@@ -1,0 +1,62 @@
+name: 'Preview Environment Dispatch'
+
+permissions:
+  contents: write
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled]
+    paths:
+      - packages/twenty-docker/**
+      - packages/twenty-server/**
+      - packages/twenty-front/**
+      - .github/workflows/preview-env-dispatch.yaml
+      - .github/workflows/preview-env-keepalive.yaml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trigger-preview:
+    if: |
+      (github.event.action == 'labeled' && github.event.label.name == 'preview-app') ||
+      (
+        (
+          github.event.pull_request.author_association == 'MEMBER' ||
+          github.event.pull_request.author_association == 'OWNER' ||
+          github.event.pull_request.author_association == 'COLLABORATOR'
+        ) && (
+          github.event.action == 'opened' ||
+          github.event.action == 'synchronize' ||
+          github.event.action == 'reopened'
+        )
+      )
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger preview environment workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh api repos/"$REPOSITORY"/dispatches \
+            -f event_type=preview-environment \
+            -f "client_payload[pr_number]=$PR_NUMBER" \
+            -f "client_payload[pr_head_sha]=$PR_HEAD_SHA" \
+            -f "client_payload[repo_full_name]=$REPOSITORY"
+
+      - name: Dispatch to ci-privileged for PR comment
+        env:
+          GH_TOKEN: ${{ secrets.CI_PRIVILEGED_DISPATCH_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          KEEPALIVE_DISPATCH_TIME: ${{ github.event.pull_request.updated_at }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh api repos/twentyhq/ci-privileged/dispatches \
+            -f event_type=preview-env-url \
+            -f "client_payload[pr_number]=$PR_NUMBER" \
+            -f "client_payload[keepalive_dispatch_time]=$KEEPALIVE_DISPATCH_TIME" \
+            -f "client_payload[repo]=$REPOSITORY"

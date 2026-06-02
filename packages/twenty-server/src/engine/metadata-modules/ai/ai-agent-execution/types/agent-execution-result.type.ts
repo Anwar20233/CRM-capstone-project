@@ -1,0 +1,9 @@
+import { type LanguageModelUsage } from 'ai';
+
+export interface AgentExecutionResult {
+  result: object;
+  usage: LanguageModelUsage;
+  cacheCreationTokens: number;
+  nativeWebSearchCallCount: number;
+  hasNoMoreAvailableCredits: boolean;
+}

@@ -1,0 +1,32 @@
+{
+  "name": "twenty-docs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/twenty-docs",
+  "projectType": "application",
+  "tags": ["scope:docs"],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "mintlify dev"
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "mintlify validate"
+      }
+    },
+    "lint": {},
+    "fmt": {
+      "options": {
+        "files": "."
+      },
+      "configurations": {
+        "fix": {}
+      }
+    }
+  }
+}

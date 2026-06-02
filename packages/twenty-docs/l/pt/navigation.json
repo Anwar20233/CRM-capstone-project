@@ -1,0 +1,192 @@
+{
+  "tabs": {
+    "gettingStarted": {
+      "label": "Primeiros passos",
+      "groups": {
+        "welcome": {
+          "label": "Boas-vindas"
+        },
+        "coreConcepts": {
+          "label": "Conceitos essenciais"
+        }
+      }
+    },
+    "userGuide": {
+      "label": "User Guide",
+      "groups": {
+        "userGuideOverview": {
+          "label": "Visão Geral"
+        },
+        "dataModel": {
+          "label": "Modelo de dados",
+          "groups": {
+            "dataModelReference": {
+              "label": "Referência"
+            },
+            "dataModelHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "dataMigration": {
+          "label": "Data Migration",
+          "groups": {
+            "dataMigrationReference": {
+              "label": "Referência"
+            },
+            "dataMigrationHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "calendarEmails": {
+          "label": "Calendar & Emails",
+          "groups": {
+            "calendarEmailsReference": {
+              "label": "Referência"
+            },
+            "calendarEmailsHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "workflows": {
+          "label": "Fluxos de trabalho",
+          "groups": {
+            "workflowsReference": {
+              "label": "Referência"
+            },
+            "workflowsHowTos": {
+              "label": "How-Tos",
+              "groups": {
+                "crmAutomations": {
+                  "label": "CRM Automations"
+                },
+                "connectToOtherTools": {
+                  "label": "Connect to Other Tools"
+                },
+                "advancedConfigurations": {
+                  "label": "Advanced Configurations"
+                },
+                "needMoreHelp": {
+                  "label": "Precisa de mais ajuda"
+                }
+              }
+            }
+          }
+        },
+        "ai": {
+          "label": "IA",
+          "groups": {
+            "aiReference": {
+              "label": "Referência"
+            },
+            "aiHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "layout": {
+          "label": "Layout",
+          "groups": {
+            "layoutReference": {
+              "label": "Referência",
+              "groups": {
+                "layoutViews": {
+                  "label": "Visualizações"
+                }
+              }
+            },
+            "layoutHowTos": {
+              "label": "Tutoriais"
+            }
+          }
+        },
+        "dashboards": {
+          "label": "Painéis",
+          "groups": {
+            "dashboardsReference": {
+              "label": "Referência"
+            },
+            "dashboardsHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "permissionsAccess": {
+          "label": "Permissions & Access",
+          "groups": {
+            "permissionsAccessReference": {
+              "label": "Referência"
+            },
+            "permissionsAccessHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "billing": {
+          "label": "Faturação",
+          "groups": {
+            "billingReference": {
+              "label": "Referência"
+            },
+            "billingHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "settings": {
+          "label": "Configurações",
+          "groups": {
+            "settingsReference": {
+              "label": "Referência"
+            },
+            "settingsHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        }
+      }
+    },
+    "developers": {
+      "label": "Programadores",
+      "groups": {
+        "developersOverview": {
+          "label": "Visão Geral"
+        },
+        "apps": {
+          "label": "Aplicativos",
+          "groups": {
+            "appsGettingStarted": {
+              "label": "Primeiros passos"
+            },
+            "appsConfig": {
+              "label": "Configuração"
+            },
+            "appsData": {
+              "label": "Dados"
+            },
+            "appsLogic": {
+              "label": "Lógica"
+            },
+            "appsLayout": {
+              "label": "Layout"
+            },
+            "appsOperations": {
+              "label": "Operações"
+            }
+          }
+        },
+        "api": {
+          "label": "API"
+        },
+        "selfHost": {
+          "label": "Self-Host"
+        },
+        "contribute": {
+          "label": "Contribute"
+        }
+      }
+    }
+  }
+}

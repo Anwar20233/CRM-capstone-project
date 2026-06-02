@@ -1,0 +1,23 @@
+name: CD deploy tag
+
+permissions:
+  contents: read
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy-tag:
+    timeout-minutes: 3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        env:
+          GH_TOKEN: ${{ secrets.TWENTY_INFRA_TOKEN }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          gh api repos/twentyhq/twenty-infra/dispatches \
+            -f event_type=auto-deploy-tag \
+            -f "client_payload[github][ref_name]=$REF_NAME"

@@ -1,0 +1,203 @@
+{
+  "tabs": {
+    "userGuide": {
+      "label": "Guía de usuario",
+      "groups": {
+        "discoverTwenty": {
+          "label": "Descubre Twenty",
+          "groups": {
+            "gettingStartedCapabilities": {
+              "label": "Capacidades"
+            },
+            "gettingStartedHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "dataModel": {
+          "label": "Modelo de datos",
+          "groups": {
+            "dataModelCapabilities": {
+              "label": "Capacidades"
+            },
+            "dataModelHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "dataMigration": {
+          "label": "Migración de datos",
+          "groups": {
+            "dataMigrationCapabilities": {
+              "label": "Capacidades"
+            },
+            "dataMigrationHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "calendarEmails": {
+          "label": "Calendario y correos electrónicos",
+          "groups": {
+            "calendarEmailsCapabilities": {
+              "label": "Capacidades"
+            },
+            "calendarEmailsHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "workflows": {
+          "label": "Flujos de trabajo",
+          "groups": {
+            "workflowsCapabilities": {
+              "label": "Capacidades"
+            },
+            "workflowsHowTos": {
+              "label": "Guías prácticas",
+              "groups": {
+                "crmAutomations": {
+                  "label": "Automatizaciones de CRM"
+                },
+                "connectToOtherTools": {
+                  "label": "Conectar con otras herramientas"
+                },
+                "advancedConfigurations": {
+                  "label": "Configuraciones avanzadas"
+                },
+                "needMoreHelp": {
+                  "label": "¿Necesitas más ayuda?"
+                }
+              }
+            }
+          }
+        },
+        "ai": {
+          "label": "IA",
+          "groups": {
+            "aiCapabilities": {
+              "label": "Capacidades"
+            },
+            "aiHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "viewsPipelines": {
+          "label": "Vistas y canalizaciones",
+          "groups": {
+            "viewsPipelinesCapabilities": {
+              "label": "Capacidades"
+            },
+            "viewsPipelinesHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "dashboards": {
+          "label": "Tableros",
+          "groups": {
+            "dashboardsCapabilities": {
+              "label": "Capacidades"
+            },
+            "dashboardsHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "permissionsAccess": {
+          "label": "Permisos y acceso",
+          "groups": {
+            "permissionsAccessCapabilities": {
+              "label": "Capacidades"
+            },
+            "permissionsAccessHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "billing": {
+          "label": "Facturación",
+          "groups": {
+            "billingCapabilities": {
+              "label": "Capacidades"
+            },
+            "billingHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        },
+        "settings": {
+          "label": "Configuración",
+          "groups": {
+            "settingsCapabilities": {
+              "label": "Capacidades"
+            },
+            "settingsHowTos": {
+              "label": "Guías prácticas"
+            }
+          }
+        }
+      }
+    },
+    "developers": {
+      "label": "Desarrolladores",
+      "groups": {
+        "developersGroup": {
+          "label": "Desarrolladores"
+        },
+        "extend": {
+          "label": "Ampliar",
+          "groups": {
+            "extendCapabilities": {
+              "label": "Capacidades"
+            }
+          }
+        },
+        "selfHost": {
+          "label": "Autoalojamiento",
+          "groups": {
+            "selfHostCapabilities": {
+              "label": "Capacidades"
+            }
+          }
+        },
+        "contribute": {
+          "label": "Contribuir",
+          "groups": {
+            "contributeCapabilities": {
+              "label": "Capacidades",
+              "groups": {
+                "frontendDevelopment": {
+                  "label": "Desarrollo Frontend",
+                  "groups": {
+                    "twentyUi": {
+                      "label": "Twenty UI",
+                      "groups": {
+                        "display": {
+                          "label": "Mostrar"
+                        },
+                        "feedback": {
+                          "label": "Retroalimentación"
+                        },
+                        "input": {
+                          "label": "Entrada"
+                        },
+                        "navigation": {
+                          "label": "Navegación"
+                        }
+                      }
+                    }
+                  }
+                },
+                "backendDevelopment": {
+                  "label": "Desarrollo Backend"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
