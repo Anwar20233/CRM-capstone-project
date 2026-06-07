@@ -16,7 +16,8 @@ export type MaskedEntity = {
   // Offsets into the original message text (what the UI displays).
   start: number | null;
   end: number | null;
-  // Token (CONTACT_001) / obfuscated number for money, or null when not masked.
+  // Token (CONTACT_001 / ORG_001 / DEAL_001) for matched records, or null when
+  // the entity is detected but not masked (money, dates, or not in the CRM).
   masked: string | null;
   token: string | null;
   recordId?: string;

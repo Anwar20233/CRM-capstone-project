@@ -16,10 +16,10 @@ export type MaskedEntity = {
   // Offsets into the ORIGINAL submitted text (what the UI displays).
   start: number | null;
   end: number | null;
-  // Token (CONTACT_001) for matched records, obfuscated number for money, or
-  // null when the entity is detected but not masked (not in the CRM).
+  // Token (CONTACT_001 / ORG_001 / DEAL_001) for matched records, or null when
+  // the entity is detected but not masked (money, dates, or not in the CRM).
   masked: string | null;
-  // Stable enumeration key when masked (CONTACT_001 / ORG_001 / DEAL_001 / AMOUNT_001).
+  // Stable enumeration key when masked (CONTACT_001 / ORG_001 / DEAL_001).
   token: string | null;
   // Present for entities matched to a CRM record.
   recordId?: string;
