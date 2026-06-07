@@ -18,6 +18,7 @@ import { CoreGraphQLApiModule } from 'src/engine/api/graphql/core-graphql-api.mo
 import { GraphQLConfigModule } from 'src/engine/api/graphql/graphql-config/graphql-config.module';
 import { GraphQLConfigService } from 'src/engine/api/graphql/graphql-config/graphql-config.service';
 import { MetadataGraphQLApiModule } from 'src/engine/api/graphql/metadata-graphql-api.module';
+import { AgentBridgeModule } from 'src/engine/api/agent-bridge/agent-bridge.module';
 import { McpMethodGuardMiddleware } from 'src/engine/api/mcp/middlewares/mcp-method-guard.middleware';
 import { McpModule } from 'src/engine/api/mcp/mcp.module';
 import { RestApiModule } from 'src/engine/api/rest/rest-api.module';
@@ -69,6 +70,7 @@ const MIGRATED_REST_METHODS = [
     AdminPanelGraphQLApiModule,
     RestApiModule,
     McpModule,
+    AgentBridgeModule,
     MiddlewareModule,
     WorkspaceMetadataVersionModule,
     // I18n module for translations
