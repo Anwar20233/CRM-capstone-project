@@ -14,10 +14,6 @@ import { EntityMaskAliasService } from 'src/engine/metadata-modules/ai/text-mask
 import { MaskingSessionService } from 'src/engine/metadata-modules/ai/text-masking/services/masking-session.service';
 import { type NerEntity } from 'src/engine/metadata-modules/ai/text-masking/types/ner-entity.type';
 import { applyReplacements } from 'src/engine/metadata-modules/ai/text-masking/utils/apply-replacements.util';
-import {
-  obfuscateMoneyText,
-  parseMoneyValue,
-} from 'src/engine/metadata-modules/ai/text-masking/utils/parse-and-obfuscate-money.util';
 import { GlobalWorkspaceOrmManager } from 'src/engine/twenty-orm/global-workspace-datasource/global-workspace-orm.manager';
 import { buildSystemAuthContext } from 'src/engine/twenty-orm/utils/build-system-auth-context.util';
 
@@ -64,7 +60,6 @@ export class TextMaskingService {
     const { entities, reverseMap } = await this.buildEntities({
       workspaceId,
       nerEntities,
-      priceFactor: session.priceFactor,
     });
 
     const maskedText = applyReplacements(
@@ -101,43 +96,33 @@ export class TextMaskingService {
   private async buildEntities({
     workspaceId,
     nerEntities,
-    priceFactor,
   }: {
     workspaceId: string;
     nerEntities: NerEntity[];
-    priceFactor: number;
   }): Promise<{
     entities: MaskedEntity[];
     reverseMap: ReverseMap;
   }> {
     const reverseMap: ReverseMap = {};
-    const amountSequence = { current: 0 };
 
     return this.globalWorkspaceOrmManager.executeInWorkspaceContext(
       async () => {
         const entities: MaskedEntity[] = [];
 
         for (const nerEntity of nerEntities) {
-          if (nerEntity.label === 'money') {
-            entities.push(
-              this.buildMoneyEntity(
-                nerEntity,
-                priceFactor,
-                amountSequence,
-                reverseMap,
-              ),
-            );
-            continue;
-          }
-
           const objectName = RECORD_LABEL_TO_OBJECT[nerEntity.label];
-          const type: MaskedEntityType = objectName ?? 'other';
 
-          // Detected but not a maskable record type (date, location, …).
+          // Detected but not a maskable record type (money, date, location, …).
+          // Money is highlighted like any other non-record span, never masked.
           if (!isDefined(objectName)) {
-            entities.push(this.buildUnmaskedEntity(nerEntity, 'other'));
+            const type: MaskedEntityType =
+              nerEntity.label === 'money' ? 'money' : 'other';
+
+            entities.push(this.buildUnmaskedEntity(nerEntity, type));
             continue;
           }
+
+          const type: MaskedEntityType = objectName;
 
           const recordId = await this.matchEntity(
             workspaceId,
@@ -194,47 +179,6 @@ export class TextMaskingService {
       end: nerEntity.end,
       masked: null,
       token: null,
-    };
-  }
-
-  private buildMoneyEntity(
-    nerEntity: NerEntity,
-    priceFactor: number,
-    amountSequence: { current: number },
-    reverseMap: ReverseMap,
-  ): MaskedEntity {
-    const originalValue = parseMoneyValue(nerEntity.text);
-
-    // No parseable number (e.g. "six figures") — highlight but don't obfuscate.
-    if (!isDefined(originalValue)) {
-      return this.buildUnmaskedEntity(nerEntity, 'money');
-    }
-
-    amountSequence.current += 1;
-    const token = `AMOUNT_${String(amountSequence.current).padStart(3, '0')}`;
-    const obfuscatedText = obfuscateMoneyText(
-      nerEntity.text,
-      originalValue,
-      priceFactor,
-    );
-
-    reverseMap[token] = {
-      token,
-      type: 'money',
-      originalText: nerEntity.text,
-      originalValue,
-      obfuscatedValue: Math.round(originalValue * priceFactor),
-      obfuscatedText,
-    };
-
-    return {
-      label: nerEntity.label,
-      type: 'money',
-      originalText: nerEntity.text,
-      start: nerEntity.start,
-      end: nerEntity.end,
-      masked: obfuscatedText,
-      token,
     };
   }
 

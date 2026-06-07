@@ -1,0 +1,3170 @@
+[
+  {
+    "id": "E-HP-01",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Standard inbound inquiry — all major entities present",
+    "text": "Hi Sarah,\n\nMy name is James Whitfield and I'm the Head of Operations at NovaTech Solutions.\nWe're a mid-sized logistics company based in Dubai with around 400 employees.\nCould we schedule a call this Thursday, June 12th? Our budget is around $45,000 annually.\nFeel free to reach me at james.whitfield@novatech.ae or call +971 50 123 4567.\n\nBest, James",
+    "expected": {
+      "person": [
+        "James Whitfield",
+        "Sarah"
+      ],
+      "company": [
+        "NovaTech Solutions"
+      ],
+      "job title": [
+        "Head of Operations"
+      ],
+      "date": [
+        "Thursday, June 12th"
+      ],
+      "money": [
+        "$45,000"
+      ],
+      "email address": [
+        "james.whitfield@novatech.ae"
+      ],
+      "phone number": [
+        "+971 50 123 4567"
+      ],
+      "location": [
+        "Dubai"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-02",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Multi-person follow-up after demo with deadline and competitors",
+    "text": "Hi Marcus,\n\nFollowing up on our demo. Both Linda Chen (our CFO) and David Park from IT were impressed.\nWe're comparing you against Salesforce and HubSpot but your pricing is more competitive.\nOur goal is to decide by September 30th. The total contract is $120,000.\nPlease send the proposal to procurement@meridiangroup.com.\n\nRachel Torres\nVP of Sales, Meridian Group",
+    "expected": {
+      "person": [
+        "Marcus",
+        "Linda Chen",
+        "David Park",
+        "Rachel Torres"
+      ],
+      "company": [
+        "Meridian Group"
+      ],
+      "job title": [
+        "CFO",
+        "VP of Sales"
+      ],
+      "date": [
+        "September 30th"
+      ],
+      "money": [
+        "$120,000"
+      ],
+      "email address": [
+        "procurement@meridiangroup.com"
+      ],
+      "competitor": [
+        "Salesforce",
+        "HubSpot"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-03",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Cold outbound reply — clear buying signal and budget",
+    "text": "Hi,\n\nThanks for reaching out. I'm Omar Nassif, Director of Digital Transformation at Gulf Retail Corp.\nWe want to migrate by January 2025. Our procurement budget is AED 200,000.\nLet's talk — omar.nassif@gulfretail.com.\n\nOmar",
+    "expected": {
+      "person": [
+        "Omar Nassif"
+      ],
+      "company": [
+        "Gulf Retail Corp"
+      ],
+      "job title": [
+        "Director of Digital Transformation"
+      ],
+      "date": [
+        "January 2025"
+      ],
+      "money": [
+        "AED 200,000"
+      ],
+      "email address": [
+        "omar.nassif@gulfretail.com"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-04",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Renewal discussion with contract value and expiry date",
+    "text": "Hi,\n\nOur current contract expires on March 31, 2025.\nWe'd like to renew for two years at $8,500/month.\nPlease have your account manager contact Lisa Park at lpark@orbitsystems.com.\n\nTom Nguyen\nCOO, Orbit Systems",
+    "expected": {
+      "person": [
+        "Lisa Park",
+        "Tom Nguyen"
+      ],
+      "company": [
+        "Orbit Systems"
+      ],
+      "job title": [
+        "COO"
+      ],
+      "date": [
+        "March 31, 2025"
+      ],
+      "money": [
+        "$8,500/month"
+      ],
+      "email address": [
+        "lpark@orbitsystems.com"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-05",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "RFP response request with phone, budget, and submission deadline",
+    "text": "Dear Sales Team,\n\nI'm Dr. Fatima Al-Sayed, Procurement Manager at Saudi National Bank.\nWe are issuing an RFP for a CRM platform with a budget of SAR 750,000.\nSubmissions are due by August 15, 2024.\nFor questions call +966 11 234 5678 or email fatima.alsayed@snb.sa.\n\nKind regards,\nDr. Fatima Al-Sayed",
+    "expected": {
+      "person": [
+        "Dr. Fatima Al-Sayed"
+      ],
+      "company": [
+        "Saudi National Bank"
+      ],
+      "job title": [
+        "Procurement Manager"
+      ],
+      "date": [
+        "August 15, 2024"
+      ],
+      "money": [
+        "SAR 750,000"
+      ],
+      "phone number": [
+        "+966 11 234 5678"
+      ],
+      "email address": [
+        "fatima.alsayed@snb.sa"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-06",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Partnership inquiry between two companies",
+    "text": "Hi,\n\nI'm Carlos Mendez, Head of Business Development at Luminary Labs.\nWe've been following Apex Digital's growth and believe a partnership could work.\nCould we schedule an intro call on October 3rd? My direct line is +1 312 555 9090.\n\nCarlos",
+    "expected": {
+      "person": [
+        "Carlos Mendez"
+      ],
+      "company": [
+        "Luminary Labs",
+        "Apex Digital"
+      ],
+      "job title": [
+        "Head of Business Development"
+      ],
+      "date": [
+        "October 3rd"
+      ],
+      "phone number": [
+        "+1 312 555 9090"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-07",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Upsell opportunity — current plan vs proposed plan with discount deadline",
+    "text": "Hi Julia,\n\nI wanted to follow up regarding upgrading your Plan A subscription to our Enterprise Suite.\nThe annual cost would be $24,000, down from $30,000 if you sign before December 1st.\n\nBen Okafor\nAccount Manager",
+    "expected": {
+      "person": [
+        "Julia",
+        "Ben Okafor"
+      ],
+      "job title": [
+        "Account Manager"
+      ],
+      "date": [
+        "December 1st"
+      ],
+      "money": [
+        "$24,000",
+        "$30,000"
+      ],
+      "product": [
+        "Plan A",
+        "Enterprise Suite"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-08",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Intro email with full contact block and location",
+    "text": "Hello,\n\nMy name is Priya Sharma, VP of Engineering at CloudNest Inc., based in Bangalore.\nI came across your product at a recent conference and am interested in a pilot.\nYou can reach me at priya@cloudnest.io.\n\nPriya",
+    "expected": {
+      "person": [
+        "Priya Sharma"
+      ],
+      "company": [
+        "CloudNest Inc."
+      ],
+      "job title": [
+        "VP of Engineering"
+      ],
+      "location": [
+        "Bangalore"
+      ],
+      "email address": [
+        "priya@cloudnest.io"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-09",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Complaint email that still contains CRM-relevant entities",
+    "text": "To Whom It May Concern,\n\nI'm Nathan Cole, Operations Director at Horizon Freight.\nWe've been your client since March 2022 paying $3,200/month.\nWe've experienced repeated outages and request a credit of $9,600.\n\nnathan.cole@horizonfreight.com\n+44 20 7946 0123",
+    "expected": {
+      "person": [
+        "Nathan Cole"
+      ],
+      "company": [
+        "Horizon Freight"
+      ],
+      "job title": [
+        "Operations Director"
+      ],
+      "date": [
+        "March 2022"
+      ],
+      "money": [
+        "$3,200/month",
+        "$9,600"
+      ],
+      "email address": [
+        "nathan.cole@horizonfreight.com"
+      ],
+      "phone number": [
+        "+44 20 7946 0123"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-10",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Event invitation with location, date range, and multiple attendees",
+    "text": "Dear Mr. Peterson,\n\nWe'd like to invite you and your colleague Mia Hoffman to our summit\non November 14–15, 2024 in Abu Dhabi, hosted by TechForward Group.\nPlease RSVP to events@techforward.ae by October 25.\n\nElena Ruiz\nEvents Director",
+    "expected": {
+      "person": [
+        "Mr. Peterson",
+        "Mia Hoffman",
+        "Elena Ruiz"
+      ],
+      "company": [
+        "TechForward Group"
+      ],
+      "job title": [
+        "Events Director"
+      ],
+      "date": [
+        "November 14–15, 2024",
+        "October 25"
+      ],
+      "location": [
+        "Abu Dhabi"
+      ],
+      "email address": [
+        "events@techforward.ae"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-11",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Pricing negotiation with three deal values",
+    "text": "Hi,\n\nWe've reviewed your proposal of $95,000. We can go up to $78,000 maximum.\nIf we agree on $82,000 I think we can close this week. Please respond by Wednesday.\n\nKevin Zhang\nCFO, Pinnacle Ventures",
+    "expected": {
+      "person": [
+        "Kevin Zhang"
+      ],
+      "company": [
+        "Pinnacle Ventures"
+      ],
+      "job title": [
+        "CFO"
+      ],
+      "date": [
+        "Wednesday"
+      ],
+      "money": [
+        "$95,000",
+        "$78,000",
+        "$82,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-12",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Enterprise deal signed with legal and procurement contacts",
+    "text": "Hi,\n\nPlease find attached the signed NDA. We're ready to proceed with the $500,000 enterprise agreement.\nOur legal contact is counsel@deltatech.com and procurement is cc'd at po@deltatech.com.\nLooking forward to onboarding in Q1 2025.\n\nAnna Lee\nCEO, DeltaTech",
+    "expected": {
+      "person": [
+        "Anna Lee"
+      ],
+      "company": [
+        "DeltaTech"
+      ],
+      "job title": [
+        "CEO"
+      ],
+      "date": [
+        "Q1 2025"
+      ],
+      "money": [
+        "$500,000"
+      ],
+      "email address": [
+        "counsel@deltatech.com",
+        "po@deltatech.com"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-13",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Referral email naming both referrer and new prospect contact",
+    "text": "Hi,\n\nI was referred to you by Mark Stevens at BlueRidge Capital.\nI'm Sophie Laurent, Head of Finance at Vanta Group in Paris. Budget: €60,000.\nMy email is s.laurent@vantagroup.fr.\n\nSophie",
+    "expected": {
+      "person": [
+        "Mark Stevens",
+        "Sophie Laurent"
+      ],
+      "company": [
+        "BlueRidge Capital",
+        "Vanta Group"
+      ],
+      "job title": [
+        "Head of Finance"
+      ],
+      "location": [
+        "Paris"
+      ],
+      "money": [
+        "€60,000"
+      ],
+      "email address": [
+        "s.laurent@vantagroup.fr"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-14",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Support-to-sales handoff with current and target plan pricing",
+    "text": "Hi Sales Team,\n\nSupport flagged this account for upgrade. Client: Maximus Retail.\nCurrent plan: Starter ($299/month). Eligible for Pro at $799/month.\nContact: michael.osei@maximusretail.com or +233 30 277 1234.\n\nDiane Cho",
+    "expected": {
+      "person": [
+        "Diane Cho",
+        "Michael Osei"
+      ],
+      "company": [
+        "Maximus Retail"
+      ],
+      "money": [
+        "$299/month",
+        "$799/month"
+      ],
+      "email address": [
+        "michael.osei@maximusretail.com"
+      ],
+      "phone number": [
+        "+233 30 277 1234"
+      ],
+      "product": [
+        "Starter",
+        "Pro"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-15",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Post-meeting summary with action items and multiple dates",
+    "text": "Hi Farouk,\n\nGreat meeting today. Summary:\n- Crestline Industries will review the proposal by Friday\n- Budget confirmed at $180,000 for Year 1\n- Technical review with their CTO Hassan Al-Zain on January 8th\n- Contract signature targeted for January 31st\n\nAlex",
+    "expected": {
+      "person": [
+        "Farouk",
+        "Hassan Al-Zain",
+        "Alex"
+      ],
+      "company": [
+        "Crestline Industries"
+      ],
+      "job title": [
+        "CTO"
+      ],
+      "date": [
+        "Friday",
+        "January 8th",
+        "January 31st"
+      ],
+      "money": [
+        "$180,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-16",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Churn risk — client threatening to cancel with competitor mention",
+    "text": "Hi,\n\nWe're seriously considering cancelling. We're paying $4,500/month and not seeing ROI.\nWe've been evaluating Zoho CRM as an alternative.\nCan someone call me this week? — Robert Finch, CTO, Finch & Co.",
+    "expected": {
+      "person": [
+        "Robert Finch"
+      ],
+      "company": [
+        "Finch & Co."
+      ],
+      "job title": [
+        "CTO"
+      ],
+      "money": [
+        "$4,500/month"
+      ],
+      "competitor": [
+        "Zoho CRM"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-17",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Invoice dispute with two money values and a date",
+    "text": "Dear Accounts Team,\n\nInvoice #INV-2024-0891 for $12,400 dated September 1, 2024 appears incorrect.\nWe were quoted $10,800. Please advise.\n\nGrace Oduya\nFinance Manager, Sterling Logistics\ngrace@sterlinglog.ng",
+    "expected": {
+      "person": [
+        "Grace Oduya"
+      ],
+      "company": [
+        "Sterling Logistics"
+      ],
+      "job title": [
+        "Finance Manager"
+      ],
+      "date": [
+        "September 1, 2024"
+      ],
+      "money": [
+        "$12,400",
+        "$10,800"
+      ],
+      "email address": [
+        "grace@sterlinglog.ng"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-18",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Outbound SDR email with named case studies and price range",
+    "text": "Hi Jennifer,\n\nI noticed Brightwave Solutions just expanded to Southeast Asia — congrats!\nCompanies like yours typically spend $30,000–$50,000 on CRM tools annually.\nWe've helped TechBloom and DataSphere cut that in half.\nWould a 20-minute call on Tuesday work?\n\nSam Ortega\nSDR, NexCRM",
+    "expected": {
+      "person": [
+        "Jennifer",
+        "Sam Ortega"
+      ],
+      "company": [
+        "Brightwave Solutions",
+        "TechBloom",
+        "DataSphere",
+        "NexCRM"
+      ],
+      "job title": [
+        "SDR"
+      ],
+      "date": [
+        "Tuesday"
+      ],
+      "money": [
+        "$30,000",
+        "$50,000"
+      ],
+      "location": [
+        "Southeast Asia"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-19",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Legal notice with two companies and a payment deadline",
+    "text": "Dear Mr. Hamilton,\n\nThis notice is issued by Graystone Legal on behalf of our client Kova Corp.\nThe outstanding balance of $87,000 must be settled by November 30, 2024.\n\nNatasha Wells\nSenior Partner, Graystone Legal\nnwells@graystonelegal.com",
+    "expected": {
+      "person": [
+        "Mr. Hamilton",
+        "Natasha Wells"
+      ],
+      "company": [
+        "Graystone Legal",
+        "Kova Corp"
+      ],
+      "job title": [
+        "Senior Partner"
+      ],
+      "date": [
+        "November 30, 2024"
+      ],
+      "money": [
+        "$87,000"
+      ],
+      "email address": [
+        "nwells@graystonelegal.com"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-20",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Demo request specifying product modules and team size",
+    "text": "Hello,\n\nI'm interested in a demo of your Analytics Pro and Pipeline Manager modules.\nI'm Diego Vargas, Sales Director at Comet Technologies in Mexico City.\nTeam of 25 sales reps, budget around $40,000/year.\nEmail: d.vargas@comettechnologies.mx",
+    "expected": {
+      "person": [
+        "Diego Vargas"
+      ],
+      "company": [
+        "Comet Technologies"
+      ],
+      "job title": [
+        "Sales Director"
+      ],
+      "location": [
+        "Mexico City"
+      ],
+      "money": [
+        "$40,000/year"
+      ],
+      "product": [
+        "Analytics Pro",
+        "Pipeline Manager"
+      ],
+      "email address": [
+        "d.vargas@comettechnologies.mx"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-21",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Colleague forwarding a contact with location and budget",
+    "text": "Hi,\n\nForwarding this from my colleague Amir Khalil at Orion Systems.\nHe's based in Cairo and is the right person for their CRM evaluation.\nBudget: approximately $55,000. Email: a.khalil@orionsystems.eg.\n\nYara Hassan",
+    "expected": {
+      "person": [
+        "Amir Khalil",
+        "Yara Hassan"
+      ],
+      "company": [
+        "Orion Systems"
+      ],
+      "location": [
+        "Cairo"
+      ],
+      "money": [
+        "$55,000"
+      ],
+      "email address": [
+        "a.khalil@orionsystems.eg"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-22",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Budget approval confirmation with CFO signatory and two dates",
+    "text": "Hi,\n\nThe budget for the CRM implementation has been approved at $220,000\nby our CFO, Mr. Roland Becker, on December 10, 2024.\nProject kickoff is January 6, 2025.\n\nPaula Schneider\nProject Manager, Becker Industries",
+    "expected": {
+      "person": [
+        "Roland Becker",
+        "Paula Schneider"
+      ],
+      "company": [
+        "Becker Industries"
+      ],
+      "job title": [
+        "CFO",
+        "Project Manager"
+      ],
+      "date": [
+        "December 10, 2024",
+        "January 6, 2025"
+      ],
+      "money": [
+        "$220,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-23",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Discovery call scheduling across time zones with location",
+    "text": "Hi,\n\nI'd like to schedule a call for next Thursday at 3pm GST (12pm CET).\nWe're based in Dubai at Nexus Capital.\nPlease confirm with amira@nexuscapital.ae.\n\nAmira Saleh\nHead of Strategy",
+    "expected": {
+      "person": [
+        "Amira Saleh"
+      ],
+      "company": [
+        "Nexus Capital"
+      ],
+      "job title": [
+        "Head of Strategy"
+      ],
+      "date": [
+        "next Thursday"
+      ],
+      "location": [
+        "Dubai"
+      ],
+      "email address": [
+        "amira@nexuscapital.ae"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-24",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Year-end deal push with discounted price and deadline",
+    "text": "Hi James,\n\nAs we approach year-end, we can offer a 20% discount if you sign before December 31.\nThat brings the total to $76,000 from the standard $95,000.\n\nSarah Kim\nAE, TrueScale",
+    "expected": {
+      "person": [
+        "James",
+        "Sarah Kim"
+      ],
+      "company": [
+        "TrueScale"
+      ],
+      "job title": [
+        "AE"
+      ],
+      "date": [
+        "December 31"
+      ],
+      "money": [
+        "$76,000",
+        "$95,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-26",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Pilot approval with start date, seat count, and per-seat pricing",
+    "text": "Hi,\n\nWe've approved a 90-day pilot starting February 1, 2025 — 10 seats at $150/seat/month.\nPrimary contact: Leo Tan, IT Manager at Vertex Group.\nleo.tan@vertexgroup.sg | +65 9123 4567",
+    "expected": {
+      "person": [
+        "Leo Tan"
+      ],
+      "company": [
+        "Vertex Group"
+      ],
+      "job title": [
+        "IT Manager"
+      ],
+      "date": [
+        "February 1, 2025"
+      ],
+      "money": [
+        "$150/seat/month"
+      ],
+      "email address": [
+        "leo.tan@vertexgroup.sg"
+      ],
+      "phone number": [
+        "+65 9123 4567"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-27",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Multi-office company — regional contact with three city locations",
+    "text": "Hi,\n\nWe have offices in London, Singapore, and Toronto.\nOur London office lead is Claire Fox, Regional Director. Budget: GBP 110,000.\nc.fox@globaledge.com | +44 207 123 4567",
+    "expected": {
+      "person": [
+        "Claire Fox"
+      ],
+      "job title": [
+        "Regional Director"
+      ],
+      "location": [
+        "London",
+        "Singapore",
+        "Toronto"
+      ],
+      "money": [
+        "GBP 110,000"
+      ],
+      "email address": [
+        "c.fox@globaledge.com"
+      ],
+      "phone number": [
+        "+44 207 123 4567"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-28",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Competitive evaluation with three named tools",
+    "text": "Hi,\n\nWe are evaluating your product alongside Zoho, Monday CRM, and Copper.\nDecision deadline: June 30. Budget: $60,000/year.\nI'm Marcus Webb, VP of Sales at Coda Enterprises.\nmarcus.webb@codaent.com",
+    "expected": {
+      "person": [
+        "Marcus Webb"
+      ],
+      "company": [
+        "Coda Enterprises"
+      ],
+      "job title": [
+        "VP of Sales"
+      ],
+      "date": [
+        "June 30"
+      ],
+      "money": [
+        "$60,000/year"
+      ],
+      "email address": [
+        "marcus.webb@codaent.com"
+      ],
+      "competitor": [
+        "Zoho",
+        "Monday CRM",
+        "Copper"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-29",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Onboarding kickoff with four named team members",
+    "text": "Hi Team,\n\nWelcome to your onboarding kickoff for FlowDesk Pro.\nYour success manager will be Tanya Brown.\nTeam members: Sarah Park, Dev Lee, and Ravi Mehta.\nKickoff: Monday, March 4th at 10am.\n\nTanya Brown\nCustomer Success Manager, FlowDesk",
+    "expected": {
+      "person": [
+        "Tanya Brown",
+        "Sarah Park",
+        "Dev Lee",
+        "Ravi Mehta"
+      ],
+      "company": [
+        "FlowDesk"
+      ],
+      "job title": [
+        "Customer Success Manager"
+      ],
+      "date": [
+        "Monday, March 4th"
+      ],
+      "product": [
+        "FlowDesk Pro"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-HP-30",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Security questionnaire with CISO contact and submission deadline",
+    "text": "Hi,\n\nAs part of our vendor evaluation, we require a completed security questionnaire.\nTechnical contact: Erik Andersen, CISO at NordCom Group.\ne.andersen@nordcom.dk | +45 33 12 3456\nDeadline: April 1, 2025.",
+    "expected": {
+      "person": [
+        "Erik Andersen"
+      ],
+      "company": [
+        "NordCom Group"
+      ],
+      "job title": [
+        "CISO"
+      ],
+      "date": [
+        "April 1, 2025"
+      ],
+      "email address": [
+        "e.andersen@nordcom.dk"
+      ],
+      "phone number": [
+        "+45 33 12 3456"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-EC-01",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Name only in signature block, absent from email body",
+    "text": "Hi,\n\nJust wanted to confirm our meeting is still on for next week.\n\n--\nDr. Amira Al-Hassan\nChief Medical Officer | HealthAxis MENA\nTel: +966 11 456 7890\namira.alhassan@healthaxis.sa",
+    "expected": {
+      "person": [
+        "Dr. Amira Al-Hassan"
+      ],
+      "company": [
+        "HealthAxis MENA"
+      ],
+      "job title": [
+        "Chief Medical Officer"
+      ],
+      "phone number": [
+        "+966 11 456 7890"
+      ],
+      "email address": [
+        "amira.alhassan@healthaxis.sa"
+      ]
+    },
+    "notes": "Name only appears in signature — not in body text"
+  },
+  {
+    "id": "E-EC-02",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Three companies — sender / prospect / two competitors",
+    "text": "Hi Tom,\n\nThis is Alex from Zenith CRM. I noticed Apex Dynamics recently expanded.\nWe've helped companies move away from Microsoft Dynamics and Pipedrive.\n\nAlex Brennan\nAccount Executive, Zenith CRM",
+    "expected": {
+      "person": [
+        "Tom",
+        "Alex Brennan"
+      ],
+      "company": [
+        "Zenith CRM",
+        "Apex Dynamics"
+      ],
+      "job title": [
+        "Account Executive"
+      ],
+      "competitor": [
+        "Microsoft Dynamics",
+        "Pipedrive"
+      ]
+    },
+    "notes": "Own company, prospect company, and two competitors — model must distinguish roles"
+  },
+  {
+    "id": "E-EC-03",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "All relative dates — no ISO or calendar dates",
+    "text": "Hey,\n\nHope you're well. We're hoping to wrap this up before the end of the fiscal year.\nWe close our books in Q4, so ideally a decision within the next 6 weeks.\nEarly next month works for a call?\n\nPatricia",
+    "expected": {
+      "date": [
+        "end of the fiscal year",
+        "Q4",
+        "next 6 weeks",
+        "early next month"
+      ],
+      "person": [
+        "Patricia"
+      ]
+    },
+    "notes": "No concrete dates — all relative expressions. GLiNER likely misses several."
+  },
+  {
+    "id": "E-EC-04",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Money in three formats: per-unit, computed total, range",
+    "text": "Hi,\n\nJust to clarify: 50 users at $35/user/month comes to about $21,000 annually.\nOur budget is capped at $15,000–$18,000 for the year. Is there flexibility?\n\nKevin",
+    "expected": {
+      "money": [
+        "$35/user/month",
+        "$21,000",
+        "$15,000",
+        "$18,000"
+      ],
+      "person": [
+        "Kevin"
+      ]
+    },
+    "notes": "Per-unit price, calculated total, and a range — multiple money formats in one message"
+  },
+  {
+    "id": "E-EC-05",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Arabic company name with English translation in parentheses",
+    "text": "Hello,\n\nMy name is Khalid Al-Mansouri from Advanced Tech Company (شركة التقنية المتقدمة) in Riyadh.\nOur technical lead, Eng. Faisal Al-Otaibi, wants a demo.\n\nKhalid",
+    "expected": {
+      "person": [
+        "Khalid Al-Mansouri",
+        "Faisal Al-Otaibi"
+      ],
+      "company": [
+        "Advanced Tech Company"
+      ],
+      "location": [
+        "Riyadh"
+      ]
+    },
+    "notes": "Arabic script alongside English — model should extract English version"
+  },
+  {
+    "id": "E-EC-06",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Decision-maker referred to only by pronoun",
+    "text": "Hi,\n\nI spoke with Mike earlier and he said he'd forward this to his boss.\nShe's the one who makes the final call. Can you follow up with him directly?",
+    "expected": {
+      "person": [
+        "Mike"
+      ]
+    },
+    "notes": "Unnamed decision-maker referred to as 'she' — model must not hallucinate a name"
+  },
+  {
+    "id": "E-EC-07",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Entities scattered across a multi-level reply chain",
+    "text": "From: nadia.ibrahim@cloudpeak.io\nSubject: Re: Re: Proposal follow-up\n\nYes, let's do Friday at 2pm.\n\n> Following up on the $80,000 proposal sent to CloudPeak on March 3rd.\n> Confirm with Nadia or Ben Strauss.\n\n>> Ben is on leave until April 10th. I'll be contact for now.",
+    "expected": {
+      "person": [
+        "Nadia",
+        "Ben Strauss"
+      ],
+      "company": [
+        "CloudPeak"
+      ],
+      "email address": [
+        "nadia.ibrahim@cloudpeak.io"
+      ],
+      "money": [
+        "$80,000"
+      ],
+      "date": [
+        "March 3rd",
+        "Friday",
+        "April 10th"
+      ]
+    },
+    "notes": "Entities spread across quoted reply levels — indentation adds noise"
+  },
+  {
+    "id": "E-EC-08",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Role implied by context, contact unnamed",
+    "text": "Hi,\n\nI spoke to the person who handles software procurement at Vertex Corp.\nShe didn't give her name but said budget is $25,000 and they want to decide before Q2.\n\nAhmed",
+    "expected": {
+      "company": [
+        "Vertex Corp"
+      ],
+      "money": [
+        "$25,000"
+      ],
+      "date": [
+        "Q2"
+      ],
+      "person": [
+        "Ahmed"
+      ]
+    },
+    "notes": "Procurement contact unnamed — role is described contextually, not titled"
+  },
+  {
+    "id": "E-EC-09",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Job title embedded in sentence before name, no punctuation separator",
+    "text": "Hi,\n\nOur chief revenue officer Helena Voss will be joining the call.\nShe oversees all deals above $100,000 at Crescent Software.\n\nBest",
+    "expected": {
+      "person": [
+        "Helena Voss"
+      ],
+      "company": [
+        "Crescent Software"
+      ],
+      "job title": [
+        "chief revenue officer"
+      ],
+      "money": [
+        "$100,000"
+      ]
+    },
+    "notes": "Title immediately precedes name without comma or colon"
+  },
+  {
+    "id": "E-EC-10",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Two people with the same last name at different companies",
+    "text": "Hi,\n\nI've cc'd David Chen from our team and Jennifer Chen from Bridgeway Corp.\nThey'll both need to approve the $50,000 contract by Friday.",
+    "expected": {
+      "person": [
+        "David Chen",
+        "Jennifer Chen"
+      ],
+      "company": [
+        "Bridgeway Corp"
+      ],
+      "money": [
+        "$50,000"
+      ],
+      "date": [
+        "Friday"
+      ]
+    },
+    "notes": "Same last name — model must distinguish two separate people"
+  },
+  {
+    "id": "E-EC-11",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Two phone formats — dashes vs spaces, two country codes",
+    "text": "Hi,\n\nYou can reach us at +1-800-555-0199 (US) or +971 4 123 4567 (Dubai).\n\nSupport Team, GlobalServ",
+    "expected": {
+      "phone number": [
+        "+1-800-555-0199",
+        "+971 4 123 4567"
+      ],
+      "company": [
+        "GlobalServ"
+      ],
+      "location": [
+        "Dubai"
+      ]
+    },
+    "notes": "International numbers in different formatting styles"
+  },
+  {
+    "id": "E-EC-12",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Deal value with percentage discount — two resulting amounts",
+    "text": "Hi,\n\nWe're offering a 15% discount on the list price of $100,000,\nbringing your cost to $85,000. Valid until March 15.\n\nBen",
+    "expected": {
+      "money": [
+        "$100,000",
+        "$85,000"
+      ],
+      "date": [
+        "March 15"
+      ],
+      "person": [
+        "Ben"
+      ]
+    },
+    "notes": "Percent is not a money entity; list price and discounted price are"
+  },
+  {
+    "id": "E-EC-13",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Company referred to as 'the company' after first mention",
+    "text": "Hi,\n\nFollowing our call with Hartmann AG last week, I confirm the company is moving forward.\nContact is Klaus Bauer, budget is €90,000. He should get back to us by Thursday.",
+    "expected": {
+      "person": [
+        "Klaus Bauer"
+      ],
+      "company": [
+        "Hartmann AG"
+      ],
+      "money": [
+        "€90,000"
+      ],
+      "date": [
+        "Thursday"
+      ]
+    },
+    "notes": "Model needs to extract from first mention — not the pronoun"
+  },
+  {
+    "id": "E-EC-14",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Two functional email addresses not paired with named individuals",
+    "text": "Hi,\n\nPlease send the contract to contracts@legaldept.io and copy billing@financeunit.org.\nI'm Wendy Cross, Head of Procurement at Surge Dynamics.\n\nWendy",
+    "expected": {
+      "person": [
+        "Wendy Cross"
+      ],
+      "company": [
+        "Surge Dynamics"
+      ],
+      "job title": [
+        "Head of Procurement"
+      ],
+      "email address": [
+        "contracts@legaldept.io",
+        "billing@financeunit.org"
+      ]
+    },
+    "notes": "Emails belong to teams/departments, not named contacts"
+  },
+  {
+    "id": "E-EC-15",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Location embedded in company name AND as standalone city",
+    "text": "Hi,\n\nI represent Cairo Capital Group, headquartered in Cairo.\nWe also have offices in London and New York.\n\nHana Abdelaziz",
+    "expected": {
+      "person": [
+        "Hana Abdelaziz"
+      ],
+      "company": [
+        "Cairo Capital Group"
+      ],
+      "location": [
+        "Cairo",
+        "London",
+        "New York"
+      ]
+    },
+    "notes": "'Cairo' appears in company name and as a separate location entity"
+  },
+  {
+    "id": "E-EC-16",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Competitor mentioned positively — still a competitor signal",
+    "text": "Hi,\n\nWe've used Salesforce for 5 years and love it, but we need better integrations.\nLooking at your platform as a complement, not replacement. Budget: $15,000.\n— James Ford, COO, FordWorks",
+    "expected": {
+      "person": [
+        "James Ford"
+      ],
+      "company": [
+        "FordWorks"
+      ],
+      "job title": [
+        "COO"
+      ],
+      "money": [
+        "$15,000"
+      ],
+      "competitor": [
+        "Salesforce"
+      ]
+    },
+    "notes": "Client likes Salesforce but is looking for a complement — still extract it"
+  },
+  {
+    "id": "E-EC-17",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Two separate deals in one email with different amounts and locations",
+    "text": "Hi,\n\nThe $30,000 deal for the Dubai office closes Friday.\nThe $120,000 contract for the London office goes through legal first — ready by March 20.\n\nClaudia Renz\nVP Finance",
+    "expected": {
+      "person": [
+        "Claudia Renz"
+      ],
+      "job title": [
+        "VP Finance"
+      ],
+      "money": [
+        "$30,000",
+        "$120,000"
+      ],
+      "location": [
+        "Dubai",
+        "London"
+      ],
+      "date": [
+        "Friday",
+        "March 20"
+      ]
+    },
+    "notes": "Two distinct deal values tied to two different locations"
+  },
+  {
+    "id": "E-EC-18",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Hyphenated surname with academic title",
+    "text": "Dear Prof. Marie-Claire Beaumont,\n\nWe're pleased to offer a research partnership to the University of Lyon.\nThe grant is €45,000 and runs January to December 2025.\n\nHenri Dupont\nPartnership Manager",
+    "expected": {
+      "person": [
+        "Prof. Marie-Claire Beaumont",
+        "Henri Dupont"
+      ],
+      "company": [
+        "University of Lyon"
+      ],
+      "job title": [
+        "Partnership Manager"
+      ],
+      "money": [
+        "€45,000"
+      ],
+      "date": [
+        "January",
+        "December 2025"
+      ]
+    },
+    "notes": "Academic title + hyphenated surname — common in European contacts"
+  },
+  {
+    "id": "E-EC-19",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Same date in EU and US format in the same sentence",
+    "text": "Hi,\n\nCould we meet on 15/04/2025 (or April 15, 2025 for US colleagues)?\nPreferred time 14:00 GST. — Tariq Mahmoud, Mosaic Group",
+    "expected": {
+      "person": [
+        "Tariq Mahmoud"
+      ],
+      "company": [
+        "Mosaic Group"
+      ],
+      "date": [
+        "15/04/2025",
+        "April 15, 2025"
+      ]
+    },
+    "notes": "15/04/2025 and April 15, 2025 refer to the same day — two formats"
+  },
+  {
+    "id": "E-EC-20",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Cc line contains relevant contacts not named in body",
+    "text": "To: sales@ourcrm.com\nCc: ana.ferreira@cortex.pt, rlopes@cortex.pt\nSubject: Demo request\n\nHi, I'd like to schedule a demo for our team at Cortex. Budget TBD.\n\nMiguel Santos",
+    "expected": {
+      "person": [
+        "Miguel Santos"
+      ],
+      "company": [
+        "Cortex"
+      ],
+      "email address": [
+        "ana.ferreira@cortex.pt",
+        "rlopes@cortex.pt"
+      ]
+    },
+    "notes": "Two additional contacts only appear in the Cc header, not the email body"
+  },
+  {
+    "id": "E-EC-21",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Money with non-standard currency text abbreviation",
+    "text": "Hi,\n\nOur budget is approximately 2.5 million EGP, or about 50,000 USD at current rates.\nPlease quote in both currencies.\n\nNoha",
+    "expected": {
+      "money": [
+        "2.5 million EGP",
+        "50,000 USD"
+      ],
+      "person": [
+        "Noha"
+      ]
+    },
+    "notes": "Currency expressed in text (EGP) and abbreviation (USD)"
+  },
+  {
+    "id": "E-EC-22",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Company name is an acronym only",
+    "text": "Hi,\n\nI'm reaching out from MENA FSI — our regional fintech arm, based in Bahrain.\nBudget: $200,000–$300,000.\n\nNour Qassem\nHead of Technology",
+    "expected": {
+      "person": [
+        "Nour Qassem"
+      ],
+      "company": [
+        "MENA FSI"
+      ],
+      "job title": [
+        "Head of Technology"
+      ],
+      "location": [
+        "Bahrain"
+      ],
+      "money": [
+        "$200,000",
+        "$300,000"
+      ]
+    },
+    "notes": "No context clues about what the acronym stands for"
+  },
+  {
+    "id": "E-EC-23",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Date as fiscal quarter with year",
+    "text": "Hi,\n\nWe are targeting go-live by Q3 FY2025. Hard deadline is Q4 FY2025.\nPlease confirm feasibility by end of this month.\n\nRegards",
+    "expected": {
+      "date": [
+        "Q3 FY2025",
+        "Q4 FY2025",
+        "end of this month"
+      ]
+    },
+    "notes": "FY-qualified quarter — not a calendar date, GLiNER may miss these"
+  },
+  {
+    "id": "E-EC-24",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Person name that looks like a product/brand name",
+    "text": "Hi,\n\nOur contact at Fusion Labs is Max — he runs the Fusion Analytics suite.\nHe's also evaluating your product against Fusion CRM (a different company).\n\nDana",
+    "expected": {
+      "person": [
+        "Max",
+        "Dana"
+      ],
+      "company": [
+        "Fusion Labs"
+      ],
+      "product": [
+        "Fusion Analytics"
+      ],
+      "competitor": [
+        "Fusion CRM"
+      ]
+    },
+    "notes": "'Fusion' appears as a person's nickname context, company name, product, and competitor"
+  },
+  {
+    "id": "E-EC-25",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Contract value as monthly rate × duration",
+    "text": "Hi,\n\nWe're looking at a 24-month contract at $5,500/month — that's $132,000 total.\nCan you match that?\n\nThanks, Ian",
+    "expected": {
+      "money": [
+        "$5,500/month",
+        "$132,000"
+      ],
+      "person": [
+        "Ian"
+      ]
+    },
+    "notes": "Rate and total both present — both are relevant money entities"
+  },
+  {
+    "id": "E-EC-26",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Informal company alias in quotes vs full legal name",
+    "text": "Hi,\n\nWe're from 'The Lab' (officially Emergent Laboratory Solutions Inc.).\nOur CEO, Prof. Zhang Wei, would like to speak with your enterprise team.\n\nlab@emergent.io | +86 21 1234 5678",
+    "expected": {
+      "person": [
+        "Prof. Zhang Wei"
+      ],
+      "company": [
+        "Emergent Laboratory Solutions Inc."
+      ],
+      "job title": [
+        "CEO"
+      ],
+      "email address": [
+        "lab@emergent.io"
+      ],
+      "phone number": [
+        "+86 21 1234 5678"
+      ]
+    },
+    "notes": "Model should prefer the formal name over the alias"
+  },
+  {
+    "id": "E-EC-27",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Forwarded email — sender in header, different contact in body",
+    "text": "---------- Forwarded message ---------\nFrom: Sarah Osei <sarah@brightgroup.gh>\n\nHi, we're Bright Group in Accra. Budget: GHS 400,000.\nContact our IT Director, Patrick Mensah, for technical questions.\npatrick@brightgroup.gh | +233 24 456 7890",
+    "expected": {
+      "person": [
+        "Sarah Osei",
+        "Patrick Mensah"
+      ],
+      "company": [
+        "Bright Group"
+      ],
+      "job title": [
+        "IT Director"
+      ],
+      "location": [
+        "Accra"
+      ],
+      "money": [
+        "GHS 400,000"
+      ],
+      "email address": [
+        "sarah@brightgroup.gh",
+        "patrick@brightgroup.gh"
+      ],
+      "phone number": [
+        "+233 24 456 7890"
+      ]
+    },
+    "notes": "Sender named in forwarded header; separate technical contact named in body"
+  },
+  {
+    "id": "E-EC-28",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Internal project codename used — not a product name",
+    "text": "Hi,\n\nWe're calling this 'Project Hydra' internally — our move to a new CRM.\nBudget: $250,000. Sponsor is our CPO, Vanessa Obi at StormEdge Technologies.\n\nVanessa",
+    "expected": {
+      "person": [
+        "Vanessa Obi"
+      ],
+      "company": [
+        "StormEdge Technologies"
+      ],
+      "job title": [
+        "CPO"
+      ],
+      "money": [
+        "$250,000"
+      ]
+    },
+    "notes": "'Project Hydra' is an internal initiative name, not a product to extract"
+  },
+  {
+    "id": "E-EC-29",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Proposal with start and end date in one range expression",
+    "text": "Hi,\n\nThe proposal is valid from October 1 to October 31, 2024. Please sign before expiry.\n\nMarco Bellini\nSales Director, Ardent Systems",
+    "expected": {
+      "person": [
+        "Marco Bellini"
+      ],
+      "company": [
+        "Ardent Systems"
+      ],
+      "job title": [
+        "Sales Director"
+      ],
+      "date": [
+        "October 1",
+        "October 31, 2024"
+      ]
+    },
+    "notes": "Two dates in one range — model should catch both endpoints"
+  },
+  {
+    "id": "E-EC-30",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Person mentioned only as a past contact, not current stakeholder",
+    "text": "Hi,\n\nWe previously worked with your colleague Tom Baker about two years ago.\nIs he still with the company? We'd like to reconnect.\n\nElsa Vogel\nHead of Partnerships, Velo Corp",
+    "expected": {
+      "person": [
+        "Tom Baker",
+        "Elsa Vogel"
+      ],
+      "company": [
+        "Velo Corp"
+      ],
+      "job title": [
+        "Head of Partnerships"
+      ]
+    },
+    "notes": "Tom Baker is a historical reference — still an extractable person entity"
+  },
+  {
+    "id": "E-FM-01",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "One-liner — no entities expected",
+    "text": "Can we push to next week?",
+    "expected": {},
+    "notes": "Minimal signal. Model should extract nothing."
+  },
+  {
+    "id": "E-FM-02",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Heavy abbreviations — acronym-dense corporate speak",
+    "text": "FYI — touched base w/ PMO at ADNOC re: ERP RFP. Want demo ASAP, EOD Tue. POC is SME from IT. ~SAR 500K budget.",
+    "expected": {
+      "company": [
+        "ADNOC"
+      ],
+      "money": [
+        "SAR 500K"
+      ],
+      "date": [
+        "Tue"
+      ]
+    },
+    "notes": "PMO, RFP, POC, SME, EOD — GLiNER likely misses most"
+  },
+  {
+    "id": "E-FM-03",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Company names that are common English words",
+    "text": "We've been using Apple, Notion, and Monday for our ops but want something more integrated. Our team at Target has about 200 people.",
+    "expected": {
+      "company": [
+        "Apple",
+        "Notion",
+        "Monday",
+        "Target"
+      ]
+    },
+    "notes": "'Apple', 'Notion', 'Monday', 'Target' — all real companies AND common words"
+  },
+  {
+    "id": "E-FM-04",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Name/place ambiguity — Jordan and Paris are both persons and locations",
+    "text": "Hi,\n\nJordan from Phoenix Consulting here. We're working with Paris (our project lead) and the team in Jordan (the country) to finalize the deal.",
+    "expected": {
+      "person": [
+        "Jordan",
+        "Paris"
+      ],
+      "company": [
+        "Phoenix Consulting"
+      ],
+      "location": [
+        "Jordan",
+        "Phoenix"
+      ]
+    },
+    "notes": "'Jordan' is person + country. 'Paris' is person + city. Severe ambiguity."
+  },
+  {
+    "id": "E-FM-05",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Auto-generated system notification — no human entities",
+    "text": "This is an automated notification from your CRM system. Lead #4821 was updated on 2024-10-15 at 09:32 UTC. Stage changed from Qualified to Proposal Sent.",
+    "expected": {},
+    "notes": "System message — nothing extractable"
+  },
+  {
+    "id": "E-FM-06",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Numbers everywhere but none are CRM-relevant",
+    "text": "Hi,\n\nWe have 3 locations, 12 departments, 450 employees, and 7 product lines. System ID: 8842-A. Founded in 1998. Response time: 48 hours.",
+    "expected": {},
+    "notes": "No money, no named entities, no meaningful dates — over-extraction risk"
+  },
+  {
+    "id": "E-FM-07",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Email entirely in Arabic with no English entities",
+    "text": "مرحباً،\n\nأنا أحمد الشمري من شركة التقنية الحديثة في الرياض.\nنودّ معرفة المزيد عن منتجاتكم.\n\nمع التحية",
+    "expected": {},
+    "notes": "Entirely Arabic text — English-trained GLiNER expected to extract nothing"
+  },
+  {
+    "id": "E-FM-08",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Out-of-office autoreply — minimal extractable entities",
+    "text": "Thank you for your email. I am out of office from October 21 to October 28 with limited access. For urgent matters contact support@company.com.",
+    "expected": {
+      "date": [
+        "October 21",
+        "October 28"
+      ],
+      "email address": [
+        "support@company.com"
+      ]
+    },
+    "notes": "OOO reply — dates and one email present, no person name or company"
+  },
+  {
+    "id": "E-FM-09",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Dense financial metrics — no deal-level entities",
+    "text": "Q3 revenue was $4.2B, up 12% YoY. EBITDA margin: 23.4%. Operating costs: $1.1B. Cash position: $800M.",
+    "expected": {},
+    "notes": "Financial report numbers are not deal values"
+  },
+  {
+    "id": "E-FM-10",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Obvious spam with fake but extractable entities",
+    "text": "Dear Valued Customer,\n\nCongratulations! You've been selected to receive $5,000,000 from the United Nations Development Fund. Contact Mr. John Williams at reward@un-special.info to claim.",
+    "expected": {
+      "person": [
+        "Mr. John Williams"
+      ],
+      "money": [
+        "$5,000,000"
+      ],
+      "email address": [
+        "reward@un-special.info"
+      ]
+    },
+    "notes": "Spam — entities are present but fictitious. Model should still extract what's there."
+  },
+  {
+    "id": "E-FM-11",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Pronoun-only, no antecedent in this message",
+    "text": "Can you update their address and resend them the invoice?",
+    "expected": {},
+    "notes": "'Their' and 'them' — no referent in this message"
+  },
+  {
+    "id": "E-FM-12",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Meeting notes with roles but no names",
+    "text": "Meeting notes — Oct 10:\n- The CTO expressed concern about integration\n- The CFO asked about pricing flexibility\n- The VP of Sales wants a pilot by end of year\n- Legal will review the contract next week",
+    "expected": {
+      "job title": [
+        "CTO",
+        "CFO",
+        "VP of Sales"
+      ],
+      "date": [
+        "end of year",
+        "next week"
+      ]
+    },
+    "notes": "Titles present but no names — model should not invent names"
+  },
+  {
+    "id": "E-FM-13",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Internal system-forwarded email with metadata noise",
+    "text": "From: noreply@crm.internal\nSent: Monday, October 14, 2024 9:15 AM\nTo: team-sales@internal.com\n\nLead assigned to queue. No action required.",
+    "expected": {
+      "date": [
+        "Monday, October 14, 2024"
+      ]
+    },
+    "notes": "System-generated — nearly nothing extractable beyond a date"
+  },
+  {
+    "id": "E-FM-14",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Company names identical to famous historical figures",
+    "text": "Hi,\n\nWe're reaching out from Lincoln (the consultancy, not the president). We also work closely with Edison Group and Tesla Advisory.\n\nBest",
+    "expected": {
+      "company": [
+        "Lincoln",
+        "Edison Group",
+        "Tesla Advisory"
+      ]
+    },
+    "notes": "Lincoln, Edison, Tesla — company names that collide with famous person names"
+  },
+  {
+    "id": "E-FM-15",
+    "category": "email",
+    "subcategory": "failure_mode",
+    "description": "Structured bullet-point format — tests non-prose extraction",
+    "text": "• Company: NovaTech\n• Contact: Rita Johansson\n• Title: Head of IT\n• Budget: $70,000\n• Decision date: Q1 2025\n• Competitors considered: SAP, Oracle",
+    "expected": {
+      "company": [
+        "NovaTech"
+      ],
+      "person": [
+        "Rita Johansson"
+      ],
+      "job title": [
+        "Head of IT"
+      ],
+      "money": [
+        "$70,000"
+      ],
+      "date": [
+        "Q1 2025"
+      ],
+      "competitor": [
+        "SAP",
+        "Oracle"
+      ]
+    },
+    "notes": "Label-prefixed bullets — all entities explicitly labeled in the text"
+  },
+  {
+    "id": "C-HP-01",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Adding a new lead with all key fields",
+    "text": "Add a new lead: Ahmed Al-Rashid, CTO at ByteStream Inc. in Jeddah. Email is ahmed@bytestream.sa and budget is SAR 120,000.",
+    "expected": {
+      "person": [
+        "Ahmed Al-Rashid"
+      ],
+      "company": [
+        "ByteStream Inc."
+      ],
+      "job title": [
+        "CTO"
+      ],
+      "location": [
+        "Jeddah"
+      ],
+      "email address": [
+        "ahmed@bytestream.sa"
+      ],
+      "money": [
+        "SAR 120,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-02",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Logging a call outcome with buying signal",
+    "text": "Just got off a call with Sandra Lee from Vertix Corp. She said they're ready to sign a $65,000 deal by end of month.",
+    "expected": {
+      "person": [
+        "Sandra Lee"
+      ],
+      "company": [
+        "Vertix Corp"
+      ],
+      "money": [
+        "$65,000"
+      ],
+      "date": [
+        "end of month"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-03",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Scheduling a follow-up reminder",
+    "text": "Set a reminder to follow up with Rami at GlobalTech on December 5th about the renewal.",
+    "expected": {
+      "person": [
+        "Rami"
+      ],
+      "company": [
+        "GlobalTech"
+      ],
+      "date": [
+        "December 5th"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-04",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Updating deal stage and amount",
+    "text": "Move the Apex deal to Proposal stage. Value is $88,000. Contact is Mike Turner, VP Sales.",
+    "expected": {
+      "company": [
+        "Apex"
+      ],
+      "money": [
+        "$88,000"
+      ],
+      "person": [
+        "Mike Turner"
+      ],
+      "job title": [
+        "VP Sales"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-05",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "New contact with phone and job title",
+    "text": "Add contact: Layla Hassan, Marketing Director at PrimeSoft, +971 50 888 7777.",
+    "expected": {
+      "person": [
+        "Layla Hassan"
+      ],
+      "company": [
+        "PrimeSoft"
+      ],
+      "job title": [
+        "Marketing Director"
+      ],
+      "phone number": [
+        "+971 50 888 7777"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-06",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Deal lost to a named competitor",
+    "text": "Mark the Cresco deal as lost. They went with HubSpot. Budget was $42,000.",
+    "expected": {
+      "company": [
+        "Cresco"
+      ],
+      "competitor": [
+        "HubSpot"
+      ],
+      "money": [
+        "$42,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-07",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Scheduling a demo with date and contact",
+    "text": "Schedule a demo for TechNova on January 15th at 2pm. Main contact is Nadia Osei, CFO.",
+    "expected": {
+      "company": [
+        "TechNova"
+      ],
+      "date": [
+        "January 15th"
+      ],
+      "person": [
+        "Nadia Osei"
+      ],
+      "job title": [
+        "CFO"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-08",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Inbound lead from website with location",
+    "text": "New inbound lead: Chris Park, Head of Engineering at Orbit Labs, Singapore. Email: chris@orbitlabs.sg.",
+    "expected": {
+      "person": [
+        "Chris Park"
+      ],
+      "company": [
+        "Orbit Labs"
+      ],
+      "job title": [
+        "Head of Engineering"
+      ],
+      "location": [
+        "Singapore"
+      ],
+      "email address": [
+        "chris@orbitlabs.sg"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-09",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Updating deal close date and amount",
+    "text": "The Meridian deal close date moved to March 15. Value stays at $110,000.",
+    "expected": {
+      "company": [
+        "Meridian"
+      ],
+      "date": [
+        "March 15"
+      ],
+      "money": [
+        "$110,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-10",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Log note after meeting with CEO in a city",
+    "text": "Had a meeting with Peter Voss, CEO of SkyBridge GmbH in Frankfurt. Very interested. Budget around €85,000. Following up Thursday.",
+    "expected": {
+      "person": [
+        "Peter Voss"
+      ],
+      "company": [
+        "SkyBridge GmbH"
+      ],
+      "job title": [
+        "CEO"
+      ],
+      "location": [
+        "Frankfurt"
+      ],
+      "money": [
+        "€85,000"
+      ],
+      "date": [
+        "Thursday"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-11",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Add two contacts at the same company",
+    "text": "Add two contacts at Helix Group: Tom Reyes, COO (t.reyes@helixgroup.com) and Diana Wu, Head of Procurement (d.wu@helixgroup.com).",
+    "expected": {
+      "person": [
+        "Tom Reyes",
+        "Diana Wu"
+      ],
+      "company": [
+        "Helix Group"
+      ],
+      "job title": [
+        "COO",
+        "Head of Procurement"
+      ],
+      "email address": [
+        "t.reyes@helixgroup.com",
+        "d.wu@helixgroup.com"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-12",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Win notification with full deal details and kickoff date",
+    "text": "We won the NorthStar deal! $200,000 contract signed today by CEO Mark Stein. Kickoff is January 10.",
+    "expected": {
+      "company": [
+        "NorthStar"
+      ],
+      "money": [
+        "$200,000"
+      ],
+      "person": [
+        "Mark Stein"
+      ],
+      "job title": [
+        "CEO"
+      ],
+      "date": [
+        "January 10"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-13",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Pipeline filter query by location and budget threshold",
+    "text": "Show me all leads based in Riyadh with a budget over $50,000.",
+    "expected": {
+      "location": [
+        "Riyadh"
+      ],
+      "money": [
+        "$50,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-14",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Competitor switch — logging the reason and deal value",
+    "text": "Crestview Corp is switching from Salesforce to us. Deal value: $95,000. Contact: Ali Hassan, IT Director.",
+    "expected": {
+      "company": [
+        "Crestview Corp"
+      ],
+      "competitor": [
+        "Salesforce"
+      ],
+      "money": [
+        "$95,000"
+      ],
+      "person": [
+        "Ali Hassan"
+      ],
+      "job title": [
+        "IT Director"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-15",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Renewal with new monthly rate and start date",
+    "text": "Renew the contract for Apex Dynamics. New rate is $6,000/month starting February 1. Contact stays as Clara Novak.",
+    "expected": {
+      "company": [
+        "Apex Dynamics"
+      ],
+      "money": [
+        "$6,000/month"
+      ],
+      "date": [
+        "February 1"
+      ],
+      "person": [
+        "Clara Novak"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-16",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Inbound call log with referral source",
+    "text": "Got a call from Marcus Bell at Fusion Tech, referred by Linda from SkyGroup. Number: +1 646 555 3210. Budget around $30,000.",
+    "expected": {
+      "person": [
+        "Marcus Bell",
+        "Linda"
+      ],
+      "company": [
+        "Fusion Tech",
+        "SkyGroup"
+      ],
+      "phone number": [
+        "+1 646 555 3210"
+      ],
+      "money": [
+        "$30,000"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-17",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Account review with product plan and start date",
+    "text": "Run an account review for Zephyr Inc. They're on the Growth plan at $1,200/month since July 2023.",
+    "expected": {
+      "company": [
+        "Zephyr Inc."
+      ],
+      "product": [
+        "Growth"
+      ],
+      "money": [
+        "$1,200/month"
+      ],
+      "date": [
+        "July 2023"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-18",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Prospect sourced from LinkedIn",
+    "text": "Found this on LinkedIn: Jane Summers, VP of Operations at ClearPath Industries, Toronto. Email: jsummers@clearpath.ca.",
+    "expected": {
+      "person": [
+        "Jane Summers"
+      ],
+      "company": [
+        "ClearPath Industries"
+      ],
+      "job title": [
+        "VP of Operations"
+      ],
+      "location": [
+        "Toronto"
+      ],
+      "email address": [
+        "jsummers@clearpath.ca"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-19",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Task assignment with deadline",
+    "text": "Assign the follow-up with Stellar Group to Raj Patel by end of Friday.",
+    "expected": {
+      "company": [
+        "Stellar Group"
+      ],
+      "person": [
+        "Raj Patel"
+      ],
+      "date": [
+        "end of Friday"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-20",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Event-sourced lead with location",
+    "text": "Met Sophie Delamare, Head of Sales at InnoCorp, at GITEX 2024 in Dubai. She's interested. Email: s.delamare@innocorp.fr.",
+    "expected": {
+      "person": [
+        "Sophie Delamare"
+      ],
+      "company": [
+        "InnoCorp"
+      ],
+      "job title": [
+        "Head of Sales"
+      ],
+      "location": [
+        "Dubai"
+      ],
+      "email address": [
+        "s.delamare@innocorp.fr"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-21",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Pipeline query with time period and amount filter",
+    "text": "Show deals closing this quarter above $100,000 assigned to Sarah.",
+    "expected": {
+      "money": [
+        "$100,000"
+      ],
+      "person": [
+        "Sarah"
+      ],
+      "date": [
+        "this quarter"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-22",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Churn risk flag with plan and last login date",
+    "text": "Flag Prism Tech as churn risk. They're on Basic plan, paying $500/month, and haven't logged in since October.",
+    "expected": {
+      "company": [
+        "Prism Tech"
+      ],
+      "product": [
+        "Basic"
+      ],
+      "money": [
+        "$500/month"
+      ],
+      "date": [
+        "October"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-23",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "New account creation with billing contact",
+    "text": "Create account for BlueWave LLC. Billing contact: Tara Mills, CFO. tara@bluewave.io. Annual plan: $14,400.",
+    "expected": {
+      "company": [
+        "BlueWave LLC"
+      ],
+      "person": [
+        "Tara Mills"
+      ],
+      "job title": [
+        "CFO"
+      ],
+      "email address": [
+        "tara@bluewave.io"
+      ],
+      "money": [
+        "$14,400"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-24",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Hot lead with large budget and tight close date",
+    "text": "Flag as hot lead: OmniGroup. Just spoke to their CPTO, Ren Watanabe. Budget is $300,000 and they want to close by end of March.",
+    "expected": {
+      "company": [
+        "OmniGroup"
+      ],
+      "person": [
+        "Ren Watanabe"
+      ],
+      "job title": [
+        "CPTO"
+      ],
+      "money": [
+        "$300,000"
+      ],
+      "date": [
+        "end of March"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-HP-25",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Upsell with current and new plan ARR",
+    "text": "Pinnacle Corp is ready to upgrade from Starter to Enterprise. Current ARR: $18,000, new ARR: $60,000. Talk to Hannah Lee, Account Admin.",
+    "expected": {
+      "company": [
+        "Pinnacle Corp"
+      ],
+      "product": [
+        "Starter",
+        "Enterprise"
+      ],
+      "money": [
+        "$18,000",
+        "$60,000"
+      ],
+      "person": [
+        "Hannah Lee"
+      ],
+      "job title": [
+        "Account Admin"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-EC-01",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Casual typo-filled message with abbreviated money",
+    "text": "yo can u add sara from techcorp she said shes intrested her eamil is sara@techcorp.com budget around 20k",
+    "expected": {
+      "person": [
+        "sara"
+      ],
+      "company": [
+        "techcorp"
+      ],
+      "email address": [
+        "sara@techcorp.com"
+      ],
+      "money": [
+        "20k"
+      ]
+    },
+    "notes": "Typos, lowercase names, no punctuation, '20k' for money"
+  },
+  {
+    "id": "C-EC-02",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Mixed Arabic-English input",
+    "text": "اضف عميل جديد: Mohammed Al-Ghamdi من شركة DataFlow في الرياض, budget is $50,000",
+    "expected": {
+      "person": [
+        "Mohammed Al-Ghamdi"
+      ],
+      "money": [
+        "$50,000"
+      ]
+    },
+    "notes": "Arabic command with English entities embedded"
+  },
+  {
+    "id": "C-EC-03",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Multiple people from same company, one deliberately unnamed",
+    "text": "Meeting with Apex tomorrow: Daniel (CEO), Laura Chen (Head of Finance), and their IT guy whose name I forgot.",
+    "expected": {
+      "person": [
+        "Daniel",
+        "Laura Chen"
+      ],
+      "company": [
+        "Apex"
+      ],
+      "job title": [
+        "CEO",
+        "Head of Finance"
+      ],
+      "date": [
+        "tomorrow"
+      ]
+    },
+    "notes": "Third person called 'IT guy' — model must not hallucinate a name"
+  },
+  {
+    "id": "C-EC-04",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Deal value as unit price × quantity",
+    "text": "The deal is 200 licenses at $299 each, roughly 60k total. Contract runs Jan to Dec 2025.",
+    "expected": {
+      "money": [
+        "$299",
+        "60k"
+      ],
+      "date": [
+        "Jan",
+        "Dec 2025"
+      ],
+      "product": [
+        "licenses"
+      ]
+    },
+    "notes": "Model should extract stated values, not compute the product"
+  },
+  {
+    "id": "C-EC-05",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Competitor implied as previous vendor without being named as such",
+    "text": "The client is moving from Salesforce to us. Their main contact is Josh, +1 415 999 8888.",
+    "expected": {
+      "competitor": [
+        "Salesforce"
+      ],
+      "person": [
+        "Josh"
+      ],
+      "phone number": [
+        "+1 415 999 8888"
+      ]
+    },
+    "notes": "Salesforce is the previous vendor — implicit competitor signal"
+  },
+  {
+    "id": "C-EC-06",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Relative past date — 'last Friday'",
+    "text": "Any updates on the FutureBuild deal? I think Tony was supposed to get back to us last Friday.",
+    "expected": {
+      "company": [
+        "FutureBuild"
+      ],
+      "person": [
+        "Tony"
+      ],
+      "date": [
+        "last Friday"
+      ]
+    },
+    "notes": "Past-facing relative date — GLiNER may miss or misclassify it"
+  },
+  {
+    "id": "C-EC-07",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Two deals in one message with different amounts",
+    "text": "Close the Spark deal at $40,000 and push the Nova deal to next quarter — budget confirmed at $150,000.",
+    "expected": {
+      "company": [
+        "Spark",
+        "Nova"
+      ],
+      "money": [
+        "$40,000",
+        "$150,000"
+      ],
+      "date": [
+        "next quarter"
+      ]
+    },
+    "notes": "Two separate company deal values in one short message"
+  },
+  {
+    "id": "C-EC-08",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Person name in possessive form",
+    "text": "Can you pull up Kevin's account at Meridian? I think his email changed.",
+    "expected": {
+      "person": [
+        "Kevin"
+      ],
+      "company": [
+        "Meridian"
+      ]
+    },
+    "notes": "'Kevin's' — possessive not base form"
+  },
+  {
+    "id": "C-EC-09",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Company name contains a common word and a number",
+    "text": "Update the Stage 3 deal at Group 7 Technologies. Contact is Paul Chen, +44 7700 900123.",
+    "expected": {
+      "company": [
+        "Group 7 Technologies"
+      ],
+      "person": [
+        "Paul Chen"
+      ],
+      "phone number": [
+        "+44 7700 900123"
+      ]
+    },
+    "notes": "'Group 7' is the company name — not a numbered list item"
+  },
+  {
+    "id": "C-EC-10",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Money expressed in words, no numeric or symbol",
+    "text": "The deal is worth about two hundred thousand dollars. Sign-off needed from their board by end of year.",
+    "expected": {
+      "money": [
+        "two hundred thousand dollars"
+      ],
+      "date": [
+        "end of year"
+      ]
+    },
+    "notes": "Amount in text — 'two hundred thousand dollars'"
+  },
+  {
+    "id": "C-EC-11",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Person referred to only by title, no name given",
+    "text": "Their CEO called. Said they're interested but wants a better price. Budget is $70,000.",
+    "expected": {
+      "job title": [
+        "CEO"
+      ],
+      "money": [
+        "$70,000"
+      ]
+    },
+    "notes": "Model should extract the title but must not invent a name"
+  },
+  {
+    "id": "C-EC-12",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Date expressed as day of week only",
+    "text": "The call is on Wednesday. Reach out to Carlos at Vertex before then.",
+    "expected": {
+      "date": [
+        "Wednesday"
+      ],
+      "person": [
+        "Carlos"
+      ],
+      "company": [
+        "Vertex"
+      ]
+    },
+    "notes": "Day of week without any calendar reference"
+  },
+  {
+    "id": "C-EC-13",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Three email addresses with no names attached",
+    "text": "Send the contract to ceo@alphatech.com and copy legal@alphatech.com and accounts@thirdparty.org.",
+    "expected": {
+      "email address": [
+        "ceo@alphatech.com",
+        "legal@alphatech.com",
+        "accounts@thirdparty.org"
+      ]
+    },
+    "notes": "Functional/team emails — no person name pairing"
+  },
+  {
+    "id": "C-EC-14",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Competitor switch with no explicit prospect company name",
+    "text": "They were with Dynamics 365 for 3 years but came to us. Budget: $90,000/year.",
+    "expected": {
+      "competitor": [
+        "Dynamics 365"
+      ],
+      "money": [
+        "$90,000/year"
+      ]
+    },
+    "notes": "Only competitor and deal value — no company name for the prospect"
+  },
+  {
+    "id": "C-EC-15",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Plan tier names that are also common nouns",
+    "text": "Upgrade them from Basic to Pro+. They want the Analytics add-on too. New total: $2,400/month.",
+    "expected": {
+      "product": [
+        "Basic",
+        "Pro+",
+        "Analytics"
+      ],
+      "money": [
+        "$2,400/month"
+      ]
+    },
+    "notes": "'Basic', 'Pro+', 'Analytics' — product tier names vs generic words"
+  },
+  {
+    "id": "C-EC-16",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "City in company name vs standalone location",
+    "text": "Reach out to London Capital Group at their Canary Wharf office and their branch in Manchester.",
+    "expected": {
+      "company": [
+        "London Capital Group"
+      ],
+      "location": [
+        "Canary Wharf",
+        "Manchester"
+      ]
+    },
+    "notes": "'London' is part of company name AND a standalone location"
+  },
+  {
+    "id": "C-EC-17",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Deal note mixed with personal context",
+    "text": "Quick note — met Ahmad at his daughter's school event. He's CISO at NovaBridge. Budget unclear, probably 6 figures.",
+    "expected": {
+      "person": [
+        "Ahmad"
+      ],
+      "company": [
+        "NovaBridge"
+      ],
+      "job title": [
+        "CISO"
+      ],
+      "money": [
+        "6 figures"
+      ]
+    },
+    "notes": "Vague money expression — 'six figures' with no precise number"
+  },
+  {
+    "id": "C-EC-18",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Acronym used alongside full company name in parentheses",
+    "text": "Follow up with the guys at MTSC (MidTech Solutions Corp) — spoke to Raj last week about the $45k deal.",
+    "expected": {
+      "company": [
+        "MidTech Solutions Corp"
+      ],
+      "person": [
+        "Raj"
+      ],
+      "money": [
+        "$45k"
+      ]
+    },
+    "notes": "Model should extract full name over acronym"
+  },
+  {
+    "id": "C-EC-19",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Two phone number formats including letter-encoded toll-free",
+    "text": "Call Yousef on +971-55-100-2233 or the office line 800-NEXUS (800-63987).",
+    "expected": {
+      "person": [
+        "Yousef"
+      ],
+      "phone number": [
+        "+971-55-100-2233",
+        "800-NEXUS"
+      ]
+    },
+    "notes": "Standard international format and US toll-free with letter encoding"
+  },
+  {
+    "id": "C-EC-20",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Date as 'next [month name]' without a specific day",
+    "text": "Let's target close in next October. The Navara Group deal should be around $175,000.",
+    "expected": {
+      "date": [
+        "next October"
+      ],
+      "company": [
+        "Navara Group"
+      ],
+      "money": [
+        "$175,000"
+      ]
+    },
+    "notes": "Month name without a day — vague future date"
+  },
+  {
+    "id": "C-EC-21",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Two people with the same first name at different companies",
+    "text": "Both Davids confirmed — David Kim at Polaris and David Osei at TrueForm. Combined deals total $80,000.",
+    "expected": {
+      "person": [
+        "David Kim",
+        "David Osei"
+      ],
+      "company": [
+        "Polaris",
+        "TrueForm"
+      ],
+      "money": [
+        "$80,000"
+      ]
+    },
+    "notes": "Two different Davids — model must keep them distinct"
+  },
+  {
+    "id": "C-EC-22",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Specific product names of two competitors",
+    "text": "They compared us against Salesforce Sales Cloud and Microsoft Dynamics 365 Sales. Our price beat both.",
+    "expected": {
+      "competitor": [
+        "Salesforce Sales Cloud",
+        "Microsoft Dynamics 365 Sales"
+      ]
+    },
+    "notes": "Full product names not just company names"
+  },
+  {
+    "id": "C-EC-23",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Budget cut — original and reduced amounts",
+    "text": "They got their budget cut from $200k to $130k. Still moving forward. Contact is Ting Wu, Procurement Manager.",
+    "expected": {
+      "money": [
+        "$200k",
+        "$130k"
+      ],
+      "person": [
+        "Ting Wu"
+      ],
+      "job title": [
+        "Procurement Manager"
+      ]
+    },
+    "notes": "Two money values representing before and after a budget reduction"
+  },
+  {
+    "id": "C-EC-24",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Two currencies for two office locations in one deal",
+    "text": "Contract is GBP 40,000 for the UK team and AED 150,000 for the Dubai office. Contact is Nina Clarke.",
+    "expected": {
+      "money": [
+        "GBP 40,000",
+        "AED 150,000"
+      ],
+      "person": [
+        "Nina Clarke"
+      ],
+      "location": [
+        "Dubai"
+      ]
+    },
+    "notes": "Two deal values in different currencies tied to different locations"
+  },
+  {
+    "id": "C-EC-25",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Very long compound job title",
+    "text": "The decision-maker is their Senior Vice President of Global Sales Operations, James Okoro. Reach him at james@globalcorp.com.",
+    "expected": {
+      "person": [
+        "James Okoro"
+      ],
+      "job title": [
+        "Senior Vice President of Global Sales Operations"
+      ],
+      "email address": [
+        "james@globalcorp.com"
+      ]
+    },
+    "notes": "Model may truncate or split the long title"
+  },
+  {
+    "id": "C-FM-01",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Pure action command — no entities",
+    "text": "Show me all open deals",
+    "expected": {},
+    "notes": "Intent-only. Nothing to extract."
+  },
+  {
+    "id": "C-FM-02",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Pronoun with no antecedent",
+    "text": "Can you update their contact info?",
+    "expected": {},
+    "notes": "'Their' has no referent in this message"
+  },
+  {
+    "id": "C-FM-03",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Company names that are common English phrases",
+    "text": "We're talking to The Agency and Open Door about a partnership. Budget TBD.",
+    "expected": {
+      "company": [
+        "The Agency",
+        "Open Door"
+      ]
+    },
+    "notes": "Ambiguous names that could be generic phrases"
+  },
+  {
+    "id": "C-FM-04",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Numbers present but none are CRM-relevant",
+    "text": "The client has 5000 employees, 3 offices, and their system ID is #88420.",
+    "expected": {},
+    "notes": "Numbers everywhere — none are money, dates, or named entities"
+  },
+  {
+    "id": "C-FM-05",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "General best-practice question with no entities",
+    "text": "What's the best way to handle a stalled deal?",
+    "expected": {},
+    "notes": "No specific entities — general question"
+  },
+  {
+    "id": "C-FM-06",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Instruction referencing a deal by ID only",
+    "text": "Update deal #4821 — change the close date to next Friday.",
+    "expected": {
+      "date": [
+        "next Friday"
+      ]
+    },
+    "notes": "Deal referenced by number — no company or person name"
+  },
+  {
+    "id": "C-FM-07",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Entirely lowercase with no capitalization cues",
+    "text": "update the deal for acmecorp the cfo reached out and said budget is around 50 grand closing next month",
+    "expected": {
+      "company": [
+        "acmecorp"
+      ],
+      "job title": [
+        "cfo"
+      ],
+      "money": [
+        "50 grand"
+      ],
+      "date": [
+        "next month"
+      ]
+    },
+    "notes": "No capitals to help NER — tests robustness to casing"
+  },
+  {
+    "id": "C-FM-08",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Emoji-heavy message with entities hidden between emojis",
+    "text": "🔥 New lead alert! 🎯 Ahmed from TechBase 💰 budget $30k 📅 call Friday",
+    "expected": {
+      "person": [
+        "Ahmed"
+      ],
+      "company": [
+        "TechBase"
+      ],
+      "money": [
+        "$30k"
+      ],
+      "date": [
+        "Friday"
+      ]
+    },
+    "notes": "Emojis as structural tokens — entities embedded between non-text characters"
+  },
+  {
+    "id": "C-FM-09",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Sarcastic message — entities present but context is ironic",
+    "text": "Oh great, another $1,000,000 deal with Google falling into our lap. Sure.",
+    "expected": {
+      "company": [
+        "Google"
+      ],
+      "money": [
+        "$1,000,000"
+      ]
+    },
+    "notes": "Sarcasm — model should still extract entities regardless of ironic framing"
+  },
+  {
+    "id": "C-FM-10",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Hypothetical scenario — not a real deal",
+    "text": "Imagine we closed a $500,000 deal with Amazon tomorrow. What would our commission be?",
+    "expected": {
+      "company": [
+        "Amazon"
+      ],
+      "money": [
+        "$500,000"
+      ],
+      "date": [
+        "tomorrow"
+      ]
+    },
+    "notes": "Hypothetical framing — model should extract entities regardless"
+  },
+  {
+    "id": "C-FM-11",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Negative statement — deal explicitly did not happen",
+    "text": "We did NOT get the NovaTech deal. They chose Oracle. Budget was $250,000.",
+    "expected": {
+      "company": [
+        "NovaTech"
+      ],
+      "competitor": [
+        "Oracle"
+      ],
+      "money": [
+        "$250,000"
+      ]
+    },
+    "notes": "Negation — deal is lost but entities are still CRM-relevant"
+  },
+  {
+    "id": "C-FM-12",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Heavy slang — informal sales shorthand",
+    "text": "yo the bd guy @ apex hit us up lmk if u want me to ping him back",
+    "expected": {
+      "company": [
+        "apex"
+      ]
+    },
+    "notes": "'bd guy' = business development, '@' = at company"
+  },
+  {
+    "id": "C-FM-13",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Internal team discussion with no prospect entities",
+    "text": "Can someone take the 3pm call today? I have a conflict. Assign to whoever is free.",
+    "expected": {},
+    "notes": "No lead, deal, or contact entities — purely internal"
+  },
+  {
+    "id": "C-FM-14",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Filter query with threshold values — no specific deal entities",
+    "text": "Filter deals where amount is greater than $100,000 and close date is before Q2.",
+    "expected": {
+      "money": [
+        "$100,000"
+      ],
+      "date": [
+        "Q2"
+      ]
+    },
+    "notes": "Dollar amount and quarter as filter values, not deal-specific entities"
+  },
+  {
+    "id": "C-FM-15",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Deal referred to only by internal nickname",
+    "text": "Any update on the 'whale' deal? Last I heard they were close to signing.",
+    "expected": {},
+    "notes": "'The whale' is an internal nickname — no company, person, or value"
+  },
+  {
+    "id": "C-FM-16",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Message with only time references, no named entities",
+    "text": "We need to close at least 3 deals before end of Q4. Monthly targets are due by the 5th. Annual review is in December.",
+    "expected": {
+      "date": [
+        "end of Q4",
+        "5th",
+        "December"
+      ]
+    },
+    "notes": "Dates present but no companies, people, or money"
+  },
+  {
+    "id": "C-FM-17",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Ambiguous 'them' — no referent in this message",
+    "text": "Call them back and let them know we accept their counteroffer.",
+    "expected": {},
+    "notes": "'Them' and 'their' have no antecedent here"
+  },
+  {
+    "id": "C-FM-18",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Generic lowercase product/feature names",
+    "text": "They want the basic package with reporting and the automation add-on.",
+    "expected": {
+      "product": [
+        "basic package",
+        "automation add-on"
+      ]
+    },
+    "notes": "Product names that are lowercase common nouns — boundary unclear"
+  },
+  {
+    "id": "C-FM-19",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Website URL that is not an email address",
+    "text": "Check out their website at www.acmegroup.com — they updated their pricing page.",
+    "expected": {},
+    "notes": "Model should not extract a URL as an email address"
+  },
+  {
+    "id": "C-FM-20",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "All-caps message — no lowercase signals for NER",
+    "text": "CALL BACK DANIEL AT NEXCORP NOW BUDGET IS 80K THEY ARE LEAVING",
+    "expected": {
+      "person": [
+        "DANIEL"
+      ],
+      "company": [
+        "NEXCORP"
+      ],
+      "money": [
+        "80K"
+      ]
+    },
+    "notes": "All caps throughout — tests robustness to aggressive casing"
+  },
+  {
+    "id": "E-HP-31",
+    "category": "email",
+    "subcategory": "happy_path",
+    "description": "Channel partner intro email with reseller and end-customer named",
+    "text": "Hi,\n\nI'm writing on behalf of our reseller partner BridgeTech.\nTheir client, Falcon Industries, is interested in a 3-year deal worth $340,000.\nPrimary contact at Falcon is Yusuf Al-Farsi, VP of IT, yusuf@falconindustries.ae.\nBridgeTech account manager is Lena Schulz, +49 30 1234 5678.\n\nBest",
+    "expected": {
+      "person": [
+        "Yusuf Al-Farsi",
+        "Lena Schulz"
+      ],
+      "company": [
+        "BridgeTech",
+        "Falcon Industries"
+      ],
+      "job title": [
+        "VP of IT"
+      ],
+      "money": [
+        "$340,000"
+      ],
+      "email address": [
+        "yusuf@falconindustries.ae"
+      ],
+      "phone number": [
+        "+49 30 1234 5678"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "E-EC-31",
+    "category": "email",
+    "subcategory": "edge_case",
+    "description": "Person's name spelled inconsistently across two paragraphs",
+    "text": "Hi,\n\nMohammed Al-Otaibi from Crescent Group called yesterday about the renewal.\n\nJust a reminder that Mohamed has a hard deadline of March 31 and budget is SAR 180,000.\n\nPlease follow up ASAP.",
+    "expected": {
+      "person": [
+        "Mohammed Al-Otaibi"
+      ],
+      "company": [
+        "Crescent Group"
+      ],
+      "date": [
+        "March 31"
+      ],
+      "money": [
+        "SAR 180,000"
+      ]
+    },
+    "notes": "'Mohammed' in first paragraph, 'Mohamed' in second — two spellings, one person"
+  },
+  {
+    "id": "C-HP-26",
+    "category": "chat",
+    "subcategory": "happy_path",
+    "description": "Deal note with a cc'd legal contact and two dates",
+    "text": "Log this: Titan Corp deal at $415,000 is in legal review. Contract to be sent to legal@titancorp.com by April 5, expected signature by April 20. Contact: Priya Nair, General Counsel.",
+    "expected": {
+      "company": [
+        "Titan Corp"
+      ],
+      "money": [
+        "$415,000"
+      ],
+      "email address": [
+        "legal@titancorp.com"
+      ],
+      "date": [
+        "April 5",
+        "April 20"
+      ],
+      "person": [
+        "Priya Nair"
+      ],
+      "job title": [
+        "General Counsel"
+      ]
+    },
+    "notes": ""
+  },
+  {
+    "id": "C-EC-26",
+    "category": "chat",
+    "subcategory": "edge_case",
+    "description": "Company name is a single common noun with no other context",
+    "text": "Just spoke to the team at Horizon. Their budget is $55,000 and they want to go live in Q3.",
+    "expected": {
+      "company": [
+        "Horizon"
+      ],
+      "money": [
+        "$55,000"
+      ],
+      "date": [
+        "Q3"
+      ]
+    },
+    "notes": "'Horizon' alone as company — extremely common word, high ambiguity"
+  },
+  {
+    "id": "C-FM-21",
+    "category": "chat",
+    "subcategory": "failure_mode",
+    "description": "Message containing a person's name that is also a product name",
+    "text": "Can you upgrade their plan from Max to Ultra? The account owner is Max.",
+    "expected": {
+      "product": [
+        "Max",
+        "Ultra"
+      ],
+      "person": [
+        "Max"
+      ]
+    },
+    "notes": "'Max' is a person but also a common product/tier name — tests disambiguation"
+  }
+]
