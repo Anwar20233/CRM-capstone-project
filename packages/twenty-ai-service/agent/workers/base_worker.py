@@ -23,6 +23,7 @@ plus any extra utility tools.  The LLM model is configured via ``LLMClient``
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from langchain_core.tools import StructuredTool
@@ -49,6 +50,10 @@ class BaseWorker:
     extra_tools:
         Additional LangChain tools to include in the worker's toolset
         (e.g. ``resolve_date``).
+    model:
+        Optional model alias or OpenRouter slug overriding the env default for
+        this worker (hot-swap). Per-call override is also available via
+        ``run(..., model=...)``.
     """
 
     def __init__(
@@ -59,11 +64,13 @@ class BaseWorker:
         session_id: str = "default",
         write_policy: WritePolicy | None = None,
         extra_tools: list[StructuredTool] | None = None,
+        model: str | None = None,
     ) -> None:
         self.scope = scope
         self.system_prompt = system_prompt
         self.session_id = session_id
         self.write_policy = write_policy
+        self.model = model
 
         # -- Assemble the toolset ------------------------------------------
         # Deferred import to avoid circular dependency:
@@ -110,12 +117,30 @@ class BaseWorker:
             }
         return await tool.ainvoke(args or {})
 
-    async def run(self, user_message: str) -> dict[str, Any]:
+    async def run(
+        self,
+        user_message: str,
+        *,
+        model: str | None = None,
+        on_event: Callable[[dict[str, Any]], None] | None = None,
+    ) -> dict[str, Any]:
         """Execute the full agent loop for a single user message.
 
         This is a **simplified synchronous loop** (no streaming) suitable for
         dev and testing.  Production deployments should integrate with
         LangGraph's ``create_react_agent`` for streaming, checkpointing, etc.
+
+        ``model`` (alias or OpenRouter slug) overrides the worker's model for
+        this call; it falls back to the worker's ``model`` and then env default.
+
+        ``on_event`` is an optional callback fired with progress events so a CLI
+        can render a live trace. Event shapes::
+
+            {"type": "model", "model": "<slug>"}
+            {"type": "llm_call", "step": int}
+            {"type": "tool_call", "name": str, "args": dict}
+            {"type": "tool_result", "name": str, "result": dict}
+            {"type": "final", "response": str}
 
         Returns a dict with::
 
@@ -124,11 +149,18 @@ class BaseWorker:
                 "tool_calls": [...],      # ordered list of {name, args, result}
             }
         """
+        import json
+
         from agent.llm_client import LLMClient
 
-        client = LLMClient()
+        def _emit(event: dict[str, Any]) -> None:
+            if on_event:
+                on_event(event)
+
+        client = LLMClient(model=model or self.model)
         openai_client = client.get_openai_client()
-        model = client.model
+        model_id = client.model
+        _emit({"type": "model", "model": model_id})
 
         # Build OpenAI-compatible tool schemas.
         oai_tools = [_to_openai_tool(t) for t in self._tools]
@@ -140,9 +172,10 @@ class BaseWorker:
         tool_calls_log: list[dict] = []
 
         # Agent loop — max 15 iterations to prevent runaway.
-        for _ in range(15):
+        for step in range(1, 16):
+            _emit({"type": "llm_call", "step": step})
             response = openai_client.chat.completions.create(
-                model=model,
+                model=model_id,
                 messages=messages,
                 tools=oai_tools if oai_tools else None,
             )
@@ -151,6 +184,7 @@ class BaseWorker:
 
             # If the model produced a text response (no tool calls), we're done.
             if not msg.tool_calls:
+                _emit({"type": "final", "response": msg.content or ""})
                 return {
                     "response": msg.content or "",
                     "tool_calls": tool_calls_log,
@@ -161,15 +195,15 @@ class BaseWorker:
 
             # Execute each tool call.
             for tc in msg.tool_calls:
-                import json
-
                 name = tc.function.name
                 try:
                     args = json.loads(tc.function.arguments) if tc.function.arguments else {}
                 except json.JSONDecodeError:
                     args = {}
 
+                _emit({"type": "tool_call", "name": name, "args": args})
                 result = await self.invoke_tool(name, args)
+                _emit({"type": "tool_result", "name": name, "result": result})
 
                 result_str = json.dumps(result) if isinstance(result, dict) else str(result)
                 tool_calls_log.append({"name": name, "args": args, "result": result})

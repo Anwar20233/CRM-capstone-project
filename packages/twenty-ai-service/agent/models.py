@@ -1,0 +1,78 @@
+"""Model registry — named presets so we can hot-swap LLMs.
+
+Every entry maps a short **alias** to an OpenRouter model **slug**. Callers (the
+worker loop, tests, and — later — a user-facing model picker) select a model by
+alias without touching env vars or code:
+
+    LLMClient(model="deepseek-v4-flash")    # by alias
+    LLMClient(model="deepseek/deepseek-v4-flash")  # by raw slug (pass-through)
+    LLMClient()                              # falls back to env LLM_MODEL
+
+A raw slug (anything containing ``/``) is accepted as-is, so any OpenRouter model
+works even if it isn't pre-registered. Edit ``MODEL_REGISTRY`` to add/remove the
+curated presets.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+
+class ConfigurationError(Exception):
+    """Raised when LLM configuration is missing or invalid."""
+
+
+@dataclass(frozen=True)
+class ModelSpec:
+    """A selectable model: its OpenRouter slug, a human label, default params."""
+
+    id: str  # OpenRouter slug, e.g. "deepseek/deepseek-v4-flash"
+    label: str
+    # Default sampling params (temperature, etc.) — reserved for future use.
+    params: dict[str, object] = field(default_factory=dict)
+
+
+# Curated presets. Add a line to expose a new model to selection/UI.
+MODEL_REGISTRY: dict[str, ModelSpec] = {
+    "deepseek-v4-flash": ModelSpec("deepseek/deepseek-v4-flash", "DeepSeek V4 Flash"),
+    "deepseek-v4-pro": ModelSpec("deepseek/deepseek-v4-pro", "DeepSeek V4 Pro"),
+    "gpt-4o": ModelSpec("openai/gpt-4o", "OpenAI GPT-4o"),
+    "gpt-4o-mini": ModelSpec("openai/gpt-4o-mini", "OpenAI GPT-4o mini"),
+    # Free OpenRouter tier — handy for burning-credit-free smoke tests.
+    "gemma-free": ModelSpec("google/gemma-4-31b-it:free", "Google Gemma 4 31B (free)"),
+}
+
+# Used when neither the caller nor env specifies a model.
+DEFAULT_MODEL_ALIAS = "deepseek-v4-flash"
+
+
+def resolve_model(name: str | None) -> ModelSpec:
+    """Resolve an alias or raw OpenRouter slug to a ``ModelSpec``.
+
+    - A registered alias returns its spec.
+    - A raw slug (contains ``/``) is accepted as-is.
+    - ``None`` / empty falls back to ``DEFAULT_MODEL_ALIAS``.
+    - Anything else raises ``ConfigurationError``.
+    """
+    if not name:
+        name = DEFAULT_MODEL_ALIAS
+
+    if name in MODEL_REGISTRY:
+        return MODEL_REGISTRY[name]
+
+    if "/" in name:
+        return ModelSpec(id=name, label=name)
+
+    raise ConfigurationError(
+        f"Unknown model {name!r}. Use a registered alias "
+        f"({', '.join(sorted(MODEL_REGISTRY))}) or a full OpenRouter slug "
+        f"like 'deepseek/deepseek-v4-flash'."
+    )
+
+
+def list_models() -> list[dict[str, str]]:
+    """Return the registered presets as ``[{alias, id, label}]`` — for a picker."""
+    return [
+        {"alias": alias, "id": spec.id, "label": spec.label}
+        for alias, spec in MODEL_REGISTRY.items()
+    ]
