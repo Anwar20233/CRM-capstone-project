@@ -89,20 +89,116 @@ The system is composed of **three independent servers**, each with a clear, non-
 ```
 packages/twenty-ai-service/
 ├── main.py                    # FastAPI app + lifespan model loader
+├── bridge_client.py           # Shared async forward() to the Node bridge
 ├── requirements.txt           # Pinned Python dependencies
+├── requirements-agent.txt     # Minimal agent deps (no torch/gliner)
+├── pyproject.toml             # pytest config
+├── .env.example               # Environment variable template
 ├── Dockerfile                 # Python 3.11-slim image, port 8001
 │
+├── agent/                     # LLM-facing layer
+│   ├── crm_tools.py           # Scoped meta-tool factory: build_crm_tools(scope)
+│   ├── tool_scope.py          # Capability registry, ToolScope, filter/guard
+│   ├── llm_client.py          # OpenRouter LLM client
+│   ├── workers/               # Agent workers (reusable loops)
+│   │   ├── base_worker.py     # BaseWorker — foundation for all workers
+│   │   ├── writer_worker.py   # WriterWorker — write-focused specialisation
+│   │   └── write_policy.py    # Tier/safety write protocol
+│   └── stubs/                 # Stubbed tools (swap for real later)
+│       └── safety_tools.py    # Safety, session, date stubs
+│
 ├── routers/                   # One file per capability (thin HTTP layer)
-│   └── ner.py                 # POST /ner/extract
+│   ├── ner.py                 # POST /ner/extract
+│   └── bridge.py              # POST /bridge/* (proxy to Node bridge)
 │
 ├── pipelines/                 # Model logic lives here, never in routers
 │   └── ner_pipeline.py        # CRM entity extraction pipeline
+│
+├── tests/                     # Test suite
+│   ├── test_tool_scope.py     # Scope classification + filtering
+│   ├── test_crm_tools.py      # Scoped meta-tool guards + role isolation
+│   ├── test_writer_worker.py  # Write policy, toolset, stubs
+│   └── test_llm_client.py     # LLM client config
 │
 └── notebooks/                 # Research & experimentation (not served)
     └── CRM_NER_Pipeline_v3.ipynb
 ```
 
 **Design rule:** Routers are thin — they only parse/validate HTTP input and call a pipeline function. All model logic, thresholds, filters, and regex live in `pipelines/`.
+
+---
+
+## Agent Architecture — Tool Scoping & Workers
+
+### Defense-in-Depth: Three Enforcement Layers
+
+Each agent worker is structurally restricted to its allowed tools — a reader **cannot** write, a writer **cannot** read — enforced at three independent levels:
+
+1. **Catalog filtering** — `get_tool_catalog` only returns tool names within the worker's scope. The reader never even *sees* `create_*`/`update_*`/`delete_*` tools, and the writer never sees `find_*`/`get_*` tools.
+2. **Execute guard** — `execute_tool` rejects out-of-scope tool names *before* the bridge is contacted. The bridge is never called.
+3. **Bridge role identity** — each scope carries a dedicated Twenty role (`TWENTY_READER_ROLE_ID` vs `TWENTY_WRITER_ROLE_ID`). Even if layers 1–2 are bypassed, Twenty's role permissions block the operation.
+
+### Tool Capability Registry (`agent/tool_scope.py`)
+
+Every bridge tool is classified into a capability by its verb prefix:
+
+| Capability | Verb prefixes | In scope? |
+|---|---|---|
+| `read` | `find_*`, `find_one_*`, `group_by_*`, `get_*`, `search_*`, `list_*` | Reader only |
+| `write` | `create_*`, `update_*`, `delete_*`, `advance_*`, `link_*`, `transfer_*`, `merge_*`, `restore_*` | Writer only |
+| `meta` | `get_tool_catalog`, `learn_tools`, `execute_tool`, `get_current_user` | Both |
+| `internal` | Safety, session, tier tools | **Neither** — invisible middleware |
+
+Pre-built scopes:
+
+| Scope | Capabilities | Role env var |
+|---|---|---|
+| `READER_SCOPE` | read, meta | `TWENTY_READER_ROLE_ID` |
+| `WRITER_SCOPE` | write, meta | `TWENTY_WRITER_ROLE_ID` |
+
+### Workers (`agent/workers/`)
+
+**`BaseWorker`** is the reusable foundation — a parametrised tool-calling loop:
+```python
+from agent import BaseWorker, READER_SCOPE
+
+reader = BaseWorker(scope=READER_SCOPE, system_prompt="You are a read-only agent.")
+```
+
+**`WriterWorker`** is `BaseWorker` with `WRITER_SCOPE`, a write-focused system prompt, and a `WritePolicy` embedded as invisible middleware inside `execute_tool`. The writer receives specific write instructions from the orchestrator — it does not read or browse.
+
+### Write Protocol — Invisible Middleware (`agent/workers/write_policy.py`)
+
+The LLM never calls safety/tier/session tools directly. They are structural enforcement **inside** `execute_tool`. When the writer calls `execute_tool("delete_person", {...})`:
+
+```
+[invisible] lookup_action_tier → tier 1/2/3
+[invisible] session_check_duplicate → catch repeats
+[invisible] (tier >= 2) check_conflicts → flag value jumps, regressions
+   tier 1/2: execute transparently, auto-log the write
+   tier 3: return CONFIRMATION_REQUIRED + single-use token
+           → user clicks Confirm → agent re-calls with token → executes
+```
+
+The agent only sees the result or a `CONFIRMATION_REQUIRED` error with a token it passes back.
+
+### Dual-Role Setup (Part 4)
+
+Create two roles in Twenty's Settings → Roles:
+
+1. **agent-reader** — read-only object permissions (`canReadPerson`, `canReadCompany`, etc.)
+2. **agent-writer** — read + create + update permissions (no delete unless required)
+
+```bash
+# Get role IDs from the database:
+SELECT id, label FROM core.role WHERE "workspaceId"='<WS>';
+
+# Set in .env:
+TWENTY_READER_ROLE_ID=<reader-role-uuid>
+TWENTY_WRITER_ROLE_ID=<writer-role-uuid>
+```
+
+The bridge already accepts `roleId` per call — no bridge changes needed.
 
 ---
 
@@ -122,7 +218,7 @@ Two zero-shot transformer models run in parallel:
 - `urchade/gliner_large-v2.1` (~800 MB)
 - `urchade/gliner_medium-v2.1` (~500 MB)
 
-Target entity types: `person`, `company`, `deal`, `job title`, `date`, `money`, `location`, `product`, `competitor`.
+Target entity types: `person`, `company`, `job title`, `date`, `money`, `location`, `product`, `competitor`.
 
 **Stage 2 — Regex & Rule Layers**  
 Pattern-based extractors handle things GLiNER gets wrong or misses:
@@ -208,6 +304,16 @@ GLiNER model weights (~1.3 GB) are downloaded from HuggingFace on first startup 
 |---|---|---|
 | `HF_HOME` | `/app/.cache/huggingface` | HuggingFace model cache directory |
 | `PORT` | `8001` | Port the uvicorn server listens on |
+| `LLM_PROVIDER` | — | Must be `openrouter` |
+| `LLM_BASE_URL` | — | OpenRouter API base URL |
+| `LLM_API_KEY` | — | OpenRouter API key |
+| `LLM_MODEL` | — | Model name (e.g. `openai/gpt-4o`) |
+| `TWENTY_WORKSPACE_ID` | — | Twenty workspace UUID (shared across scopes) |
+| `TWENTY_USER_ID` | — | Twenty user UUID (shared across scopes) |
+| `TWENTY_ROLE_ID` | — | Fallback role UUID (used if scope-specific var is unset) |
+| `TWENTY_READER_ROLE_ID` | — | Reader agent role UUID (read-only permissions) |
+| `TWENTY_WRITER_ROLE_ID` | — | Writer agent role UUID (read + write permissions) |
+| `NODE_BRIDGE_BASE_URL` | `http://localhost:3000/agent-bridge` | Node bridge base URL |
 
 The AI service itself needs **no database credentials** — all CRM data it needs arrives in the request body, supplied by `twenty-server`.
 

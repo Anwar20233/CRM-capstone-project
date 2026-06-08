@@ -15,6 +15,7 @@
     "unifiedjs.vscode-mdx",
     "xyc.vscode-mdx-preview",
     "yoavbls.pretty-ts-errors",
-    "ms-playwright.playwright"
+    "ms-playwright.playwright",
+    "anthropic.claude-code"
   ]
 }
