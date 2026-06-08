@@ -61,6 +61,23 @@ def test_client_exposes_model_and_openai_client(llm_env: None) -> None:
     assert client.get_openai_client() is not None
 
 
+def test_env_alias_resolves_to_slug(
+    llm_env: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An LLM_MODEL alias is resolved to its OpenRouter slug."""
+    monkeypatch.setenv("LLM_MODEL", "deepseek-v4-flash")
+    assert LLMClient().model == "deepseek/deepseek-v4-flash"
+
+
+def test_constructor_model_overrides_env(llm_env: None) -> None:
+    """An explicit model override beats the env default (hot-swap)."""
+    client = LLMClient(model="deepseek-v4-flash")
+    assert client.model == "deepseek/deepseek-v4-flash"
+
+    client_raw = LLMClient(model="anthropic/claude-3.5-sonnet")
+    assert client_raw.model == "anthropic/claude-3.5-sonnet"
+
+
 @pytest.mark.integration
 def test_ping_returns_true() -> None:
     api_key = os.environ.get("LLM_API_KEY", "")

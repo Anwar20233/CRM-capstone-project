@@ -79,9 +79,11 @@ class WriterWorker(BaseWorker):
     session_id:
         A unique session identifier for duplicate detection and write logging.
         Should come from the authenticated session context (never from the LLM).
+    model:
+        Optional model alias or OpenRouter slug overriding the env default.
     """
 
-    def __init__(self, session_id: str = "default") -> None:
+    def __init__(self, session_id: str = "default", model: str | None = None) -> None:
         policy = WritePolicy(session_id=session_id)
 
         super().__init__(
@@ -90,4 +92,5 @@ class WriterWorker(BaseWorker):
             session_id=session_id,
             write_policy=policy,
             extra_tools=build_utility_tools(),
+            model=model,
         )
