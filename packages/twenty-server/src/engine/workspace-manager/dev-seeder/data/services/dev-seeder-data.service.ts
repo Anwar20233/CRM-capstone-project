@@ -455,7 +455,7 @@ export class DevSeederDataService {
     entityManager: WorkspaceEntityManager,
     fileSeedMetadata: AttachmentFileSeedMetadata[],
   ): Promise<void> {
-    const IS_BUILT = __dirname.includes('/dist/');
+    const IS_BUILT = __dirname.replace(/\\/g, '/').includes('/dist/');
     const sampleFilesDir = IS_BUILT
       ? join(
           __dirname,

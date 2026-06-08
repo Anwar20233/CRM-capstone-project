@@ -85,7 +85,8 @@ export default defineConfig(({ command }) => {
       }),
       svgr(),
       dts(dtsConfig),
-      checker(checkersConfig),
+      // Skip checker on build: tsgo -p conflicts with linaria/wyw passing source files (TS5042).
+      ...(isBuildCommand ? [] : [checker(checkersConfig)]),
       createWywProfilingPlugin(
         wyw({
           include: [path.resolve(__dirname, 'src') + '/**/*.{ts,tsx}'],
