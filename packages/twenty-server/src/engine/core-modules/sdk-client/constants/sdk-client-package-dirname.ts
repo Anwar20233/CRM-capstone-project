@@ -3,7 +3,7 @@ import path from 'path';
 import { ASSET_PATH } from 'src/constants/assets-path';
 
 const IS_BUILT =
-  __dirname.includes('/dist/') && process.env.NODE_ENV !== 'development';
+  __dirname.replace(/\\/g, '/').includes('/dist/') && process.env.NODE_ENV !== 'development';
 
 // In built mode the package is copied into dist/assets/ by the build step.
 // In dev mode it lives in node_modules via the monorepo workspace — resolve
