@@ -28,8 +28,23 @@ from typing import Any
 
 from langchain_core.tools import StructuredTool
 
+from agent.masking import PIISessionMap
 from agent.tool_scope import ToolScope
 from agent.workers.write_policy import WritePolicy
+
+
+# Appended to the system prompt when masking is active so the model treats
+# tokens as opaque identifiers instead of trying to "fix" or expand them.
+_MASKING_SYSTEM_NOTE = """
+
+## Privacy tokens
+
+Some names, emails, phone numbers, companies, and locations appear as opaque
+tokens like [PERSON_1], [COMPANY_2], or [EMAIL_1]. These stand in for real
+private values. Treat each token as a stable identifier: reuse it verbatim in
+your replies and tool arguments, and never invent, rename, or guess the value
+behind a token. The system translates tokens back to real values automatically.
+"""
 
 
 class BaseWorker:
@@ -54,6 +69,14 @@ class BaseWorker:
         Optional model alias or OpenRouter slug overriding the env default for
         this worker (hot-swap). Per-call override is also available via
         ``run(..., model=...)``.
+    pii_map:
+        The session's ``PIISessionMap``. The worker masks inbound text (prompt,
+        tool results) and unmasks outbound text (tool arguments, final answer)
+        against it. Pass a shared map to keep tokens consistent across workers
+        (e.g. reader and writer in one session); omit it for a fresh per-worker
+        map. Set ``mask_pii=False`` to disable masking entirely.
+    mask_pii:
+        Whether to run the masking hook. Defaults to ``True``.
     """
 
     def __init__(
@@ -65,12 +88,27 @@ class BaseWorker:
         write_policy: WritePolicy | None = None,
         extra_tools: list[StructuredTool] | None = None,
         model: str | None = None,
+        pii_map: PIISessionMap | None = None,
+        mask_pii: bool = True,
     ) -> None:
         self.scope = scope
         self.system_prompt = system_prompt
         self.session_id = session_id
         self.write_policy = write_policy
         self.model = model
+        # The masking hook is a single session map; None disables masking.
+        # Note the explicit None check: an empty PIISessionMap is falsy
+        # (``__len__`` is 0), so ``pii_map or PIISessionMap()`` would discard it.
+        if not mask_pii:
+            self.pii_map: PIISessionMap | None = None
+        elif pii_map is not None:
+            self.pii_map = pii_map
+        else:
+            self.pii_map = PIISessionMap()
+
+        # Set once the map has been rebuilt from the chat's stored history, so a
+        # multi-turn session primes only on the first turn.
+        self._mask_primed = False
 
         # -- Assemble the toolset ------------------------------------------
         # Deferred import to avoid circular dependency:
@@ -122,6 +160,7 @@ class BaseWorker:
         user_message: str,
         *,
         model: str | None = None,
+        history: list[str] | None = None,
         on_event: Callable[[dict[str, Any]], None] | None = None,
     ) -> dict[str, Any]:
         """Execute the full agent loop for a single user message.
@@ -132,6 +171,10 @@ class BaseWorker:
 
         ``model`` (alias or OpenRouter slug) overrides the worker's model for
         this call; it falls back to the worker's ``model`` and then env default.
+
+        ``history`` is the chat's prior messages (stored unmasked). On the first
+        turn it primes the PII map so reopened chats recover the same tokens —
+        no token table is persisted, the mapping is rebuilt from the messages.
 
         ``on_event`` is an optional callback fired with progress events so a CLI
         can render a live trace. Event shapes::
@@ -165,8 +208,25 @@ class BaseWorker:
         # Build OpenAI-compatible tool schemas.
         oai_tools = [_to_openai_tool(t) for t in self._tools]
 
+        # Masking hook: mask the user prompt and brief the model on tokens so
+        # raw PII never reaches the LLM. No-ops when masking is disabled.
+        system_prompt = self.system_prompt
+        if self.pii_map is not None:
+            system_prompt += _MASKING_SYSTEM_NOTE
+            # Rebuild the map from stored history once, so a reopened chat keeps
+            # its existing tokens before the new message is masked against them.
+            if history and not self._mask_primed:
+                self.pii_map.prime(history)
+                self._mask_primed = True
+            masked_message = self.pii_map.mask_text(user_message)
+            # Surface the masked prompt so callers can verify masking engaged
+            # (the final answer is unmasked, so it's otherwise invisible).
+            if masked_message != user_message:
+                _emit({"type": "prompt_masked", "masked": masked_message})
+            user_message = masked_message
+
         messages: list[dict] = [
-            {"role": "system", "content": self.system_prompt},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ]
         tool_calls_log: list[dict] = []
@@ -184,9 +244,13 @@ class BaseWorker:
 
             # If the model produced a text response (no tool calls), we're done.
             if not msg.tool_calls:
-                _emit({"type": "final", "response": msg.content or ""})
+                # Unmask the answer so the user sees real values, not tokens.
+                final_response = msg.content or ""
+                if self.pii_map is not None:
+                    final_response = self.pii_map.unmask_text(final_response)
+                _emit({"type": "final", "response": final_response})
                 return {
-                    "response": msg.content or "",
+                    "response": final_response,
                     "tool_calls": tool_calls_log,
                 }
 
@@ -201,12 +265,25 @@ class BaseWorker:
                 except json.JSONDecodeError:
                     args = {}
 
+                # Outbound: unmask tokens in the args so the real CRM is hit.
+                if self.pii_map is not None:
+                    args = self.pii_map.unmask_value(args)
+
                 _emit({"type": "tool_call", "name": name, "args": args})
                 result = await self.invoke_tool(name, args)
                 _emit({"type": "tool_result", "name": name, "result": result})
-
-                result_str = json.dumps(result) if isinstance(result, dict) else str(result)
                 tool_calls_log.append({"name": name, "args": args, "result": result})
+
+                # Inbound: mask any PII the tool returned before the LLM sees it.
+                llm_result = result
+                if self.pii_map is not None:
+                    llm_result = self.pii_map.mask_value(result)
+                    if llm_result != result:
+                        _emit({"type": "tool_result_masked", "name": name, "result": llm_result})
+
+                result_str = (
+                    json.dumps(llm_result) if isinstance(llm_result, dict) else str(llm_result)
+                )
 
                 messages.append({
                     "role": "tool",

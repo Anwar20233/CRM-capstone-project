@@ -27,6 +27,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from agent.tool_scope import READER_SCOPE  # noqa: E402
 from agent.workers import BaseWorker, WriterWorker  # noqa: E402
+from pipelines import load_models, models_loaded  # noqa: E402
 
 
 # ── ANSI styling (auto-disabled when not a TTY) ────────────────────────────
@@ -76,6 +77,10 @@ def make_printer() -> "callable":
         kind = event.get("type")
         if kind == "model":
             print(dim(f"   model: {event['model']}"))
+        elif kind == "prompt_masked":
+            print(f"   {yellow('🛡 masked prompt → LLM')} {dim(_truncate(event['masked']))}")
+        elif kind == "tool_result_masked":
+            print(f"      {yellow('🛡 masked result → LLM')} {dim(_truncate(event['result']))}")
         elif kind == "llm_call":
             print(dim(f"   ↻ step {event['step']}: asking the model…"))
         elif kind == "tool_call":
@@ -124,11 +129,32 @@ def _placeholder(name: str) -> bool:
     return (not value) or value.startswith("your-")
 
 
-def preflight(worker, agent: str) -> None:
+def load_ner_models() -> bool:
+    """Load the GLiNER ensemble so PII masking actually engages in the CLI.
+
+    The service loads these at startup; the CLI must do it too or the default
+    extractor degrades to a no-op and raw PII reaches the LLM. Returns whether
+    masking is active.
+    """
+    if models_loaded():
+        return True
+    print(dim("  loading NER models for masking (first run downloads ~1.3 GB)…"))
+    try:
+        load_models()
+        return True
+    except Exception as error:  # noqa: BLE001 — masking is best-effort in the CLI
+        print("  " + yellow(f"⚠ masking OFF — could not load NER models: {error}"))
+        return False
+
+
+def preflight(worker, agent: str, masking_on: bool) -> None:
     print(bold(f"\n  Twenty CRM — {agent.capitalize()} Agent  "))
     print(dim("  " + "─" * 46))
     print(f"  tools  : {', '.join(worker.tool_names)}")
     print(f"  bridge : {os.environ.get('NODE_BRIDGE_BASE_URL', '(unset)')}")
+    masking_label = green("on") if masking_on else red("off")
+    print(f"  masking: {masking_label} "
+          f"{dim(f'(models loaded: {models_loaded()})')}")
 
     warnings = []
     if _placeholder("LLM_API_KEY"):
@@ -149,9 +175,10 @@ def main() -> None:
     parser.add_argument("--session", default="cli-session")
     args = parser.parse_args()
 
+    masking_on = load_ner_models()
     worker = build_worker(args.agent, args.model, args.session)
     printer = make_printer()
-    preflight(worker, args.agent)
+    preflight(worker, args.agent, masking_on)
 
     turn = 0
     while True:
@@ -178,6 +205,12 @@ def main() -> None:
             continue
 
         print("\n" + bold("🤖 Agent ❯ ") + (result.get("response") or dim("(no text)")))
+
+        # Show the live token map so the session's masking is observable.
+        if worker.pii_map is not None and len(worker.pii_map):
+            print(dim("  token map: " + ", ".join(
+                f"{token}={raw}" for token, raw in worker.pii_map.mapping.items()
+            )))
         print()
 
     print(dim("  bye 👋"))
