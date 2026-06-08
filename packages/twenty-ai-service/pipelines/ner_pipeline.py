@@ -22,14 +22,13 @@ _model_md = None
 
 
 GLINER_LABELS = [
-    "person", "company", "deal", "job title", "date",
+    "person", "company", "job title", "date",
     "money", "location", "product", "competitor",
 ]
 
 LABEL_THRESHOLDS = {
     "person":     0.55,   # cuts single-word low-confidence names
     "company":    0.55,   # cuts email-fragment companies
-    "deal":       0.50,   # zero-shot deal/opportunity name extraction
     "job title":  0.50,   # cuts ambiguous single-word extractions
     "date":       0.35,   # low — GLiNER dates are generally reliable
     "money":      0.45,   # cuts vague financial terms

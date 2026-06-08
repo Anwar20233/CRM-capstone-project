@@ -1,0 +1,8 @@
+[project]
+name = "twenty-ai-service"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "integration: tests that call external services (require real API keys)",
+]

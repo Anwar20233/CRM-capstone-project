@@ -8,7 +8,6 @@ const TAG_COLOR_BY_LABEL: Record<string, TagColor> = {
   person: 'blue',
   company: 'green',
   competitor: 'red',
-  deal: 'purple',
   money: 'amber',
   'email address': 'sky',
   'phone number': 'turquoise',
