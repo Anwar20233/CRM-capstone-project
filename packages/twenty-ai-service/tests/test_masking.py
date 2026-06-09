@@ -177,6 +177,76 @@ class TestPriming:
 
 
 # ---------------------------------------------------------------------------
+# Alias resolution: case-insensitive, partial names, ambiguity, variants
+# ---------------------------------------------------------------------------
+
+# An extractor that finds any of a fixed vocabulary, case-insensitively, and
+# reports offsets — closer to how the real pipeline behaves.
+def _vocab_extractor(vocab: list[tuple[str, str]]):
+    def extractor(text: str) -> list[dict]:
+        lowered = text.lower()
+        out = []
+        for label, value in vocab:
+            index = lowered.find(value.lower())
+            if index >= 0:
+                out.append({"label": label, "text": text[index:index + len(value)],
+                            "start": index})
+        return out
+    return extractor
+
+
+class TestAliasResolution:
+    def test_case_insensitive_same_token(self) -> None:
+        session = PIISessionMap(extractor=_vocab_extractor([("person", "John Doe")]))
+        session.mask_text("John Doe arrived")
+        masked = session.mask_text("later john doe and JOHN DOE came")
+        assert masked == "later [PERSON_1] and [PERSON_1] came"
+        assert len(session) == 1
+
+    def test_partial_name_resolves_when_unambiguous(self) -> None:
+        session = PIISessionMap(
+            extractor=_vocab_extractor([("person", "John Doe"), ("person", "John")])
+        )
+        session.mask_text("Met John Doe")  # [PERSON_1]
+        assert "[PERSON_1]" in session.mask_text("John says hi")
+        assert len(session) == 1
+
+    def test_ambiguous_partial_is_not_merged(self) -> None:
+        session = PIISessionMap(
+            extractor=_vocab_extractor(
+                [("person", "John Doe"), ("person", "John Smith"), ("person", "John")]
+            )
+        )
+        session.mask_text("John Doe and John Smith met")  # P1, P2
+        masked = session.mask_text("then John spoke")
+        # "John" can't be attributed to either → its own token, not P1/P2.
+        assert "[PERSON_1]" not in masked and "[PERSON_2]" not in masked
+        assert "[PERSON_3]" in masked
+
+    def test_company_variant_resolves_and_unmask_is_fullest(self) -> None:
+        session = PIISessionMap(
+            extractor=_vocab_extractor(
+                [("company", "Acme Corporation"), ("company", "Acme")]
+            )
+        )
+        session.mask_text("Acme Corporation grew")  # [COMPANY_1]
+        assert "[COMPANY_1]" in session.mask_text("Acme is hiring")
+        # Unmask expands to the fullest known surface, not the partial.
+        assert session.unmask_text("[COMPANY_1] wins") == "Acme Corporation wins"
+
+    def test_full_roundtrip_is_faithful(self) -> None:
+        session = PIISessionMap(
+            extractor=_vocab_extractor(
+                [("person", "John Doe"), ("company", "Acme"), ("email address", "a@b.com")]
+            )
+        )
+        original = "John Doe at Acme, a@b.com"
+        masked = session.mask_text(original)
+        assert "John Doe" not in masked and "a@b.com" not in masked
+        assert session.unmask_text(masked) == original
+
+
+# ---------------------------------------------------------------------------
 # BaseWorker wiring
 # ---------------------------------------------------------------------------
 
