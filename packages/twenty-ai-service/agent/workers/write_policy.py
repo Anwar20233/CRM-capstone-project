@@ -115,7 +115,22 @@ class WritePolicy:
         tier_data = _extract_data(tier_result)
         tier = tier_data.get("tier", 3) if tier_data else 3
 
-        # ── 2. Tier 3 → generate confirmation token ────────────────────
+        # # ── 2. Required fields validation ───────────────────────────────
+        # required_fields = tier_data.get("required_fields", []) if tier_data else []
+        # missing_fields = [
+        #     field
+        #     for field in required_fields
+        #     if field not in tool_args or tool_args.get(field) in (None, "")
+        # ]
+        # if missing_fields:
+        #     return WriteDecision(
+        #         allowed=False,
+        #         tier=tier,
+        #         action=action,
+        #         tool_args=tool_args,
+        #         reason=f"Missing required fields: {', '.join(missing_fields)}",)
+
+        # ── 3. Tier 3 → generate confirmation token ────────────────────
         if tier >= 3:
             token = str(uuid.uuid4())
             self._pending[token] = _PendingConfirmation(
@@ -136,7 +151,7 @@ class WritePolicy:
                 ),
             )
 
-        # ── 3. Tier 1/2 — allowed ──────────────────────────────────────
+        # ── 4. Tier 1/2 — allowed ──────────────────────────────────────
         return WriteDecision(
             allowed=True,
             tier=tier,
@@ -190,6 +205,9 @@ class WritePolicy:
             action=action,
             tool_args=tool_args,
         )
+
+
+
 
     def clear_pending(self) -> None:
         """Discard all pending confirmation tokens (useful in tests)."""
