@@ -25,6 +25,7 @@ import sys
 # Make `agent` importable regardless of where the script is launched from.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
+from agent.orchestrator import Orchestrator  # noqa: E402
 from agent.tool_scope import READER_SCOPE  # noqa: E402
 from agent.workers import BaseWorker, WriterWorker  # noqa: E402
 from pipelines import load_models, models_loaded  # noqa: E402
@@ -108,6 +109,8 @@ def make_printer() -> "callable":
 
 # ── Worker construction ────────────────────────────────────────────────────
 def build_worker(agent: str, model: str | None, session_id: str):
+    if agent == "orchestrator":
+        return Orchestrator(session_id=session_id, model=model)
     if agent == "writer":
         return WriterWorker(session_id=session_id, model=model)
     if agent == "reader":
@@ -121,7 +124,7 @@ def build_worker(agent: str, model: str | None, session_id: str):
             session_id=session_id,
             model=model,
         )
-    raise SystemExit(f"Unknown agent '{agent}' (use 'writer' or 'reader').")
+    raise SystemExit(f"Unknown agent '{agent}' (use 'orchestrator', 'writer', or 'reader').")
 
 
 def _placeholder(name: str) -> bool:
@@ -170,7 +173,9 @@ def preflight(worker, agent: str, masking_on: bool) -> None:
 # ── REPL ────────────────────────────────────────────────────────────────────
 def main() -> None:
     parser = argparse.ArgumentParser(description="Interactive CRM agent harness")
-    parser.add_argument("--agent", choices=["writer", "reader"], default="writer")
+    parser.add_argument(
+        "--agent", choices=["orchestrator", "writer", "reader"], default="writer"
+    )
     parser.add_argument("--model", default=None, help="alias or OpenRouter slug")
     parser.add_argument("--session", default="cli-session")
     args = parser.parse_args()

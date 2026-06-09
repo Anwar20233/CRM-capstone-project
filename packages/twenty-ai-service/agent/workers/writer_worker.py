@@ -23,6 +23,7 @@ Usage::
 
 from __future__ import annotations
 
+from agent.masking import PIISessionMap
 from agent.stubs.safety_tools import build_utility_tools
 from agent.tool_scope import WRITER_SCOPE
 from agent.workers.base_worker import BaseWorker
@@ -83,7 +84,13 @@ class WriterWorker(BaseWorker):
         Optional model alias or OpenRouter slug overriding the env default.
     """
 
-    def __init__(self, session_id: str = "default", model: str | None = None) -> None:
+    def __init__(
+        self,
+        session_id: str = "default",
+        model: str | None = None,
+        *,
+        pii_map: PIISessionMap | None = None,
+    ) -> None:
         policy = WritePolicy(session_id=session_id)
 
         super().__init__(
@@ -93,4 +100,5 @@ class WriterWorker(BaseWorker):
             write_policy=policy,
             extra_tools=build_utility_tools(),
             model=model,
+            pii_map=pii_map,
         )
