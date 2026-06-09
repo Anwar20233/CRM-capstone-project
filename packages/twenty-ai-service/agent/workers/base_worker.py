@@ -153,7 +153,23 @@ class BaseWorker:
                     "message": f"Tool '{name}' is not in this worker's toolset",
                 },
             }
-        return await tool.ainvoke(args or {})
+        try:
+            return await tool.ainvoke(args or {})
+        except Exception as error:  # noqa: BLE001
+            # Surface bad-argument errors (e.g. a weak model passing a string
+            # where a list is expected) back to the LLM as a recoverable result
+            # instead of crashing the turn — it can re-read the schema and retry.
+            return {
+                "ok": False,
+                "error": {
+                    "code": "INVALID_ARGUMENTS",
+                    "message": (
+                        f"Tool '{name}' rejected the arguments: {error}. "
+                        "Re-check the schema from learn_tools and retry with "
+                        "correctly-typed arguments."
+                    ),
+                },
+            }
 
     async def run(
         self,
