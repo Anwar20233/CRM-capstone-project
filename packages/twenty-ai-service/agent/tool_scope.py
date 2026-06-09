@@ -259,3 +259,22 @@ def filter_catalog(
         for entry in catalog_entries
         if is_tool_allowed(entry.get("name", ""), scope)
     ]
+
+
+def filter_catalog_payload(data: Any, scope: ToolScope) -> Any:
+    """Recursively filter every tool-entry list inside a catalog payload.
+
+    The bridge nests the catalog by category — ``{"catalog": {"<category>":
+    [entry, …]}}`` — so filtering only the top level of ``data`` misses every
+    entry and the worker ends up seeing tools outside its scope. This walks the
+    whole structure and applies ``filter_catalog`` to any list of tool entries
+    (dicts carrying a ``"name"``), recursing into dicts and other lists so the
+    fix holds regardless of how deeply the bridge nests the catalog.
+    """
+    if isinstance(data, list):
+        if data and all(isinstance(item, dict) and "name" in item for item in data):
+            return filter_catalog(data, scope)
+        return [filter_catalog_payload(item, scope) for item in data]
+    if isinstance(data, dict):
+        return {key: filter_catalog_payload(value, scope) for key, value in data.items()}
+    return data

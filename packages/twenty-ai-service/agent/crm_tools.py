@@ -48,10 +48,11 @@ from typing import Any
 from langchain_core.tools import StructuredTool
 
 from bridge_client import forward
+from agent.schema_compactor import compact_learn_payload
 from agent.tool_scope import (
     ToolScope,
     WRITER_SCOPE,
-    filter_catalog,
+    filter_catalog_payload,
     is_tool_allowed,
     is_write_tool,
 )
@@ -140,15 +141,12 @@ def build_crm_tools(
 
         result = await forward("catalog", payload)
 
-        # Filter the catalog so the worker only sees tools in its scope.
+        # Filter the catalog so the worker only discovers tools in its scope.
+        # The bridge nests entries under data.catalog.<category>, so we recurse
+        # rather than only scanning the top level (which would skip every entry
+        # and leak out-of-scope tools into the worker's context).
         if result.get("ok") and "data" in result:
-            data = result["data"]
-            if isinstance(data, list):
-                result["data"] = filter_catalog(data, scope)
-            elif isinstance(data, dict):
-                for key, entries in data.items():
-                    if isinstance(entries, list):
-                        data[key] = filter_catalog(entries, scope)
+            result["data"] = filter_catalog_payload(result["data"], scope)
         return result
 
     # -- learn_tools -----------------------------------------------------
@@ -173,7 +171,7 @@ def build_crm_tools(
             }
 
         ident = _identity(scope)
-        return await forward(
+        result = await forward(
             "learn",
             {
                 "toolNames": tool_names,
@@ -181,6 +179,9 @@ def build_crm_tools(
                 "roleId": ident["role_id"],
             },
         )
+        # Strip validator-only noise and dedup repeated subschemas before the
+        # schema reaches the LLM. The bridge keeps the full schema for execution.
+        return compact_learn_payload(result)
 
     # -- execute_tool ----------------------------------------------------
 

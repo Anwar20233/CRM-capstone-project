@@ -14,6 +14,4 @@ for call in result.get("tool_calls", []):
     print("  ->", call["name"])
 
 # Run from packages/twenty-ai-service:
-#   python agent\test_orchestrator.py "Find the number of employees in Uber"
-# Or:
-#   python -m agent.test_orchestrator "Find the number of employees in Uber"
+#   python scripts/try_orchestrator.py "Find the number of employees in Uber"

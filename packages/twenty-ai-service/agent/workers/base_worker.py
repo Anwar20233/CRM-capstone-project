@@ -65,6 +65,12 @@ class BaseWorker:
     extra_tools:
         Additional LangChain tools to include in the worker's toolset
         (e.g. ``resolve_date``).
+    tools_override:
+        If provided, the worker uses exactly these tools instead of building the
+        CRM meta-tools from *scope*. ``extra_tools`` still appends on top. This
+        lets non-CRM agents (e.g. the orchestrator, whose tools are the
+        agent-discovery + memory meta-tools) reuse the loop without touching the
+        bridge. When ``None`` (the default) behaviour is unchanged.
     model:
         Optional model alias or OpenRouter slug overriding the env default for
         this worker (hot-swap). Per-call override is also available via
@@ -77,6 +83,13 @@ class BaseWorker:
         map. Set ``mask_pii=False`` to disable masking entirely.
     mask_pii:
         Whether to run the masking hook. Defaults to ``True``.
+    unmasked_tools:
+        Tool names whose *results* bypass the masking hook. Use this for
+        control-plane meta-tools that return system metadata, not CRM data —
+        e.g. the orchestrator's ``get_agent_catalog``/``learn_agent``, whose
+        payloads (agent names, schemas) would otherwise be mangled by the NER
+        masker (e.g. "reader" mis-tagged as a person). Their arguments are still
+        unmasked before dispatch; only result masking is skipped.
     """
 
     def __init__(
@@ -87,15 +100,18 @@ class BaseWorker:
         session_id: str = "default",
         write_policy: WritePolicy | None = None,
         extra_tools: list[StructuredTool] | None = None,
+        tools_override: list[StructuredTool] | None = None,
         model: str | None = None,
         pii_map: PIISessionMap | None = None,
         mask_pii: bool = True,
+        unmasked_tools: frozenset[str] | None = None,
     ) -> None:
         self.scope = scope
         self.system_prompt = system_prompt
         self.session_id = session_id
         self.write_policy = write_policy
         self.model = model
+        self.unmasked_tools = unmasked_tools or frozenset()
         # The masking hook is a single session map; None disables masking.
         # Note the explicit None check: an empty PIISessionMap is falsy
         # (``__len__`` is 0), so ``pii_map or PIISessionMap()`` would discard it.
@@ -111,13 +127,16 @@ class BaseWorker:
         self._mask_primed = False
 
         # -- Assemble the toolset ------------------------------------------
-        # Deferred import to avoid circular dependency:
-        # crm_tools → write_policy → (workers/__init__) → base_worker → crm_tools
-        from agent.crm_tools import build_crm_tools
+        if tools_override is not None:
+            # Non-CRM agents (e.g. the orchestrator) supply their own toolset and
+            # never touch the bridge — so skip build_crm_tools entirely.
+            self._tools: list[StructuredTool] = list(tools_override)
+        else:
+            # Deferred import to avoid circular dependency:
+            # crm_tools → write_policy → (workers/__init__) → base_worker → crm_tools
+            from agent.crm_tools import build_crm_tools
 
-        self._tools: list[StructuredTool] = list(
-            build_crm_tools(scope, write_policy=write_policy)
-        )
+            self._tools = list(build_crm_tools(scope, write_policy=write_policy))
 
         # Include any extra tools (e.g. resolve_date utility).
         if extra_tools:
@@ -177,6 +196,7 @@ class BaseWorker:
         *,
         model: str | None = None,
         history: list[str] | None = None,
+        prior_messages: list[dict[str, str]] | None = None,
         on_event: Callable[[dict[str, Any]], None] | None = None,
     ) -> dict[str, Any]:
         """Execute the full agent loop for a single user message.
@@ -188,9 +208,18 @@ class BaseWorker:
         ``model`` (alias or OpenRouter slug) overrides the worker's model for
         this call; it falls back to the worker's ``model`` and then env default.
 
-        ``history`` is the chat's prior messages (stored unmasked). On the first
-        turn it primes the PII map so reopened chats recover the same tokens —
-        no token table is persisted, the mapping is rebuilt from the messages.
+        ``history`` is the chat's prior messages (stored unmasked) as a flat list
+        of texts. On the first turn it primes the PII map so reopened chats
+        recover the same tokens — no token table is persisted, the mapping is
+        rebuilt from the messages.
+
+        ``prior_messages`` is the prior conversation replayed into the LLM context
+        as real chat turns — a list of ``{"role", "content"}`` dicts
+        (``role`` ∈ user/assistant/system). Unlike ``history`` (priming only),
+        these are sent to the model so the agent reasons over earlier turns. The
+        orchestrator passes a compacted view here (recent turns verbatim + a
+        summary system message). Each content string is masked before the model
+        sees it. Primes the PII map too when ``history`` is not given.
 
         ``on_event`` is an optional callback fired with progress events so a CLI
         can render a live trace. Event shapes::
@@ -231,9 +260,14 @@ class BaseWorker:
             system_prompt += _MASKING_SYSTEM_NOTE
             # Rebuild the map from stored history once, so a reopened chat keeps
             # its existing tokens before the new message is masked against them.
-            if history and not self._mask_primed:
-                self.pii_map.prime(history)
-                self._mask_primed = True
+            # Prefer the flat `history`; fall back to the replayed conversation.
+            if not self._mask_primed:
+                prime_source = history or (
+                    [m["content"] for m in prior_messages] if prior_messages else None
+                )
+                if prime_source:
+                    self.pii_map.prime(prime_source)
+                    self._mask_primed = True
             masked_message = self.pii_map.mask_text(user_message)
             # Surface the masked prompt so callers can verify masking engaged
             # (the final answer is unmasked, so it's otherwise invisible).
@@ -241,10 +275,15 @@ class BaseWorker:
                 _emit({"type": "prompt_masked", "masked": masked_message})
             user_message = masked_message
 
-        messages: list[dict] = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_message},
-        ]
+        messages: list[dict] = [{"role": "system", "content": system_prompt}]
+        # Replay the prior conversation (masked) so the model reasons over it.
+        if prior_messages:
+            for prior in prior_messages:
+                content = prior["content"]
+                if self.pii_map is not None:
+                    content = self.pii_map.mask_text(content)
+                messages.append({"role": prior["role"], "content": content})
+        messages.append({"role": "user", "content": user_message})
         tool_calls_log: list[dict] = []
 
         # Agent loop — max 15 iterations to prevent runaway.
@@ -291,8 +330,11 @@ class BaseWorker:
                 tool_calls_log.append({"name": name, "args": args, "result": result})
 
                 # Inbound: mask any PII the tool returned before the LLM sees it.
+                # Control-plane tools (e.g. get_agent_catalog) are exempt — their
+                # payloads are system metadata, not CRM data, and masking them
+                # would corrupt agent/tool names the model must use verbatim.
                 llm_result = result
-                if self.pii_map is not None:
+                if self.pii_map is not None and name not in self.unmasked_tools:
                     llm_result = self.pii_map.mask_value(result)
                     if llm_result != result:
                         _emit({"type": "tool_result_masked", "name": name, "result": llm_result})

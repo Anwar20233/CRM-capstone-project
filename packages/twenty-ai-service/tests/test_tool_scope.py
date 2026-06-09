@@ -18,6 +18,7 @@ from agent.tool_scope import (
     ToolScope,
     classify_tool,
     filter_catalog,
+    filter_catalog_payload,
     is_tool_allowed,
     is_write_tool,
 )
@@ -187,6 +188,64 @@ class TestFilterCatalog:
 
     def test_empty_catalog(self) -> None:
         assert filter_catalog([], READER_SCOPE) == []
+
+
+# ---------------------------------------------------------------------------
+# filter_catalog_payload — recursive filtering of the real (nested) bridge shape
+# ---------------------------------------------------------------------------
+
+class TestFilterCatalogPayload:
+    """The bridge returns data.catalog.<category> = [entries]; filtering must
+    reach those nested lists, not just the top level."""
+
+    # Mirrors the real envelope: {"catalog": {"<CATEGORY>": [entries]}}.
+    _NESTED_DATA = {
+        "catalog": {
+            "DATABASE_CRUD": [
+                {"name": "find_people", "description": "Find people"},
+                {"name": "create_person", "description": "Create a person"},
+                {"name": "update_person", "description": "Update a person"},
+            ],
+            "ACTION": [
+                {"name": "send_email", "description": "Send an email"},
+                {"name": "search_help_center", "description": "Search help"},
+            ],
+        }
+    }
+
+    def test_reader_sees_only_reads_in_nested_catalog(self) -> None:
+        filtered = filter_catalog_payload(self._NESTED_DATA, READER_SCOPE)
+        crud = {e["name"] for e in filtered["catalog"]["DATABASE_CRUD"]}
+        action = {e["name"] for e in filtered["catalog"]["ACTION"]}
+
+        assert crud == {"find_people"}
+        assert action == {"search_help_center"}
+        assert "create_person" not in crud
+        assert "send_email" not in action
+
+    def test_writer_sees_only_writes_in_nested_catalog(self) -> None:
+        filtered = filter_catalog_payload(self._NESTED_DATA, WRITER_SCOPE)
+        crud = {e["name"] for e in filtered["catalog"]["DATABASE_CRUD"]}
+        action = {e["name"] for e in filtered["catalog"]["ACTION"]}
+
+        assert crud == {"create_person", "update_person"}
+        assert action == {"send_email"}
+        assert "find_people" not in crud
+        assert "search_help_center" not in action
+
+    def test_flat_list_payload_still_filters(self) -> None:
+        # A flat list of entries (legacy/alternative shape) is filtered too.
+        flat = [
+            {"name": "find_people", "description": "ok"},
+            {"name": "create_person", "description": "write"},
+        ]
+        names = {e["name"] for e in filter_catalog_payload(flat, READER_SCOPE)}
+        assert names == {"find_people"}
+
+    def test_non_entry_data_passes_through(self) -> None:
+        # Scalars and entry-less structures are returned untouched.
+        assert filter_catalog_payload("noop", READER_SCOPE) == "noop"
+        assert filter_catalog_payload({"count": 3}, READER_SCOPE) == {"count": 3}
 
 
 # ---------------------------------------------------------------------------

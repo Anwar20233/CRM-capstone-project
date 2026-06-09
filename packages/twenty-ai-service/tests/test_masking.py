@@ -234,6 +234,39 @@ class TestAliasResolution:
         # Unmask expands to the fullest known surface, not the partial.
         assert session.unmask_text("[COMPANY_1] wins") == "Acme Corporation wins"
 
+    def test_lowercase_person_is_capitalized(self) -> None:
+        session = PIISessionMap(extractor=_vocab_extractor([("person", "john doe")]))
+        # The value the model/user typed is lower-case; the token must unmask to
+        # a properly-cased name so writes/reads hit the CRM consistently.
+        token = session.mask_text("add john doe").split()[-1]
+        assert session.unmask_text(token) == "John Doe"
+
+    def test_lowercase_company_is_capitalized(self) -> None:
+        session = PIISessionMap(extractor=_vocab_extractor([("company", "acme corp")]))
+        masked = session.mask_text("at acme corp")
+        assert session.unmask_text(masked) == "at Acme Corp"
+
+    def test_existing_internal_casing_preserved(self) -> None:
+        # Only a leading lower-case letter is fixed; internal caps stay intact.
+        session = PIISessionMap(extractor=_vocab_extractor([("person", "John McDonald")]))
+        masked = session.mask_text("call John McDonald")
+        assert session.unmask_text(masked) == "call John McDonald"
+
+    def test_email_not_capitalized(self) -> None:
+        # Emails must stay verbatim — capitalizing would corrupt the address.
+        session = PIISessionMap(extractor=_vocab_extractor([("email address", "john@acme.com")]))
+        masked = session.mask_text("mail john@acme.com")
+        assert session.unmask_text(masked) == "mail john@acme.com"
+
+    def test_case_variants_share_capitalized_token(self) -> None:
+        # Lower- and mixed-case mentions collapse to one token whose canonical
+        # is properly cased regardless of which surface appeared first.
+        session = PIISessionMap(extractor=_vocab_extractor([("person", "john doe")]))
+        session.mask_text("john doe")
+        masked = session.mask_text("JOHN DOE and john doe")
+        assert masked == "[PERSON_1] and [PERSON_1]"
+        assert session.unmask_text("[PERSON_1]") == "John Doe"
+
     def test_full_roundtrip_is_faithful(self) -> None:
         session = PIISessionMap(
             extractor=_vocab_extractor(

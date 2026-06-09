@@ -8,13 +8,15 @@ A ``BaseWorker`` specialised with:
 
 Usage::
 
-    from agent.workers.reader_worker import reader
+    from agent.workers import ReaderWorker
 
+    reader = ReaderWorker(session_id="session-abc-123")
     result = await reader.run("Find Sarah Connor at Cyberdyne Systems")
 """
 
 from __future__ import annotations
 
+from agent.masking import PIISessionMap
 from agent.tool_scope import READER_SCOPE
 from agent.workers.base_worker import BaseWorker
 
@@ -88,13 +90,17 @@ with the correct type for the lookup.
 class ReaderWorker(BaseWorker):
     """CRM Read Agent — ``BaseWorker`` with READER_SCOPE and read system prompt."""
 
-    def __init__(self, session_id: str = "default", model: str | None = None) -> None:
+    def __init__(
+        self,
+        session_id: str = "default",
+        model: str | None = None,
+        *,
+        pii_map: PIISessionMap | None = None,
+    ) -> None:
         super().__init__(
             scope=READER_SCOPE,
             system_prompt=READER_SYSTEM_PROMPT,
             session_id=session_id,
             model=model,
+            pii_map=pii_map,
         )
-
-
-reader = ReaderWorker()

@@ -65,10 +65,36 @@ DEFAULT_MASKABLE_LABELS: dict[str, str] = {
     "location": "LOCATION",
 }
 
+# Token prefixes that are proper names: their stored surface is given a leading
+# capital per word so values typed in lower-case ("john doe", "acme corp") are
+# read from and written back to the CRM with consistent casing. Emails and phone
+# numbers are excluded — capitalizing them would corrupt the value.
+_NAME_PREFIXES: frozenset[str] = frozenset({"PERSON", "COMPANY", "LOCATION"})
+
 
 def _normalize(text: str) -> str:
     """Casefold + collapse whitespace so casing/spacing never splits a token."""
     return re.sub(r"\s+", " ", text).strip().casefold()
+
+
+def _capitalize_name(text: str) -> str:
+    """Give each word a leading capital, fixing only lower-case first letters.
+
+    Single point of name-casing for the whole masking layer. Only a word's first
+    letter is touched, and only when it is lower-case, so already-correct casing
+    is preserved ("McDonald", "iPhone" stay intact). "john doe" → "John Doe",
+    "acme corp" → "Acme Corp".
+    """
+    def fix_word(word: str) -> str:
+        for index, char in enumerate(word):
+            if char.isalpha():
+                if char.islower():
+                    return word[:index] + char.upper() + word[index + 1:]
+                return word
+            # Skip leading non-letters (quotes, digits) before the first letter.
+        return word
+
+    return " ".join(fix_word(word) for word in text.split())
 
 
 def _significant_words(normalized: str) -> set[str]:
@@ -226,6 +252,12 @@ class PIISessionMap:
         surface = surface.strip()
         if not surface:
             return None
+
+        # Normalize proper-name casing once, here, so every downstream use (new
+        # token canonical, alias surfaces, unmasked tool args/answers) is
+        # consistent regardless of how the user typed the name.
+        if prefix in _NAME_PREFIXES:
+            surface = _capitalize_name(surface)
 
         normalized = _normalize(surface)
 
