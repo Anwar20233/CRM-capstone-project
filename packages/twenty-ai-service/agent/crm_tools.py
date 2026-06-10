@@ -60,6 +60,63 @@ from agent.workers.write_policy import WritePolicy
 
 
 # ---------------------------------------------------------------------------
+# DATABASE_CRUD query helpers
+# ---------------------------------------------------------------------------
+
+# The seven CRM entity types surfaced to LLMs by name.  Everything else maps
+# to the "other" bucket when filtering by object_name="other".
+_PRIORITY_OBJECT_NAMES: frozenset[str] = frozenset({
+    "person", "company", "note", "opportunity",
+    "calendarEvent", "dashboard", "task",
+})
+
+
+def _filter_crud_by_query(
+    result: dict,
+    *,
+    operation: str | None,
+    object_name: str | None,
+) -> dict:
+    """Narrow DATABASE_CRUD entries by operation and/or objectName.
+
+    Applied *after* the scope filter so write-agent calls never see read tools
+    and vice-versa.  ``object_name="other"`` returns all entries whose
+    objectName is *not* in ``_PRIORITY_OBJECT_NAMES``.
+
+    Non-DATABASE_CRUD categories (ACTION, WORKFLOW, …) are untouched.
+    """
+    if not (operation or object_name):
+        return result
+    if not (result.get("ok") and isinstance(result.get("data"), dict)):
+        return result
+    catalog = result["data"].get("catalog")
+    if not isinstance(catalog, dict):
+        return result
+    crud = catalog.get("DATABASE_CRUD")
+    if not isinstance(crud, list):
+        return result
+
+    filtered: list = crud
+    if object_name == "other":
+        filtered = [e for e in filtered if e.get("objectName") not in _PRIORITY_OBJECT_NAMES]
+    elif object_name:
+        filtered = [e for e in filtered if e.get("objectName") == object_name]
+    if operation:
+        filtered = [e for e in filtered if e.get("operation") == operation]
+
+    return {
+        **result,
+        "data": {
+            **result["data"],
+            "catalog": {
+                **catalog,
+                "DATABASE_CRUD": filtered,
+            },
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
 # Identity resolver
 # ---------------------------------------------------------------------------
 
@@ -123,13 +180,30 @@ def build_crm_tools(
 
     # -- get_tool_catalog ------------------------------------------------
 
-    async def _get_tool_catalog(categories: list[str] | None = None) -> dict:
+    async def _get_tool_catalog(
+        categories: list[str] | None = None,
+        operation: str | None = None,
+        object_name: str | None = None,
+    ) -> dict:
         """List the CRM tools available, grouped by category.
 
-        Categories: DATABASE_CRUD, ACTION, WORKFLOW, METADATA, VIEW, VIEW_FIELD,
-        DASHBOARD, LOGIC_FUNCTION. Pass ``categories`` to filter. Returns
-        lightweight entries (name + description); call learn_tools for full
-        input schemas.
+        **Always filter by object_name + operation to get exactly 1–3 tools
+        instead of the full 192-entry catalog.**
+
+        ``object_name`` — the CRM entity type to act on:
+            person, company, note, opportunity, calendarEvent, dashboard,
+            task — or "other" for all remaining entity types.
+
+        ``operation`` — the verb to apply (DATABASE_CRUD tools only):
+            create, update, delete, create_many, update_many,
+            find, find_one, group_by
+
+        ``categories`` — limit to specific bridge categories (DATABASE_CRUD,
+            ACTION, WORKFLOW, METADATA, VIEW, VIEW_FIELD, DASHBOARD,
+            LOGIC_FUNCTION). Defaults to all categories.
+
+        Returns lightweight entries (name + description); call learn_tools
+        for full input schemas.
         """
         ident = _identity(scope)
         payload: dict = {
@@ -141,12 +215,14 @@ def build_crm_tools(
 
         result = await forward("catalog", payload)
 
-        # Filter the catalog so the worker only discovers tools in its scope.
-        # The bridge nests entries under data.catalog.<category>, so we recurse
-        # rather than only scanning the top level (which would skip every entry
-        # and leak out-of-scope tools into the worker's context).
+        # Layer 1: scope filter — removes tools outside this worker's capability
+        # (e.g. read tools are stripped from the write-agent's view, and vice-versa).
         if result.get("ok") and "data" in result:
             result["data"] = filter_catalog_payload(result["data"], scope)
+
+        # Layer 2: query filter — narrows DATABASE_CRUD by objectName/operation
+        # so the LLM sees only the 1–3 tools it actually needs.
+        result = _filter_crud_by_query(result, operation=operation, object_name=object_name)
         return result
 
     # -- learn_tools -----------------------------------------------------
