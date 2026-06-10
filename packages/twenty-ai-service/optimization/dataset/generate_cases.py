@@ -79,15 +79,15 @@ def _load_fixtures() -> dict[str, list[dict]]:
 # Gold builder
 # ---------------------------------------------------------------------------
 
-def _gold(outcome, primary_action, *, required_tools=None, needs_resolve_date=False, min_tool_calls=2):
+def _gold(outcome, primary_action, *, required_tools=None, needs_resolve_date=False, min_tool_calls=3):
     return {
         "outcome": outcome,
         "primary_action": primary_action,
         "required_tools": required_tools
         if required_tools is not None
-        else (["learn_tools", "execute_tool"] if primary_action else []),
+        else (["get_tool_catalog", "learn_tools", "execute_tool"] if primary_action else []),
         "needs_resolve_date": needs_resolve_date,
-        "min_tool_calls": min_tool_calls,
+        "min_tool_calls": min_tool_calls if primary_action else 0,
     }
 
 
@@ -191,8 +191,8 @@ def _make_cases(rng: random.Random, pools: dict[str, list[str]], fx: dict[str, l
             "relative_date",
             f"Create a task titled 'Follow up with {person['name']}' due {phrase}.",
             _gold("executed", "create_task",
-                  required_tools=["resolve_date", "learn_tools", "execute_tool"],
-                  needs_resolve_date=True, min_tool_calls=3),
+                  required_tools=["resolve_date", "get_tool_catalog", "learn_tools", "execute_tool"],
+                  needs_resolve_date=True, min_tool_calls=4),
         ))
     for _ in range(4):
         cid, phrase, amount = company_id(), rng.choice(_RELATIVE_DATES), pick("money")
@@ -202,8 +202,8 @@ def _make_cases(rng: random.Random, pools: dict[str, list[str]], fx: dict[str, l
             f"Create an opportunity named '{name}' for the company with id {cid}, "
             f"amount {amount}, at the NEW stage, closing {phrase}.",
             _gold("executed", "create_opportunity",
-                  required_tools=["resolve_date", "learn_tools", "execute_tool"],
-                  needs_resolve_date=True, min_tool_calls=3),
+                  required_tools=["resolve_date", "get_tool_catalog", "learn_tools", "execute_tool"],
+                  needs_resolve_date=True, min_tool_calls=4),
         ))
 
     # -- tier3_confirm: deletes by id (10) ---------------------------------
