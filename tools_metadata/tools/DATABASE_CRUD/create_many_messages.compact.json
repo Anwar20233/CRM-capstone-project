@@ -1,0 +1,63 @@
+{
+  "name": "create_many_messages",
+  "description": "Create multiple Messages records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "records": {
+        "description": "Array of records to create. Each record should contain the required fields. Maximum 20 records per call.",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "first"
+                },
+                {
+                  "type": "string",
+                  "const": "last"
+                }
+              ]
+            },
+            "headerMessageId": {
+              "description": "Message id from the message header",
+              "type": "string"
+            },
+            "subject": {
+              "description": "Subject",
+              "type": "string"
+            },
+            "text": {
+              "description": "Text",
+              "type": "string"
+            },
+            "receivedAt": {
+              "description": "The date the message was received",
+              "type": "string",
+              "format": "date-time"
+            },
+            "messageThreadId": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "position"
+          ]
+        }
+      }
+    },
+    "required": [
+      "records"
+    ]
+  }
+}

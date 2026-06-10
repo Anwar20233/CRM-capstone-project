@@ -1,0 +1,48 @@
+{
+  "name": "update_note_target",
+  "description": "Update an existing Note Target record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "targetCompany": {
+        "description": "NoteTarget target",
+        "type": "string"
+      },
+      "noteId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "targetPerson": {
+        "description": "NoteTarget target",
+        "type": "string"
+      },
+      "targetOpportunity": {
+        "description": "NoteTarget target",
+        "type": "string"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

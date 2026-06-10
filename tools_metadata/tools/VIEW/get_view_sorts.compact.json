@@ -1,0 +1,17 @@
+{
+  "name": "get_view_sorts",
+  "description": "List all sorts applied to a view. Each sort defines a field and direction that determines the order records appear in the view.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "ID of the view to list sorts for. Obtain this from get_views.",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "viewId"
+    ]
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "name": "update_calendar_event",
+  "description": "Update an existing Calendar event record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "isCanceled": {
+        "description": "Is canceled",
+        "type": "boolean"
+      },
+      "isFullDay": {
+        "description": "Is Full Day",
+        "type": "boolean"
+      },
+      "startsAt": {
+        "description": "Start Date",
+        "type": "string",
+        "format": "date-time"
+      },
+      "endsAt": {
+        "description": "End Date",
+        "type": "string",
+        "format": "date-time"
+      },
+      "externalCreatedAt": {
+        "description": "Creation DateTime",
+        "type": "string",
+        "format": "date-time"
+      },
+      "externalUpdatedAt": {
+        "description": "Update DateTime",
+        "type": "string",
+        "format": "date-time"
+      },
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "title": {
+        "description": "Title",
+        "type": "string"
+      },
+      "description": {
+        "description": "Description",
+        "type": "string"
+      },
+      "location": {
+        "description": "Location",
+        "type": "string"
+      },
+      "iCalUid": {
+        "description": "iCal UID",
+        "type": "string"
+      },
+      "conferenceSolution": {
+        "description": "Conference Solution",
+        "type": "string"
+      },
+      "conferenceLink": {
+        "description": "Meet Link",
+        "type": "object",
+        "properties": {
+          "primaryLinkLabel": {
+            "type": "string"
+          },
+          "primaryLinkUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "secondaryLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "label"
+              ]
+            }
+          }
+        }
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "name": "create_view_field",
+  "description": "Add a new column to a view. View fields define which columns are shown in table or kanban views. First call get_field_metadata to find the fieldMetadataId of the column to add, and get_views to find the target viewId.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "The ID of the view to add the field to.",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "fieldMetadataId": {
+        "description": "The ID of the field metadata to add. Use get_field_metadata to find available fields.",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "isVisible": {
+        "description": "Whether the field is visible in the view.",
+        "default": true,
+        "type": "boolean"
+      },
+      "size": {
+        "description": "Column width in pixels.",
+        "default": 150,
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "position": {
+        "description": "Position of the field in the view (0-based).",
+        "default": 0,
+        "type": "number"
+      },
+      "aggregateOperation": {
+        "description": "Aggregate operation for this field (e.g., \"SUM\", \"AVG\", \"COUNT\").",
+        "type": "string",
+        "enum": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "SUM",
+          "COUNT",
+          "COUNT_UNIQUE_VALUES",
+          "COUNT_EMPTY",
+          "COUNT_NOT_EMPTY",
+          "COUNT_TRUE",
+          "COUNT_FALSE",
+          "PERCENTAGE_EMPTY",
+          "PERCENTAGE_NOT_EMPTY"
+        ]
+      }
+    },
+    "required": [
+      "viewId",
+      "fieldMetadataId",
+      "isVisible",
+      "size",
+      "position"
+    ],
+    "additionalProperties": false
+  }
+}

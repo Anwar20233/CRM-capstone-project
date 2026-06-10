@@ -1,0 +1,603 @@
+{
+  "name": "update_many_people",
+  "description": "Update multiple People records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Contact's name",
+            "type": "object",
+            "properties": {
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "emails": {
+            "description": "Contact's Emails",
+            "type": "object",
+            "properties": {
+              "primaryEmail": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "additionalEmails": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "linkedinLink": {
+            "description": "Contact's Linkedin account",
+            "type": "object",
+            "properties": {
+              "primaryLinkLabel": {
+                "type": "string"
+              },
+              "primaryLinkUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "secondaryLinks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "xLink": {
+            "description": "Contact's X/Twitter account",
+            "type": "object",
+            "properties": {
+              "primaryLinkLabel": {
+                "type": "string"
+              },
+              "primaryLinkUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "secondaryLinks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "jobTitle": {
+            "description": "Contact's job title",
+            "type": "string"
+          },
+          "phones": {
+            "description": "Contact's phone numbers",
+            "type": "object",
+            "properties": {
+              "primaryPhoneNumber": {
+                "type": "string"
+              },
+              "primaryPhoneCountryCode": {
+                "type": "string"
+              },
+              "primaryPhoneCallingCode": {
+                "type": "string"
+              },
+              "additionalPhones": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "city": {
+            "description": "Contact's city",
+            "type": "string"
+          },
+          "avatarUrl": {
+            "description": "Contact's avatar",
+            "type": "string"
+          },
+          "avatarFile": {
+            "description": "Contact's avatar file",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fileId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fileId",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Filter by name (full name field)",
+            "type": "object",
+            "properties": {
+              "firstName": {
+                "description": "Filter by first name",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "First name equals",
+                    "type": "string"
+                  },
+                  "neq": {
+                    "description": "First name not equals",
+                    "type": "string"
+                  },
+                  "like": {
+                    "description": "First name case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "First name case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "startsWith": {
+                    "description": "First name starts with",
+                    "type": "string"
+                  },
+                  "endsWith": {
+                    "description": "First name ends with",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty first name. Use \"NULL\" to find records with no first name, \"NOT_NULL\" for records with a first name",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "lastName": {
+                "description": "Filter by last name",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Last name equals",
+                    "type": "string"
+                  },
+                  "neq": {
+                    "description": "Last name not equals",
+                    "type": "string"
+                  },
+                  "like": {
+                    "description": "Last name case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Last name case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "startsWith": {
+                    "description": "Last name starts with",
+                    "type": "string"
+                  },
+                  "endsWith": {
+                    "description": "Last name ends with",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty last name. Use \"NULL\" to find records with no last name, \"NOT_NULL\" for records with a last name",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "emails": {
+            "description": "Filter by emails (emails field)",
+            "type": "object",
+            "properties": {
+              "primaryEmail": {
+                "description": "Filter by primary email",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary email equals",
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "neq": {
+                    "description": "Primary email not equals",
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "like": {
+                    "description": "Primary email case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary email case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary email. Use \"NULL\" to find records with no primary email, \"NOT_NULL\" for records with a primary email",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "linkedinLink": {
+            "description": "Filter by linkedinLink (links field)",
+            "type": "object",
+            "properties": {
+              "primaryLinkUrl": {
+                "description": "Filter by primary link URL",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary link URL equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "neq": {
+                    "description": "Primary link URL not equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "like": {
+                    "description": "Primary link URL case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary link URL case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary link URL. Use \"NULL\" to find records with no primary link URL, \"NOT_NULL\" for records with a primary link URL",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "xLink": {
+            "description": "Filter by xLink (links field)",
+            "type": "object",
+            "properties": {
+              "primaryLinkUrl": {
+                "description": "Filter by primary link URL",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary link URL equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "neq": {
+                    "description": "Primary link URL not equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "like": {
+                    "description": "Primary link URL case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary link URL case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary link URL. Use \"NULL\" to find records with no primary link URL, \"NOT_NULL\" for records with a primary link URL",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "jobTitle": {
+            "description": "Filter by jobTitle (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "phones": {
+            "description": "Filter by phones (phones field)",
+            "type": "object",
+            "properties": {
+              "primaryPhoneNumber": {
+                "description": "Filter by primary phone number",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary phone number equals",
+                    "type": "string"
+                  },
+                  "neq": {
+                    "description": "Primary phone number not equals",
+                    "type": "string"
+                  },
+                  "like": {
+                    "description": "Primary phone number case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary phone number case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary phone number. Use \"NULL\" to find records with no primary phone number, \"NOT_NULL\" for records with a primary phone number",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "city": {
+            "description": "Filter by city (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "companyId": {
+            "description": "Filter by companyId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

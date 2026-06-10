@@ -1,0 +1,159 @@
+{
+  "name": "update_person",
+  "description": "Update an existing Person record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "Contact's name",
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        }
+      },
+      "emails": {
+        "description": "Contact's Emails",
+        "type": "object",
+        "properties": {
+          "primaryEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "additionalEmails": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            }
+          }
+        }
+      },
+      "linkedinLink": {
+        "description": "Contact's Linkedin account",
+        "$ref": "#/$defs/_f1"
+      },
+      "xLink": {
+        "description": "Contact's X/Twitter account",
+        "$ref": "#/$defs/_f1"
+      },
+      "jobTitle": {
+        "description": "Contact's job title",
+        "type": "string"
+      },
+      "phones": {
+        "description": "Contact's phone numbers",
+        "type": "object",
+        "properties": {
+          "primaryPhoneNumber": {
+            "type": "string"
+          },
+          "primaryPhoneCountryCode": {
+            "type": "string"
+          },
+          "primaryPhoneCallingCode": {
+            "type": "string"
+          },
+          "additionalPhones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "city": {
+        "description": "Contact's city",
+        "type": "string"
+      },
+      "avatarUrl": {
+        "description": "Contact's avatar",
+        "type": "string"
+      },
+      "avatarFile": {
+        "description": "Contact's avatar file",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileId",
+            "label"
+          ]
+        }
+      },
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "companyId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "$defs": {
+      "_f1": {
+        "type": "object",
+        "properties": {
+          "primaryLinkLabel": {
+            "type": "string"
+          },
+          "primaryLinkUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "secondaryLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "label"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

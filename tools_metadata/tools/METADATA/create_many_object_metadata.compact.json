@@ -1,0 +1,65 @@
+{
+  "name": "create_many_object_metadata",
+  "description": "Create multiple object metadata at once in the workspace data model. More efficient than calling create_object_metadata multiple times. Each item follows the same schema as create_object_metadata.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "objects": {
+        "description": "Array of object metadata to create (1-20 items).",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "nameSingular": {
+              "description": "Singular name for the object (e.g., \"company\")",
+              "type": "string"
+            },
+            "namePlural": {
+              "description": "Plural name for the object (e.g., \"companies\")",
+              "type": "string"
+            },
+            "labelSingular": {
+              "description": "Display label in singular form (e.g., \"Company\")",
+              "type": "string"
+            },
+            "labelPlural": {
+              "description": "Display label in plural form (e.g., \"Companies\")",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description of the object",
+              "type": "string"
+            },
+            "icon": {
+              "description": "Icon identifier for the object",
+              "type": "string"
+            },
+            "shortcut": {
+              "description": "Keyboard shortcut for the object",
+              "type": "string"
+            },
+            "isRemote": {
+              "description": "Whether this is a remote object",
+              "type": "boolean"
+            },
+            "isLabelSyncedWithName": {
+              "description": "Whether label should sync with name changes",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "nameSingular",
+            "namePlural",
+            "labelSingular",
+            "labelPlural"
+          ]
+        }
+      }
+    },
+    "required": [
+      "objects"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "get_views",
+  "description": "List views in the workspace. Views define how records are displayed, filtered, and sorted.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "objectNameSingular": {
+        "description": "Filter views by object name (e.g., \"task\", \"person\", \"company\"). If omitted, returns all views.",
+        "type": "string"
+      },
+      "limit": {
+        "default": 50,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required": [
+      "limit"
+    ]
+  }
+}

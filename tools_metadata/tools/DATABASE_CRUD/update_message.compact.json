@@ -1,0 +1,53 @@
+{
+  "name": "update_message",
+  "description": "Update an existing Message record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "headerMessageId": {
+        "description": "Message id from the message header",
+        "type": "string"
+      },
+      "subject": {
+        "description": "Subject",
+        "type": "string"
+      },
+      "text": {
+        "description": "Text",
+        "type": "string"
+      },
+      "receivedAt": {
+        "description": "The date the message was received",
+        "type": "string",
+        "format": "date-time"
+      },
+      "messageThreadId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

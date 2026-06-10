@@ -1,0 +1,17 @@
+{
+  "name": "deactivate_workflow_version",
+  "description": "Deactivate a workflow version. This makes the workflow version inactive and unavailable for execution.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version to deactivate",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "workflowVersionId"
+    ]
+  }
+}

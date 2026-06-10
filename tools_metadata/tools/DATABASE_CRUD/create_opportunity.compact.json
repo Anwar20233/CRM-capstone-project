@@ -1,0 +1,73 @@
+{
+  "name": "create_opportunity",
+  "description": "Create a new Opportunity record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "The opportunity name",
+        "type": "string"
+      },
+      "amount": {
+        "description": "Opportunity amount",
+        "type": "object",
+        "properties": {
+          "amountMicros": {
+            "type": "number"
+          },
+          "currencyCode": {
+            "type": "string"
+          }
+        }
+      },
+      "closeDate": {
+        "description": "Opportunity close date",
+        "type": "string",
+        "format": "date-time"
+      },
+      "stage": {
+        "description": "Opportunity stage",
+        "type": "string",
+        "enum": [
+          "NEW",
+          "SCREENING",
+          "MEETING",
+          "PROPOSAL",
+          "CUSTOMER"
+        ]
+      },
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "companyId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "pointOfContactId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "ownerId": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "stage",
+      "position"
+    ]
+  }
+}
