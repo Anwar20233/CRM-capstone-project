@@ -18,4 +18,8 @@ export type StreamAgentChatJobData = {
   hasTitle: boolean;
   existingTurnId?: string;
   conversationSizeTokens: number;
+  // Set only on the external-orchestrator resume path: true = user approved the
+  // paused write, false = rejected. When present, the job calls /agent/resume
+  // instead of /agent/chat. The user-message persistence is also skipped.
+  resume?: boolean;
 };

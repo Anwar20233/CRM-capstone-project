@@ -250,6 +250,11 @@ class Orchestrator:
             message, prior_messages=prior, on_event=on_event
         )
 
+        # The writer interrupted for user approval — propagate without recording
+        # the turn (the conversation hasn't actually advanced yet).
+        if result.get("type") == "interrupt":
+            return result
+
         self._turns.append({"role": "user", "content": user_message})
         self._turns.append({"role": "assistant", "content": result["response"]})
         return result

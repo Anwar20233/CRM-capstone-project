@@ -18,6 +18,7 @@ httpx==0.28.1
 # Tool abstraction for the internal LangGraph agent (agent/crm_tools.py).
 # Range, not an exact pin, so it stays compatible with the agent's langgraph.
 langchain-core>=0.3.0,<0.4.0
+langgraph>=1.0.0
 openai>=1.0,<2.0
 python-dotenv>=1.0,<2.0
 pytest>=8.0

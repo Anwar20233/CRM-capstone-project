@@ -1,36 +1,43 @@
-"""WriterWorker — the CRM Write agent.
+"""WriterWorker — the CRM Write agent backed by a LangGraph StateGraph.
 
-A ``BaseWorker`` specialised with:
+The writer is now a proper LangGraph graph (see ``writer_graph.py``) with a
+``write_gate`` node that calls ``interrupt()`` for tier-3 actions.  The public
+interface is unchanged — callers still ``await writer.run(instruction)`` and
+get back ``{"response": ..., "tool_calls": [...]}`` — but high-risk writes now
+return an interrupt payload instead:
 
-- ``WRITER_SCOPE`` (write + meta only — **no read**).  The writer receives
-  specific write instructions from the orchestrator and executes them.  It
-  does not browse or search — that's the reader's job.
-- A write-focused system prompt.
-- A ``WritePolicy`` embedded as invisible middleware inside ``execute_tool``.
-  The LLM calls ``execute_tool`` normally; the middleware transparently runs
-  tier/duplicate/conflict checks.  Tier 1/2 execute immediately; tier 3
-  returns a ``CONFIRMATION_REQUIRED`` error with a token the user must
-  confirm before the write goes through.
-- A ``resolve_date`` utility tool for converting natural-language dates.
+    {"type": "interrupt", "interrupt": {...}, "thread_id": "<session_id>"}
 
-Usage::
+Callers (``agent_registry._invoke_writer`` → ``delegate_to_agent`` →
+``BaseWorker.run``) propagate this up to the API layer, which pauses the
+response and shows an approval UI to the user.  The user's choice is then sent
+to ``writer.resume(approved)`` which feeds ``Command(resume=...)`` back into the
+graph and lets it continue from the gate node.
 
-    from agent.workers import WriterWorker
-
-    worker = WriterWorker(session_id="session-abc-123")
-    result = await worker.run("Create a person: Sarah Connor at Cyberdyne Systems")
+Session registry
+~~~~~~~~~~~~~~~~
+``WriterWorker`` keeps a class-level ``_sessions`` dict so the ``/agent/resume``
+endpoint can find the right worker by session id without threading the instance
+through the whole call stack.
 """
 
 from __future__ import annotations
 
+from typing import Any
+
+from langchain_core.messages import HumanMessage
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import Command
+
+from agent.crm_tools import build_crm_tools
 from agent.masking import EntityHandleMap
 from agent.stubs.safety_tools import build_utility_tools
 from agent.tool_scope import WRITER_SCOPE
-from agent.workers.base_worker import BaseWorker
-from agent.workers.write_policy import WritePolicy
+from agent.workers.writer_graph import build_writer_graph
 
 
-_WRITER_SYSTEM_PROMPT = """\You are a CRM Write Agent for Twenty CRM. Execute write instructions precisely.
+_WRITER_SYSTEM_PROMPT = """\
+You are a CRM Write Agent for Twenty CRM. Execute write instructions precisely.
 
 ## Tool Discovery Protocol (strict order, optimized)
 
@@ -45,13 +52,11 @@ _WRITER_SYSTEM_PROMPT = """\You are a CRM Write Agent for Twenty CRM. Execute wr
 
 ## Confirmation Flow
 
-High-risk actions (deletions, stage changes including advancing a deal) require user confirmation. Use dedicated high-risk tools (e.g., `delete_person`, `delete_opportunity`, `advance_deal_stage`). If `execute_tool` returns `CONFIRMATION_REQUIRED`:
-1. Present the draft action clearly to the user.
-2. Wait for user confirmation.
-3. Re-call `execute_tool` with the same arguments AND the `confirmation_token` from the error response.
-
-- Never retry without a valid confirmation token.
-- Never bypass confirmation by using a generic update/delete endpoint. Always use the high-risk tool.
+High-risk actions (deletions, terminal stage moves, bulk updates) are intercepted
+automatically before execution and require user approval. You do NOT manage
+confirmation tokens. Simply attempt the action via `execute_tool`; if the user
+approves, execution proceeds transparently. If rejected, you will receive a
+USER_REJECTED error — inform the user calmly and stop.
 
 ## Deal Stage Advancement (critical)
 
@@ -59,11 +64,11 @@ For instructions like "Advance the deal to <STAGE>" or "Move deal to stage <STAG
 - This is NOT a generic update. Use the dedicated `advance_deal_stage` tool.
 - Discover via: `get_tool_catalog(object_name="opportunity", operation="advance_stage")`.
 - Execute: `execute_tool(tool="advance_deal_stage", arguments={deal_id: <id>, stage: "<STAGE>"})`.
-- This tool is high-risk and returns `CONFIRMATION_REQUIRED`. Follow the confirmation flow.
 
 ## Date Handling
 
-For relative dates (e.g., "next Friday", "in 2 weeks"), call `resolve_date` FIRST. Convert to ISO-8601, then proceed with the normal discovery protocol.
+For relative dates (e.g., "next Friday", "in 2 weeks"), call `resolve_date` FIRST.
+Convert to ISO-8601, then proceed with the normal discovery protocol.
 
 ## Scope & Data Rules
 
@@ -76,35 +81,34 @@ For relative dates (e.g., "next Friday", "in 2 weeks"), call `resolve_date` FIRS
 
 **Entity types (`object_name`):** `person`, `company`, `note`, `opportunity`, `calendarEvent`, `dashboard`, `task`, or `"other"` for remaining types.
 
-**Write operations (`operation`):** `create`, `update`, `delete`, `create_many`, `update_many`, `advance_stage` (for moving deals through stages).
-
-**Filtering examples:**
-- Add a person → `get_tool_catalog(object_name="person", operation="create")`
-- Update a company → `get_tool_catalog(object_name="company", operation="update")`
-- Delete a deal → `get_tool_catalog(object_name="opportunity", operation="delete")`
-- Bulk add people → `get_tool_catalog(object_name="person", operation="create_many")`
-- Create a note → `get_tool_catalog(object_name="note", operation="create")`
-- Create a task → `get_tool_catalog(object_name="task", operation="create")`
-- Advance a deal → `get_tool_catalog(object_name="opportunity", operation="advance_stage")` (always use this, yields `advance_deal_stage`)
+**Write operations (`operation`):** `create`, `update`, `delete`, `create_many`, `update_many`, `advance_stage`.
 
 ## Request Interpretation
 
 - List of same-type entities (e.g., "Sarah Kim and Yara Hassan") → `create_many` request.
-- "Advance" or "move" a deal → always use deal stage advancement rule. Never treat as an update.
+- "Advance" or "move" a deal → always use deal stage advancement rule.
 - Always acknowledge the request concisely before beginning tool use.
 """
 
 
-class WriterWorker(BaseWorker):
-    """CRM Write Agent — ``BaseWorker`` with WRITER_SCOPE and WritePolicy.
+# Class-level registry: session_id → WriterWorker instance.
+# Used by the /agent/resume endpoint to find the right worker.
+_sessions: dict[str, "WriterWorker"] = {}
+
+
+class WriterWorker:
+    """CRM Write Agent driven by a LangGraph StateGraph.
 
     Parameters
     ----------
     session_id:
-        A unique session identifier for duplicate detection and write logging.
-        Should come from the authenticated session context (never from the LLM).
+        Unique session identifier — also the LangGraph thread_id so the
+        checkpointer can restore state between turns and after an interrupt.
     model:
         Optional model alias or OpenRouter slug overriding the env default.
+    pii_map:
+        Shared ``EntityHandleMap`` (passed by the orchestrator so PII tokens
+        stay consistent across reader/writer in the same session).
     """
 
     def __init__(
@@ -114,14 +118,98 @@ class WriterWorker(BaseWorker):
         *,
         pii_map: EntityHandleMap | None = None,
     ) -> None:
-        policy = WritePolicy(session_id=session_id)
+        self.session_id = session_id
+        self.model = model
+        self.pii_map = pii_map
 
-        super().__init__(
-            scope=WRITER_SCOPE,
+        self._checkpointer = MemorySaver()
+        self._graph = build_writer_graph(
             system_prompt=_WRITER_SYSTEM_PROMPT,
-            session_id=session_id,
-            write_policy=policy,
-            extra_tools=build_utility_tools(),
             model=model,
-            pii_map=pii_map,
+            checkpointer=self._checkpointer,
         )
+        self._config = {"configurable": {"thread_id": session_id}}
+
+        # Pre-compute tool name list so chat.py's preflight() can display it.
+        _tools = build_crm_tools(WRITER_SCOPE, write_policy=None) + build_utility_tools()
+        self._tool_names: list[str] = sorted(t.name for t in _tools)
+
+        # Register for resume lookups.
+        _sessions[session_id] = self
+
+    @property
+    def tool_names(self) -> list[str]:
+        return self._tool_names
+
+    # ------------------------------------------------------------------
+    # Public interface (same shape as BaseWorker.run)
+    # ------------------------------------------------------------------
+
+    async def run(
+        self,
+        user_message: str,
+        *,
+        on_event: Any = None,  # accepted for interface parity; graph emits no events yet
+        **_: Any,
+    ) -> dict[str, Any]:
+        """Run one instruction through the writer graph.
+
+        Returns either a normal response dict::
+
+            {"response": str, "tool_calls": [...]}
+
+        or an interrupt payload when a tier-3 action needs approval::
+
+            {"type": "interrupt", "interrupt": {...}, "thread_id": str}
+        """
+        await self._graph.ainvoke(
+            {"messages": [HumanMessage(content=user_message)]},
+            config=self._config,
+        )
+        return self._extract_result()
+
+    async def resume(self, approved: bool) -> dict[str, Any]:
+        """Resume after the user approves or rejects a write action.
+
+        Feeds ``Command(resume=approved)`` into the graph, which re-enters the
+        ``write_gate`` node.  Returns the same shape as ``run()``.
+        """
+        await self._graph.ainvoke(
+            Command(resume=approved),
+            config=self._config,
+        )
+        return self._extract_result()
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    def _extract_result(self) -> dict[str, Any]:
+        """Read the current graph state and build the caller-facing result."""
+        state = self._graph.get_state(self._config)
+
+        # Graph paused at an interrupt — return the approval request.
+        if state.next:
+            interrupts = state.tasks[0].interrupts if state.tasks else []
+            interrupt_data = interrupts[0].value if interrupts else {}
+            return {
+                "type": "interrupt",
+                "interrupt": interrupt_data,
+                "thread_id": self.session_id,
+            }
+
+        # Graph finished — extract the last AIMessage as the response.
+        messages = state.values.get("messages", [])
+        response = ""
+        for msg in reversed(messages):
+            from langchain_core.messages import AIMessage
+            if isinstance(msg, AIMessage) and not msg.tool_calls:
+                response = msg.content or ""
+                break
+
+        return {"response": response, "tool_calls": [], "type": "response"}
+
+    @classmethod
+    def get_session(cls, session_id: str) -> "WriterWorker | None":
+        """Return the WriterWorker for an existing session, or None."""
+        return _sessions.get(session_id)
