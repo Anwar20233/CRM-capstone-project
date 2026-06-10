@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from pipelines import load_models, models_loaded
-from routers import bridge, ner
+from routers import agent, bridge, ner
 
 
 @asynccontextmanager
@@ -24,6 +24,7 @@ app = FastAPI(title="twenty-ai-service", lifespan=lifespan)
 
 app.include_router(ner.router)
 app.include_router(bridge.router)
+app.include_router(agent.router)
 
 
 @app.get("/health")

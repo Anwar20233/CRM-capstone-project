@@ -2,6 +2,7 @@ import { type LogLevel, Logger } from '@nestjs/common';
 
 import { plainToClass } from 'class-transformer';
 import {
+  IsBoolean,
   IsDefined,
   IsOptional,
   IsUrl,
@@ -1108,6 +1109,19 @@ export class ConfigVariables {
   @IsUrl({ require_tld: false, require_protocol: true })
   @IsOptional()
   AI_SERVICE_URL = 'http://127.0.0.1:8001';
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.SERVER_CONFIG,
+    description:
+      'Route the agent chat through the external Python orchestrator ' +
+      '(twenty-ai-service /agent/chat + /agent/resume) instead of the ' +
+      "built-in Node agent. Enables the orchestrator's human-in-the-loop " +
+      'write-approval flow.',
+    type: ConfigVariableType.BOOLEAN,
+  })
+  @IsBoolean()
+  @IsOptional()
+  AI_AGENT_USE_EXTERNAL_ORCHESTRATOR = false;
 
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.SERVER_CONFIG,

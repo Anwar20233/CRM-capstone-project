@@ -10,6 +10,7 @@ import { AGENT_CHAT_INSTANCE_ID } from '@/ai/constants/AgentChatInstanceId';
 import { AGENT_CHAT_RESTORE_EDITOR_CONTENT_EVENT_NAME } from '@/ai/constants/AgentChatRestoreEditorContentEventName';
 import { AGENT_CHAT_SEND_MESSAGE_EVENT_NAME } from '@/ai/constants/AgentChatSendMessageEventName';
 import { AGENT_CHAT_STOP_EVENT_NAME } from '@/ai/constants/AgentChatStopEventName';
+import { SEND_CHAT_MESSAGE } from '@/ai/graphql/mutations/sendChatMessage';
 import { STOP_AGENT_CHAT_STREAM } from '@/ai/graphql/mutations/stopAgentChatStream';
 import { useOptimisticallyUnarchiveOnSend } from '@/ai/hooks/useOptimisticallyUnarchiveOnSend';
 import {
@@ -173,6 +174,26 @@ export const useAgentChat = (
             : message,
         ),
       );
+
+      // Send the raw message to the agent. The server proxies it to the
+      // external orchestrator (which does its own masking) and streams the
+      // reply back over the agent-chat subscription. Entity spans above are
+      // only for inline highlighting of the user's own message.
+      const fileIds = agentChatUploadedFiles
+        .map((file) => ('fileId' in file ? file.fileId : undefined))
+        .filter(isDefined);
+
+      await apolloClient.mutate({
+        mutation: SEND_CHAT_MESSAGE,
+        variables: {
+          threadId,
+          text: contentToSend,
+          messageId,
+          browsingContext: null,
+          modelId: undefined,
+          fileIds: fileIds.length > 0 ? fileIds : undefined,
+        },
+      });
 
       setPendingThreadIdAfterFirstSend((pendingId) => {
         if (isDefined(pendingId)) {
