@@ -1,13 +1,16 @@
 import { Logger, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { createUIMessageStream } from 'ai';
+import { createUIMessageStream, generateId } from 'ai';
 import type {
   CodeExecutionData,
   ExtendedUIMessage,
   ExtendedUIMessagePart,
 } from 'twenty-shared/ai';
 import { Repository } from 'typeorm';
+
+import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
+import { AgentOrchestratorClientService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-orchestrator-client.service';
 
 import { Process } from 'src/engine/core-modules/message-queue/decorators/process.decorator';
 import { Processor } from 'src/engine/core-modules/message-queue/decorators/processor.decorator';
@@ -46,6 +49,8 @@ export class StreamAgentChatJob {
     private readonly eventPublisherService: AgentChatEventPublisherService,
     private readonly cancelSubscriberService: AgentChatCancelSubscriberService,
     private readonly agentChatStreamingService: AgentChatStreamingService,
+    private readonly agentOrchestratorClientService: AgentOrchestratorClientService,
+    private readonly twentyConfigService: TwentyConfigService,
   ) {}
 
   @Process(STREAM_AGENT_CHAT_JOB_NAME)
@@ -160,12 +165,143 @@ export class StreamAgentChatJob {
           })
           .catch(() => null);
 
+    // Route through the external Python orchestrator (with its human-in-the-loop
+    // write-approval flow) when enabled; otherwise use the built-in Node agent.
+    if (this.twentyConfigService.get('AI_AGENT_USE_EXTERNAL_ORCHESTRATOR')) {
+      await this.buildAndPublishExternalAgentStream({
+        data,
+        userMessagePromise,
+        titlePromise,
+        abortSignal,
+      });
+
+      return;
+    }
+
     await this.buildAndPublishStream({
       workspace,
       data,
       userMessagePromise,
       titlePromise,
       abortSignal,
+    });
+  }
+
+  // Drives the UI stream from the external Python orchestrator instead of the
+  // AI SDK streamText loop. Emits a single assistant message containing either
+  // a text part (normal answer) or a `data-write-confirmation` part (a tier-3
+  // write paused for the user's approval — see write_gate.py). The approval
+  // card on the client resumes the flow via the resumeAgentChatStream mutation.
+  private async buildAndPublishExternalAgentStream({
+    data,
+    userMessagePromise,
+    titlePromise,
+    abortSignal,
+  }: {
+    data: StreamAgentChatJobData;
+    userMessagePromise: Promise<{ turnId: string | null }>;
+    titlePromise: Promise<string | null>;
+    abortSignal: AbortSignal;
+  }): Promise<void> {
+    const result =
+      data.resume !== undefined
+        ? await this.agentOrchestratorClientService.resume(
+            data.threadId,
+            data.resume,
+          )
+        : await this.agentOrchestratorClientService.chat(
+            data.threadId,
+            data.lastUserMessageText,
+          );
+
+    if (abortSignal.aborted) {
+      return;
+    }
+
+    // Build the assistant message parts the client will render and we persist.
+    const assistantParts: ExtendedUIMessagePart[] =
+      result.type === 'interrupt'
+        ? [
+            {
+              type: 'data-write-confirmation',
+              id: `write-confirmation-${generateId()}`,
+              data: {
+                threadId: data.threadId,
+                action: result.interrupt.action,
+                args: result.interrupt.args,
+                summary: result.interrupt.summary,
+                status: 'pending',
+              },
+            } as ExtendedUIMessagePart,
+          ]
+        : [{ type: 'text', text: result.response }];
+
+    const uiStream = createUIMessageStream<ExtendedUIMessage>({
+      execute: async ({ writer }) => {
+        const generatedTitle = await titlePromise.catch(() => null);
+
+        if (generatedTitle) {
+          writer.write({
+            type: 'data-thread-title' as const,
+            id: `thread-title-${data.threadId}`,
+            data: { title: generatedTitle },
+          });
+        }
+
+        for (const part of assistantParts) {
+          if (part.type === 'text') {
+            const textId = `text-${generateId()}`;
+
+            writer.write({ type: 'text-start', id: textId });
+            writer.write({
+              type: 'text-delta',
+              id: textId,
+              delta: part.text,
+            });
+            writer.write({ type: 'text-end', id: textId });
+          } else {
+            // Custom data-* parts pass through to the client unchanged.
+            writer.write(part as never);
+          }
+        }
+      },
+    });
+
+    for await (const chunk of uiStream) {
+      await this.eventPublisherService.publish({
+        threadId: data.threadId,
+        workspaceId: data.workspaceId,
+        event: {
+          type: 'stream-chunk',
+          chunk: chunk as Record<string, unknown>,
+        },
+      });
+    }
+
+    // Persist the assistant turn so reopening the thread shows it.
+    const threadStatus = await this.threadRepository.findOne({
+      where: { id: data.threadId },
+      select: ['id', 'deletedAt'],
+    });
+
+    if (threadStatus && !threadStatus.deletedAt) {
+      const userMessage = await userMessagePromise;
+
+      await this.agentChatService.addMessage({
+        threadId: data.threadId,
+        uiMessage: {
+          role: AgentMessageRole.ASSISTANT,
+          parts: assistantParts,
+        },
+        turnId: userMessage.turnId ?? undefined,
+        workspaceId: data.workspaceId,
+      });
+    }
+
+    await this.eventPublisherService.publish({
+      threadId: data.threadId,
+      workspaceId: data.workspaceId,
+      event: { type: 'message-persisted', messageId: data.threadId },
     });
   }
 

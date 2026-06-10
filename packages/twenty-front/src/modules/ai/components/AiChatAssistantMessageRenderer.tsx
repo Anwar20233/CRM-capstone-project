@@ -6,6 +6,7 @@ import { IconDotsVertical } from 'twenty-ui/display';
 
 import { LazyMarkdownRenderer } from '@/ai/components/LazyMarkdownRenderer';
 import { ToolStepRenderer } from '@/ai/components/ToolStepRenderer';
+import { WriteApprovalCard } from '@/ai/components/WriteApprovalCard';
 import { groupContiguousThinkingStepParts } from '@/ai/utils/groupContiguousThinkingStepParts';
 import { isCodeInterpreterToolPart } from '@/ai/utils/isCodeInterpreterToolPart';
 import { styled } from '@linaria/react';
@@ -61,6 +62,8 @@ const MessagePartRenderer = ({
       return <RoutingStatusDisplay data={part.data} />;
     case 'data-compaction':
       return <AiChatCompactionIndicator />;
+    case 'data-write-confirmation':
+      return <WriteApprovalCard data={part.data} />;
     case 'data-code-execution':
       return (
         <CodeExecutionDisplay
