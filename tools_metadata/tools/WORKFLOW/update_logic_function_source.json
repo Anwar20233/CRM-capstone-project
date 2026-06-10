@@ -1,0 +1,25 @@
+{
+  "name": "update_logic_function_source",
+  "description": "Update the TypeScript source code of a logic function used in a workflow code step.\n\nUse this tool to modify the actual code that runs when a CODE step executes.\n\nThe code must:\n- Export a 'main' function as the entry point\n- Use TypeScript syntax\n- Return an object with the result\n- Use native APIs only (fetch, etc.) - external packages cannot be imported\n\nExample code using fetch for HTTP requests:\n```typescript\nexport const main = async (params: { url: string }) => {\n  const response = await fetch(params.url);\n  const data = await response.json();\n  return { data };\n};\n```\n\nTo find the logicFunctionId, look at the code step's settings.input.logicFunctionId field.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "logicFunctionId": {
+        "description": "The ID of the logic function to update (from the code step settings.input.logicFunctionId)",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "code": {
+        "description": "The TypeScript source code for the logic function. Must export a main function.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "logicFunctionId",
+      "code"
+    ],
+    "additionalProperties": false
+  }
+}

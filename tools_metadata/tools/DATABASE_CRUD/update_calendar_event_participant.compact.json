@@ -1,0 +1,66 @@
+{
+  "name": "update_calendar_event_participant",
+  "description": "Update an existing Calendar event participant record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "handle": {
+        "description": "Handle",
+        "type": "string"
+      },
+      "displayName": {
+        "description": "Display Name",
+        "type": "string"
+      },
+      "isOrganizer": {
+        "description": "Is Organizer",
+        "type": "boolean"
+      },
+      "responseStatus": {
+        "description": "Response Status",
+        "type": "string",
+        "enum": [
+          "NEEDS_ACTION",
+          "DECLINED",
+          "TENTATIVE",
+          "ACCEPTED"
+        ]
+      },
+      "calendarEventId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "personId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "workspaceMemberId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "update_dashboard",
+  "description": "Update an existing Dashboard record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "title": {
+        "description": "Dashboard title",
+        "type": "string"
+      },
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "pageLayoutId": {
+        "description": "Dashboard page layout",
+        "type": "string",
+        "format": "uuid"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

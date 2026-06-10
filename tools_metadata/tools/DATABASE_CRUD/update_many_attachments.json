@@ -1,0 +1,434 @@
+{
+  "name": "update_many_attachments",
+  "description": "Update multiple Attachments records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Attachment name",
+            "type": "string"
+          },
+          "file": {
+            "description": "Attachment file",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fileId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fileId",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "fullPath": {
+            "description": "Attachment full path",
+            "type": "string"
+          },
+          "fileCategory": {
+            "description": "Attachment file category",
+            "type": "string",
+            "enum": [
+              "ARCHIVE",
+              "AUDIO",
+              "IMAGE",
+              "PRESENTATION",
+              "SPREADSHEET",
+              "TEXT_DOCUMENT",
+              "VIDEO",
+              "OTHER"
+            ]
+          },
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "targetTask": {
+            "description": "Attachment target",
+            "type": "string"
+          },
+          "targetNote": {
+            "description": "Attachment target",
+            "type": "string"
+          },
+          "targetPerson": {
+            "description": "Attachment target",
+            "type": "string"
+          },
+          "targetCompany": {
+            "description": "Attachment target",
+            "type": "string"
+          },
+          "targetOpportunity": {
+            "description": "Attachment target",
+            "type": "string"
+          },
+          "targetDashboard": {
+            "description": "Attachment target",
+            "type": "string"
+          },
+          "targetWorkflow": {
+            "description": "Attachment target",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Filter by name (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "file": {
+            "description": "Filter by file (raw JSON field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Raw JSON equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Raw JSON not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Raw JSON case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Raw JSON case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetTask": {
+            "description": "Filter by targetTask (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetNote": {
+            "description": "Filter by targetNote (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetPerson": {
+            "description": "Filter by targetPerson (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetCompany": {
+            "description": "Filter by targetCompany (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetOpportunity": {
+            "description": "Filter by targetOpportunity (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetDashboard": {
+            "description": "Filter by targetDashboard (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetWorkflow": {
+            "description": "Filter by targetWorkflow (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

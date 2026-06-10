@@ -1,0 +1,44 @@
+{
+  "name": "create_note",
+  "description": "Create a new Note record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "title": {
+        "description": "Note title",
+        "type": "string"
+      },
+      "bodyV2": {
+        "description": "Note body",
+        "type": "object",
+        "properties": {
+          "markdown": {
+            "type": "string"
+          },
+          "blocknote": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "required": [
+      "position"
+    ]
+  }
+}

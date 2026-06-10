@@ -1,0 +1,440 @@
+{
+  "name": "update_many_companies",
+  "description": "Update multiple Companies records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "The company name",
+            "type": "string"
+          },
+          "domainName": {
+            "description": "The company website URL. We use this url to fetch the company icon",
+            "$ref": "#/$defs/_f2"
+          },
+          "address": {
+            "description": "Address of the company",
+            "type": "object",
+            "properties": {
+              "addressStreet1": {
+                "type": "string"
+              },
+              "addressStreet2": {
+                "type": "string"
+              },
+              "addressCity": {
+                "type": "string"
+              },
+              "addressPostcode": {
+                "type": "string"
+              },
+              "addressState": {
+                "type": "string"
+              },
+              "addressCountry": {
+                "type": "string"
+              },
+              "addressLat": {
+                "type": "number"
+              },
+              "addressLng": {
+                "type": "number"
+              }
+            }
+          },
+          "employees": {
+            "description": "Number of employees in the company",
+            "type": "integer"
+          },
+          "linkedinLink": {
+            "description": "The company Linkedin account",
+            "$ref": "#/$defs/_f2"
+          },
+          "xLink": {
+            "description": "The company Twitter/X account",
+            "$ref": "#/$defs/_f2"
+          },
+          "annualRecurringRevenue": {
+            "description": "Annual Recurring Revenue: The actual or estimated annual revenue of the company",
+            "type": "object",
+            "properties": {
+              "amountMicros": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              }
+            }
+          },
+          "idealCustomerProfile": {
+            "description": "Ideal Customer Profile: Indicates whether the company is the most suitable and valuable customer for you",
+            "type": "boolean"
+          },
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "accountOwnerId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string"
+              },
+              "neq": {
+                "type": "string"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "type": "string"
+              },
+              "ilike": {
+                "type": "string"
+              },
+              "startsWith": {
+                "type": "string"
+              },
+              "endsWith": {
+                "type": "string"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "domainName": {
+            "$ref": "#/$defs/_f6"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "addressStreet1": {
+                "description": "Filter by street 1",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "string"
+                  },
+                  "neq": {
+                    "type": "string"
+                  },
+                  "like": {
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "type": "string"
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              },
+              "addressCity": {
+                "description": "Filter by city",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "string"
+                  },
+                  "neq": {
+                    "type": "string"
+                  },
+                  "like": {
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "type": "string"
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              },
+              "addressCountry": {
+                "description": "Filter by country",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "string"
+                  },
+                  "neq": {
+                    "type": "string"
+                  },
+                  "like": {
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "type": "string"
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "employees": {
+            "$ref": "#/$defs/_f9"
+          },
+          "linkedinLink": {
+            "$ref": "#/$defs/_f6"
+          },
+          "xLink": {
+            "$ref": "#/$defs/_f6"
+          },
+          "annualRecurringRevenue": {
+            "type": "object",
+            "properties": {
+              "amountMicros": {
+                "description": "Filter by amount",
+                "$ref": "#/$defs/_f9"
+              },
+              "currencyCode": {
+                "description": "Filter by currency code",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "string"
+                  },
+                  "neq": {
+                    "type": "string"
+                  },
+                  "in": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "idealCustomerProfile": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "accountOwnerId": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "neq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f2": {
+        "type": "object",
+        "properties": {
+          "primaryLinkLabel": {
+            "type": "string"
+          },
+          "primaryLinkUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "secondaryLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "label"
+              ]
+            }
+          }
+        }
+      },
+      "_f6": {
+        "type": "object",
+        "properties": {
+          "primaryLinkUrl": {
+            "description": "Filter by primary link URL",
+            "$ref": "#/$defs/_f7"
+          }
+        }
+      },
+      "_f7": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "uri"
+          },
+          "neq": {
+            "type": "string",
+            "format": "uri"
+          },
+          "like": {
+            "type": "string"
+          },
+          "ilike": {
+            "type": "string"
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      },
+      "_f9": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "number"
+          },
+          "neq": {
+            "type": "number"
+          },
+          "gt": {
+            "type": "number"
+          },
+          "gte": {
+            "type": "number"
+          },
+          "lt": {
+            "type": "number"
+          },
+          "lte": {
+            "type": "number"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "name": "delete_workflow_version_edge",
+  "description": "Delete a connection (edge) between workflow steps.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "source": {
+        "description": "The source step: \"trigger\" or a step UUID",
+        "anyOf": [
+          {
+            "type": "string",
+            "const": "trigger"
+          },
+          {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        ]
+      },
+      "target": {
+        "description": "The UUID of the target step",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "sourceConnectionOptions": {
+        "description": "Optional connection options for iterator steps",
+        "type": "object",
+        "properties": {
+          "connectedStepType": {
+            "type": "string",
+            "const": "ITERATOR"
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "isConnectedToLoop": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isConnectedToLoop"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "connectedStepType",
+          "settings"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "workflowVersionId",
+      "source",
+      "target"
+    ],
+    "additionalProperties": false
+  }
+}

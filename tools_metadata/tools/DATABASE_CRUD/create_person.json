@@ -1,0 +1,192 @@
+{
+  "name": "create_person",
+  "description": "Create a new Person record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "Contact's name",
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "emails": {
+        "description": "Contact's Emails",
+        "type": "object",
+        "properties": {
+          "primaryEmail": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "additionalEmails": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "linkedinLink": {
+        "description": "Contact's Linkedin account",
+        "type": "object",
+        "properties": {
+          "primaryLinkLabel": {
+            "type": "string"
+          },
+          "primaryLinkUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "secondaryLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "xLink": {
+        "description": "Contact's X/Twitter account",
+        "type": "object",
+        "properties": {
+          "primaryLinkLabel": {
+            "type": "string"
+          },
+          "primaryLinkUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "secondaryLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "jobTitle": {
+        "description": "Contact's job title",
+        "type": "string"
+      },
+      "phones": {
+        "description": "Contact's phone numbers",
+        "type": "object",
+        "properties": {
+          "primaryPhoneNumber": {
+            "type": "string"
+          },
+          "primaryPhoneCountryCode": {
+            "type": "string"
+          },
+          "primaryPhoneCallingCode": {
+            "type": "string"
+          },
+          "additionalPhones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "city": {
+        "description": "Contact's city",
+        "type": "string"
+      },
+      "avatarUrl": {
+        "description": "Contact's avatar",
+        "type": "string"
+      },
+      "avatarFile": {
+        "description": "Contact's avatar file",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileId",
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "companyId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+      }
+    },
+    "required": [
+      "position"
+    ],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,335 @@
+{
+  "name": "update_many_opportunities",
+  "description": "Update multiple Opportunities records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "The opportunity name",
+            "type": "string"
+          },
+          "amount": {
+            "description": "Opportunity amount",
+            "type": "object",
+            "properties": {
+              "amountMicros": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              }
+            }
+          },
+          "closeDate": {
+            "description": "Opportunity close date",
+            "type": "string",
+            "format": "date-time"
+          },
+          "stage": {
+            "description": "Opportunity stage",
+            "type": "string",
+            "enum": [
+              "NEW",
+              "SCREENING",
+              "MEETING",
+              "PROPOSAL",
+              "CUSTOMER"
+            ]
+          },
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "companyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "pointOfContactId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string"
+              },
+              "neq": {
+                "type": "string"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "type": "string"
+              },
+              "ilike": {
+                "type": "string"
+              },
+              "startsWith": {
+                "type": "string"
+              },
+              "endsWith": {
+                "type": "string"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "amount": {
+            "type": "object",
+            "properties": {
+              "amountMicros": {
+                "description": "Filter by amount",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "number"
+                  },
+                  "neq": {
+                    "type": "number"
+                  },
+                  "gt": {
+                    "type": "number"
+                  },
+                  "gte": {
+                    "type": "number"
+                  },
+                  "lt": {
+                    "type": "number"
+                  },
+                  "lte": {
+                    "type": "number"
+                  },
+                  "in": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              },
+              "currencyCode": {
+                "description": "Filter by currency code",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "string"
+                  },
+                  "neq": {
+                    "type": "string"
+                  },
+                  "in": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "closeDate": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "neq": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "gt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "gte": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "lt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "lte": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "stage": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "NEW",
+                  "SCREENING",
+                  "MEETING",
+                  "PROPOSAL",
+                  "CUSTOMER"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "NEW",
+                  "SCREENING",
+                  "MEETING",
+                  "PROPOSAL",
+                  "CUSTOMER"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NEW",
+                    "SCREENING",
+                    "MEETING",
+                    "PROPOSAL",
+                    "CUSTOMER"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "companyId": {
+            "$ref": "#/$defs/_f8"
+          },
+          "pointOfContactId": {
+            "$ref": "#/$defs/_f8"
+          },
+          "ownerId": {
+            "$ref": "#/$defs/_f8"
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f8": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "neq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

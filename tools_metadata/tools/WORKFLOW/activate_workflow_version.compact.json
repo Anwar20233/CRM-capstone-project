@@ -1,0 +1,17 @@
+{
+  "name": "activate_workflow_version",
+  "description": "Activate a workflow version. This makes the workflow version active and available for execution.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version to activate",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "workflowVersionId"
+    ]
+  }
+}

@@ -1,0 +1,777 @@
+{
+  "name": "group_by_messages",
+  "description": "Group Messages records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "groupBy": {
+        "description": "Fields to group by (max 2). Each entry must be an object with exactly one field key. Examples: {\"status\": true}, {\"companyId\": true}, {\"createdAt\": {\"granularity\": \"MONTH\", \"timeZone\": \"UTC\"}}. Available: createdAt (date), updatedAt (date), headerMessageId, subject, text, receivedAt (date), messageThreadId.",
+        "minItems": 1,
+        "maxItems": 2,
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "createdAt": {
+                  "description": "Date field grouping configuration",
+                  "type": "object",
+                  "properties": {
+                    "granularity": {
+                      "description": "Date grouping granularity. Default: MONTH.",
+                      "default": "MONTH",
+                      "type": "string",
+                      "enum": [
+                        "DAY",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "WEEK",
+                        "DAY_OF_THE_WEEK",
+                        "MONTH_OF_THE_YEAR",
+                        "QUARTER_OF_THE_YEAR"
+                      ]
+                    },
+                    "weekStartDay": {
+                      "description": "First day of week (MONDAY, SUNDAY, SATURDAY). Only used when granularity is WEEK.",
+                      "type": "string",
+                      "enum": [
+                        "MONDAY",
+                        "SUNDAY",
+                        "SATURDAY"
+                      ]
+                    },
+                    "timeZone": {
+                      "description": "IANA timezone for date groupings (e.g. \"America/New_York\"). Default: UTC.",
+                      "default": "UTC",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "granularity",
+                    "timeZone"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "createdAt"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "updatedAt": {
+                  "description": "Date field grouping configuration",
+                  "type": "object",
+                  "properties": {
+                    "granularity": {
+                      "description": "Date grouping granularity. Default: MONTH.",
+                      "default": "MONTH",
+                      "type": "string",
+                      "enum": [
+                        "DAY",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "WEEK",
+                        "DAY_OF_THE_WEEK",
+                        "MONTH_OF_THE_YEAR",
+                        "QUARTER_OF_THE_YEAR"
+                      ]
+                    },
+                    "weekStartDay": {
+                      "description": "First day of week (MONDAY, SUNDAY, SATURDAY). Only used when granularity is WEEK.",
+                      "type": "string",
+                      "enum": [
+                        "MONDAY",
+                        "SUNDAY",
+                        "SATURDAY"
+                      ]
+                    },
+                    "timeZone": {
+                      "description": "IANA timezone for date groupings (e.g. \"America/New_York\"). Default: UTC.",
+                      "default": "UTC",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "granularity",
+                    "timeZone"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "headerMessageId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "headerMessageId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "subject": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "subject"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "text"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "receivedAt": {
+                  "description": "Date field grouping configuration",
+                  "type": "object",
+                  "properties": {
+                    "granularity": {
+                      "description": "Date grouping granularity. Default: MONTH.",
+                      "default": "MONTH",
+                      "type": "string",
+                      "enum": [
+                        "DAY",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "WEEK",
+                        "DAY_OF_THE_WEEK",
+                        "MONTH_OF_THE_YEAR",
+                        "QUARTER_OF_THE_YEAR"
+                      ]
+                    },
+                    "weekStartDay": {
+                      "description": "First day of week (MONDAY, SUNDAY, SATURDAY). Only used when granularity is WEEK.",
+                      "type": "string",
+                      "enum": [
+                        "MONDAY",
+                        "SUNDAY",
+                        "SATURDAY"
+                      ]
+                    },
+                    "timeZone": {
+                      "description": "IANA timezone for date groupings (e.g. \"America/New_York\"). Default: UTC.",
+                      "default": "UTC",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "granularity",
+                    "timeZone"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "receivedAt"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "messageThreadId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "messageThreadId"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "aggregateOperation": {
+        "description": "Aggregate operation to apply per group. Default: COUNT. Any operation other than COUNT requires aggregateFieldName.",
+        "default": "COUNT",
+        "type": "string",
+        "enum": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "SUM",
+          "COUNT",
+          "COUNT_UNIQUE_VALUES",
+          "COUNT_EMPTY",
+          "COUNT_NOT_EMPTY",
+          "COUNT_TRUE",
+          "COUNT_FALSE",
+          "PERCENTAGE_EMPTY",
+          "PERCENTAGE_NOT_EMPTY"
+        ]
+      },
+      "aggregateFieldName": {
+        "description": "Field to aggregate. Required for any operation other than COUNT. Available fields: id, createdAt, updatedAt, deletedAt, createdBy, updatedBy, position, searchVector, headerMessageId, subject, text, receivedAt.",
+        "type": "string"
+      },
+      "limit": {
+        "description": "Maximum number of groups to return (default: 50, max: 100).",
+        "default": 50,
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 100
+      },
+      "orderBy": {
+        "description": "Order groups by aggregate value. DESC (default) gives \"top N\" behavior.",
+        "default": "DESC",
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      },
+      "headerMessageId": {
+        "description": "Filter by headerMessageId (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "subject": {
+        "description": "Filter by subject (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "text": {
+        "description": "Filter by text (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "receivedAt": {
+        "description": "Filter by receivedAt (date field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals (ISO datetime string)",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "neq": {
+            "description": "Not equals (ISO datetime string)",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "gt": {
+            "description": "Greater than (ISO datetime string)",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "gte": {
+            "description": "Greater than or equal (ISO datetime string)",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "lt": {
+            "description": "Less than (ISO datetime string)",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "lte": {
+            "description": "Less than or equal (ISO datetime string)",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "in": {
+            "description": "In array of values (ISO datetime strings)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "messageThreadId": {
+        "description": "Filter by messageThreadId (relation field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Related record ID equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "neq": {
+            "description": "Related record ID not equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "in": {
+            "description": "Related record ID in array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "or": {
+        "description": "OR condition - matches if ANY of the filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "and": {
+        "description": "AND condition - matches if ALL filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "not": {
+        "description": "NOT condition - matches if the filter does NOT match",
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "required": [
+      "groupBy",
+      "aggregateOperation",
+      "limit",
+      "orderBy"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "headerMessageId": {
+            "description": "Filter by headerMessageId (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "subject": {
+            "description": "Filter by subject (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "text": {
+            "description": "Filter by text (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "receivedAt": {
+            "description": "Filter by receivedAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "messageThreadId": {
+            "description": "Filter by messageThreadId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

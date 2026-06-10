@@ -1,0 +1,83 @@
+{
+  "name": "create_many_message_folders",
+  "description": "Create multiple Message Folders records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "records": {
+        "description": "Array of records to create. Each record should contain the required fields. Maximum 20 records per call.",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "first"
+                },
+                {
+                  "type": "string",
+                  "const": "last"
+                }
+              ]
+            },
+            "name": {
+              "description": "Folder name",
+              "type": "string"
+            },
+            "syncCursor": {
+              "description": "Sync Cursor",
+              "type": "string"
+            },
+            "isSentFolder": {
+              "description": "Is Sent Folder",
+              "type": "boolean"
+            },
+            "isSynced": {
+              "description": "Is Synced",
+              "type": "boolean"
+            },
+            "parentFolderId": {
+              "description": "Parent Folder ID",
+              "type": "string"
+            },
+            "externalId": {
+              "description": "External ID",
+              "type": "string"
+            },
+            "pendingSyncAction": {
+              "description": "Pending action for folder sync",
+              "type": "string",
+              "enum": [
+                "FOLDER_DELETION",
+                "NONE"
+              ]
+            },
+            "messageChannelId": {
+              "description": "Message Channel",
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "position",
+            "isSentFolder",
+            "isSynced",
+            "pendingSyncAction",
+            "messageChannelId"
+          ]
+        }
+      }
+    },
+    "required": [
+      "records"
+    ]
+  }
+}

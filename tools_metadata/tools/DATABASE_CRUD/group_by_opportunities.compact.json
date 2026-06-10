@@ -1,0 +1,492 @@
+{
+  "name": "group_by_opportunities",
+  "description": "Group Opportunities records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+  "inputSchema": {
+    "type": "object",
+    "required": [
+      "groupBy",
+      "aggregateOperation",
+      "limit",
+      "orderBy"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string"
+              },
+              "neq": {
+                "type": "string"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "type": "string"
+              },
+              "ilike": {
+                "type": "string"
+              },
+              "startsWith": {
+                "type": "string"
+              },
+              "endsWith": {
+                "type": "string"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "amount": {
+            "type": "object",
+            "properties": {
+              "amountMicros": {
+                "description": "Filter by amount",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "number"
+                  },
+                  "neq": {
+                    "type": "number"
+                  },
+                  "gt": {
+                    "type": "number"
+                  },
+                  "gte": {
+                    "type": "number"
+                  },
+                  "lt": {
+                    "type": "number"
+                  },
+                  "lte": {
+                    "type": "number"
+                  },
+                  "in": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              },
+              "currencyCode": {
+                "description": "Filter by currency code",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "type": "string"
+                  },
+                  "neq": {
+                    "type": "string"
+                  },
+                  "in": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "is": {
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "closeDate": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "neq": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "gt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "gte": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "lt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "lte": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "stage": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "NEW",
+                  "SCREENING",
+                  "MEETING",
+                  "PROPOSAL",
+                  "CUSTOMER"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "NEW",
+                  "SCREENING",
+                  "MEETING",
+                  "PROPOSAL",
+                  "CUSTOMER"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NEW",
+                    "SCREENING",
+                    "MEETING",
+                    "PROPOSAL",
+                    "CUSTOMER"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "companyId": {
+            "$ref": "#/$defs/_f7"
+          },
+          "pointOfContactId": {
+            "$ref": "#/$defs/_f7"
+          },
+          "ownerId": {
+            "$ref": "#/$defs/_f7"
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f7": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "neq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      },
+      "_f11": {
+        "type": "object",
+        "properties": {
+          "granularity": {
+            "description": "Date grouping granularity. Default: MONTH.",
+            "default": "MONTH",
+            "type": "string",
+            "enum": [
+              "DAY",
+              "MONTH",
+              "QUARTER",
+              "YEAR",
+              "WEEK",
+              "DAY_OF_THE_WEEK",
+              "MONTH_OF_THE_YEAR",
+              "QUARTER_OF_THE_YEAR"
+            ]
+          },
+          "weekStartDay": {
+            "description": "First day of week (MONDAY, SUNDAY, SATURDAY). Only used when granularity is WEEK.",
+            "type": "string",
+            "enum": [
+              "MONDAY",
+              "SUNDAY",
+              "SATURDAY"
+            ]
+          },
+          "timeZone": {
+            "description": "IANA timezone for date groupings (e.g. \"America/New_York\"). Default: UTC.",
+            "default": "UTC",
+            "type": "string"
+          }
+        },
+        "required": [
+          "granularity",
+          "timeZone"
+        ]
+      }
+    },
+    "properties": {
+      "groupBy": {
+        "description": "Fields to group by (max 2). Each entry must be an object with exactly one field key. Examples: {\"status\": true}, {\"companyId\": true}, {\"createdAt\": {\"granularity\": \"MONTH\", \"timeZone\": \"UTC\"}}. Available: createdAt (date), updatedAt (date), name, amount.amountMicros, amount.currencyCode, closeDate (date), stage, companyId, pointOfContactId, ownerId.",
+        "minItems": 1,
+        "maxItems": 2,
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "createdAt": {
+                  "description": "Date field grouping configuration",
+                  "$ref": "#/$defs/_f11"
+                }
+              },
+              "required": [
+                "createdAt"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "updatedAt": {
+                  "description": "Date field grouping configuration",
+                  "$ref": "#/$defs/_f11"
+                }
+              },
+              "required": [
+                "updatedAt"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "name"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "amountMicros": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "amountMicros"
+                  ]
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "object",
+                  "properties": {
+                    "currencyCode": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "currencyCode"
+                  ]
+                }
+              },
+              "required": [
+                "amount"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "closeDate": {
+                  "description": "Date field grouping configuration",
+                  "$ref": "#/$defs/_f11"
+                }
+              },
+              "required": [
+                "closeDate"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "companyId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "companyId"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "pointOfContactId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "pointOfContactId"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ownerId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "ownerId"
+              ]
+            }
+          ]
+        }
+      },
+      "aggregateOperation": {
+        "description": "Aggregate operation to apply per group. Default: COUNT. Any operation other than COUNT requires aggregateFieldName.",
+        "default": "COUNT",
+        "type": "string",
+        "enum": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "SUM",
+          "COUNT",
+          "COUNT_UNIQUE_VALUES",
+          "COUNT_EMPTY",
+          "COUNT_NOT_EMPTY",
+          "COUNT_TRUE",
+          "COUNT_FALSE",
+          "PERCENTAGE_EMPTY",
+          "PERCENTAGE_NOT_EMPTY"
+        ]
+      },
+      "aggregateFieldName": {
+        "description": "Field to aggregate. Required for any operation other than COUNT. Available fields: id, createdAt, updatedAt, deletedAt, name, amount, amount.amountMicros, closeDate, stage, position, createdBy, updatedBy, searchVector.",
+        "type": "string"
+      },
+      "limit": {
+        "default": 50,
+        "type": "integer",
+        "maximum": 100
+      },
+      "orderBy": {
+        "default": "DESC",
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      }
+    },
+    "allOf": [
+      {
+        "$ref": "#/$defs/__schema0"
+      }
+    ]
+  }
+}

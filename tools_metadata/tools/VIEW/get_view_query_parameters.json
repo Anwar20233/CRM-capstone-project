@@ -1,0 +1,20 @@
+{
+  "name": "get_view_query_parameters",
+  "description": "Get filter and sort parameters from a view. Use these parameters with find_* tools to query records matching the view.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "ID of the view to get query parameters for.",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      }
+    },
+    "required": [
+      "viewId"
+    ],
+    "additionalProperties": false
+  }
+}
