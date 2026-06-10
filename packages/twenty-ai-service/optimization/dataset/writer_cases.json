@@ -7,11 +7,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -23,11 +24,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -39,11 +41,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -55,11 +58,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -71,11 +75,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -87,11 +92,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -103,11 +109,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -119,11 +126,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -135,11 +143,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -151,11 +160,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -167,11 +177,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -183,11 +194,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -199,11 +211,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -215,11 +228,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -231,11 +245,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -247,11 +262,12 @@
       "outcome": "executed",
       "primary_action": "create_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -263,11 +279,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -279,11 +296,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -295,11 +313,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -311,11 +330,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -327,11 +347,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -343,11 +364,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -359,11 +381,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -375,11 +398,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -391,11 +415,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -407,11 +432,12 @@
       "outcome": "executed",
       "primary_action": "create_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -423,11 +449,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -439,11 +466,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -455,11 +483,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -471,11 +500,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -487,11 +517,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -503,11 +534,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -519,11 +551,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -535,11 +568,12 @@
       "outcome": "executed",
       "primary_action": "create_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -551,11 +585,12 @@
       "outcome": "executed",
       "primary_action": "update_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -567,11 +602,12 @@
       "outcome": "executed",
       "primary_action": "update_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -583,11 +619,12 @@
       "outcome": "executed",
       "primary_action": "update_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -599,11 +636,12 @@
       "outcome": "executed",
       "primary_action": "update_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -615,11 +653,12 @@
       "outcome": "executed",
       "primary_action": "update_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -631,11 +670,12 @@
       "outcome": "executed",
       "primary_action": "update_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -647,11 +687,12 @@
       "outcome": "executed",
       "primary_action": "update_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -663,11 +704,12 @@
       "outcome": "executed",
       "primary_action": "update_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -679,11 +721,12 @@
       "outcome": "executed",
       "primary_action": "create_note",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -695,11 +738,12 @@
       "outcome": "executed",
       "primary_action": "create_note",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -711,11 +755,12 @@
       "outcome": "executed",
       "primary_action": "create_note",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -727,11 +772,12 @@
       "outcome": "executed",
       "primary_action": "create_note",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -743,11 +789,12 @@
       "outcome": "executed",
       "primary_action": "create_note",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -759,11 +806,12 @@
       "outcome": "executed",
       "primary_action": "create_task",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -775,11 +823,12 @@
       "outcome": "executed",
       "primary_action": "create_task",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -791,11 +840,12 @@
       "outcome": "executed",
       "primary_action": "create_task",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -807,11 +857,12 @@
       "outcome": "executed",
       "primary_action": "create_task",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -823,11 +874,12 @@
       "outcome": "executed",
       "primary_action": "create_task",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -840,11 +892,12 @@
       "primary_action": "create_task",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "val"
   },
@@ -857,11 +910,12 @@
       "primary_action": "create_task",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "train"
   },
@@ -874,11 +928,12 @@
       "primary_action": "create_task",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "test"
   },
@@ -891,11 +946,12 @@
       "primary_action": "create_task",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "train"
   },
@@ -908,11 +964,12 @@
       "primary_action": "create_task",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "val"
   },
@@ -925,11 +982,12 @@
       "primary_action": "create_task",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "train"
   },
@@ -942,11 +1000,12 @@
       "primary_action": "create_opportunity",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "train"
   },
@@ -959,11 +1018,12 @@
       "primary_action": "create_opportunity",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "train"
   },
@@ -976,11 +1036,12 @@
       "primary_action": "create_opportunity",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "train"
   },
@@ -993,11 +1054,12 @@
       "primary_action": "create_opportunity",
       "required_tools": [
         "resolve_date",
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": true,
-      "min_tool_calls": 3
+      "min_tool_calls": 4
     },
     "split": "test"
   },
@@ -1009,11 +1071,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -1025,11 +1088,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -1041,11 +1105,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -1057,11 +1122,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1073,11 +1139,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_person",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1089,11 +1156,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -1105,11 +1173,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1121,11 +1190,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_company",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -1137,11 +1207,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1153,11 +1224,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_opportunity",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1169,11 +1241,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_note",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1185,11 +1258,12 @@
       "outcome": "confirmation_required",
       "primary_action": "delete_task",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1201,11 +1275,12 @@
       "outcome": "confirmation_required",
       "primary_action": "advance_deal_stage",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -1217,11 +1292,12 @@
       "outcome": "confirmation_required",
       "primary_action": "advance_deal_stage",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -1233,11 +1309,12 @@
       "outcome": "confirmation_required",
       "primary_action": "advance_deal_stage",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1249,11 +1326,12 @@
       "outcome": "confirmation_required",
       "primary_action": "update_many_opportunities",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -1265,11 +1343,12 @@
       "outcome": "confirmation_required",
       "primary_action": "update_many_opportunities",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1281,11 +1360,12 @@
       "outcome": "confirmation_required",
       "primary_action": "update_many_opportunities",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1297,11 +1377,12 @@
       "outcome": "executed",
       "primary_action": "create_many_people",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "val"
   },
@@ -1313,11 +1394,12 @@
       "outcome": "executed",
       "primary_action": "create_many_people",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
@@ -1329,11 +1411,12 @@
       "outcome": "executed",
       "primary_action": "create_many_people",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "test"
   },
@@ -1345,11 +1428,12 @@
       "outcome": "executed",
       "primary_action": "create_many_people",
       "required_tools": [
+        "get_tool_catalog",
         "learn_tools",
         "execute_tool"
       ],
       "needs_resolve_date": false,
-      "min_tool_calls": 2
+      "min_tool_calls": 3
     },
     "split": "train"
   },
