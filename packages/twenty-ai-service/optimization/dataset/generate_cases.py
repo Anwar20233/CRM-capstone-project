@@ -1,35 +1,23 @@
 """Generate the labelled Writer-agent optimization dataset.
 
-Produces ``writer_cases.json`` — 100 orchestrator->writer instructions, each with
-a *gold* label describing the optimal tool trajectory and outcome. The cases are
-seeded with **real entities** (names, companies, emails, phones, dates, money)
-pulled from ``notebooks/cases_data.json`` so the prompts look like genuine
-orchestrator hand-offs and exercise the PII masking layer.
+Produces ``writer_cases.json`` — orchestrator→writer instructions, each with a
+*gold* label describing the optimal tool trajectory and outcome.
 
-Deterministic: a fixed seed makes regeneration reproducible, and the train/val/
-test split is stratified by category so every split sees every case type. The
-held-out **test** split (20) is never shown to the optimizer.
+**Id-based by construction.** The Writer is write-only and never searches, so any
+case that touches an existing record references a **real fixture id** (see
+``fixtures.py``), exactly as the orchestrator would hand the writer resolved ids
+in production. New-record creates (torn down per rollout) use fresh names from the
+NER ``cases_data.json`` entity pools so masking still has real PII to mask.
+
+Run order (ids are workspace-specific, so seed first)::
+
+    .venv/bin/python optimization/dataset/fixtures.py --seed
+    .venv/bin/python optimization/dataset/generate_cases.py
 
 Each case::
 
-    {
-      "id": "W-CREATE_PERSON-03",
-      "category": "create_person",
-      "request": "Create a person ...",
-      "gold": {
-        "outcome": "executed",              # executed|confirmation_required|
-                                            #   rejected_out_of_scope|clarification_needed
-        "primary_action": "create_person",  # the tool inside execute_tool, or null
-        "required_tools": ["learn_tools", "execute_tool"],
-        "needs_resolve_date": false,
-        "min_tool_calls": 2                 # parsimony target (fewest calls that work)
-      },
-      "split": "train"                       # train|val|test
-    }
-
-Run::
-
-    .venv/bin/python optimization/dataset/generate_cases.py
+    {"id", "category", "request", "gold": {outcome, primary_action, required_tools,
+     needs_resolve_date, min_tool_calls}, "split"}
 """
 
 from __future__ import annotations
@@ -39,27 +27,25 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Paths
-# ---------------------------------------------------------------------------
-
 _HERE = Path(__file__).resolve().parent
-_SERVICE_ROOT = _HERE.parent.parent  # packages/twenty-ai-service
+_SERVICE_ROOT = _HERE.parent.parent
 _CASES_DATA = _SERVICE_ROOT / "notebooks" / "cases_data.json"
+_FIXTURES = _HERE / "fixtures.json"
 _OUTPUT = _HERE / "writer_cases.json"
 
 _SEED = 20260610
 
+_RELATIVE_DATES = ["next Friday", "next Monday", "in 2 weeks", "end of month", "tomorrow", "next week"]
+_STAGES = ["NEW", "SCREENING", "MEETING", "PROPOSAL", "CUSTOMER"]
+
 
 # ---------------------------------------------------------------------------
-# Entity pools — pulled from the NER cases so prompts use realistic PII
+# Inputs
 # ---------------------------------------------------------------------------
 
 def _load_entity_pools() -> dict[str, list[str]]:
-    """Collect de-duplicated entity values by type from cases_data.json."""
     pools: dict[str, list[str]] = defaultdict(list)
     seen: dict[str, set[str]] = defaultdict(set)
-
     raw = json.loads(_CASES_DATA.read_text(encoding="utf-8"))
     for case in raw:
         for label, values in case.get("expected", {}).items():
@@ -68,49 +54,35 @@ def _load_entity_pools() -> dict[str, list[str]]:
                 if value and value not in seen[label]:
                     seen[label].add(value)
                     pools[label].append(value)
-
-    # Fallbacks so the generator still works if a label is sparse.
     pools.setdefault("person", []).extend(["Sarah Connor", "James Whitfield"])
     pools.setdefault("company", []).extend(["NovaTech Solutions", "Cyberdyne Systems"])
     pools.setdefault("job title", []).extend(["Head of Operations", "CTO"])
     pools.setdefault("location", []).extend(["Dubai", "Riyadh"])
     pools.setdefault("money", []).extend(["$45,000", "$120,000"])
     pools.setdefault("email address", []).extend(["james@novatech.ae"])
-    pools.setdefault("phone number", []).extend(["+971 50 123 4567"])
     return pools
 
 
-# Relative-date phrases the writer's resolve_date tool actually understands.
-_RELATIVE_DATES = [
-    "next Friday",
-    "next Monday",
-    "in 2 weeks",
-    "end of month",
-    "tomorrow",
-    "next week",
-]
-
-_PIPELINE_STAGES = ["Discovery", "Proposal", "Negotiation", "Closed Won", "Closed Lost"]
+def _load_fixtures() -> dict[str, list[dict]]:
+    if not _FIXTURES.exists():
+        raise SystemExit(
+            "fixtures.json not found. Run: .venv/bin/python optimization/dataset/fixtures.py --seed"
+        )
+    fixtures = json.loads(_FIXTURES.read_text(encoding="utf-8"))
+    for key in ("companies", "persons", "opportunities", "notes", "tasks"):
+        if not fixtures.get(key):
+            raise SystemExit(f"fixtures.json has no '{key}' — re-seed fixtures.")
+    return fixtures
 
 
 # ---------------------------------------------------------------------------
-# Gold builders
+# Gold builder
 # ---------------------------------------------------------------------------
 
-def _gold(
-    outcome: str,
-    primary_action: str | None,
-    *,
-    required_tools: list[str] | None = None,
-    needs_resolve_date: bool = False,
-    min_tool_calls: int = 2,
-) -> dict:
+def _gold(outcome, primary_action, *, required_tools=None, needs_resolve_date=False, min_tool_calls=2):
     return {
         "outcome": outcome,
         "primary_action": primary_action,
-        # learn-before-execute is the non-negotiable core; get_tool_catalog is
-        # intentionally NOT required so the optimizer can learn to skip browsing
-        # when the action is already known (fewer calls).
         "required_tools": required_tools
         if required_tools is not None
         else (["learn_tools", "execute_tool"] if primary_action else []),
@@ -120,216 +92,212 @@ def _gold(
 
 
 # ---------------------------------------------------------------------------
-# Per-category case factories. Each returns (request, gold).
+# Case factory
 # ---------------------------------------------------------------------------
 
-def _make_cases(rng: random.Random, pools: dict[str, list[str]]) -> list[dict]:
-    def pick(label: str) -> str:
+def _make_cases(rng: random.Random, pools: dict[str, list[str]], fx: dict[str, list[dict]]) -> list[dict]:
+    companies = fx["companies"]
+    persons = fx["persons"]
+    opportunities = fx["opportunities"]
+    notes = fx["notes"]
+    tasks = fx["tasks"]
+
+    def pick(label):
         return rng.choice(pools[label])
 
-    cases: list[tuple[str, str, dict]] = []  # (category, request, gold)
+    def first_last(full_name: str) -> tuple[str, str]:
+        parts = full_name.split()
+        return (parts[0], parts[-1] if len(parts) > 1 else "")
 
-    # -- create_person (16) ------------------------------------------------
+    def company_id():
+        return rng.choice(companies)["id"]
+
+    cases: list[tuple[str, str, dict]] = []
+
+    # -- create_person (16) — at an existing company id --------------------
     for _ in range(16):
-        person, company = pick("person"), pick("company")
-        title = pick("job title")
+        first, last = first_last(pick("person"))
+        title, cid = pick("job title"), company_id()
         cases.append((
             "create_person",
-            f"Create a person record for {person}, {title} at {company}.",
-            _gold("executed", "create_person", min_tool_calls=2),
+            f"Create a person named {first} {last}, {title}, at the company with id {cid}.",
+            _gold("executed", "create_person"),
         ))
 
-    # -- create_company (10) ----------------------------------------------
+    # -- create_company (10) — no prerequisite -----------------------------
     for _ in range(10):
-        company, location = pick("company"), pick("location")
+        company, city = pick("company"), pick("location")
         cases.append((
             "create_company",
-            f"Add a new company {company} based in {location} to the CRM.",
-            _gold("executed", "create_company", min_tool_calls=2),
+            f"Add a new company called {company} based in {city}; mark it as an ideal customer profile.",
+            _gold("executed", "create_company"),
         ))
 
-    # -- create_opportunity (8) -------------------------------------------
+    # -- create_opportunity (8) — for an existing company id ---------------
     for _ in range(8):
-        company, amount = pick("company"), pick("money")
+        cid, amount = company_id(), pick("money")
+        name = f"{pick('company')} Deal"
         cases.append((
             "create_opportunity",
-            f"Create an opportunity for {company} worth {amount} at the "
-            f"{rng.choice(_PIPELINE_STAGES[:3])} stage.",
-            _gold("executed", "create_opportunity", min_tool_calls=2),
+            f"Create an opportunity named '{name}' for the company with id {cid}, "
+            f"amount {amount}, at the NEW stage.",
+            _gold("executed", "create_opportunity"),
         ))
 
-    # -- update_person / update_company / update_opportunity (8) ----------
+    # -- update_person / company / opportunity (8) — by id -----------------
     for _ in range(4):
-        person, email = pick("person"), pick("email address")
+        person, email = rng.choice(persons), pick("email address")
         cases.append((
             "update_person",
-            f"Update {person}'s email address to {email}.",
-            _gold("executed", "update_person", min_tool_calls=2),
+            f"Update the person with id {person['id']}: set their primary email to {email}.",
+            _gold("executed", "update_person"),
         ))
     for _ in range(2):
-        company, location = pick("company"), pick("location")
+        company, city = rng.choice(companies), pick("location")
         cases.append((
             "update_company",
-            f"Update the address of {company} to {location}.",
-            _gold("executed", "update_company", min_tool_calls=2),
+            f"Update the company with id {company['id']}: set its city to {city}.",
+            _gold("executed", "update_company"),
         ))
     for _ in range(2):
-        company = pick("company")
+        opp = rng.choice(opportunities)
         cases.append((
             "update_opportunity",
-            f"Update the opportunity for {company} to the "
-            f"{rng.choice(_PIPELINE_STAGES[:3])} stage.",
-            _gold("executed", "update_opportunity", min_tool_calls=2),
+            f"Update the opportunity with id {opp['id']}: move it to the MEETING stage.",
+            _gold("executed", "update_opportunity"),
         ))
 
-    # -- note / task (10) — Tier 1 ----------------------------------------
+    # -- note / task (10) — standalone (no entity link needed) -------------
     for _ in range(5):
-        person = pick("person")
+        person = rng.choice(persons)
         cases.append((
             "note_task",
-            f"Add a note to {person} saying they confirmed interest in a demo.",
-            _gold("executed", "create_note", min_tool_calls=2),
+            f"Create a note titled 'Demo interest — {person['name']}' "
+            f"with a short body noting they confirmed interest in a demo.",
+            _gold("executed", "create_note"),
         ))
     for _ in range(5):
-        person = pick("person")
+        person = rng.choice(persons)
         cases.append((
             "note_task",
-            f"Create a follow-up task to call {person} about the proposal.",
-            _gold("executed", "create_task", min_tool_calls=2),
+            f"Create a task titled 'Call {person['name']} about the proposal'.",
+            _gold("executed", "create_task"),
         ))
 
-    # -- relative_date (10) — must call resolve_date first -----------------
+    # -- relative_date (10) — resolve_date before the write ----------------
     for _ in range(6):
-        person, phrase = pick("person"), rng.choice(_RELATIVE_DATES)
+        person, phrase = rng.choice(persons), rng.choice(_RELATIVE_DATES)
         cases.append((
             "relative_date",
-            f"Create a task to follow up with {person} {phrase}.",
-            _gold(
-                "executed", "create_task",
-                required_tools=["resolve_date", "learn_tools", "execute_tool"],
-                needs_resolve_date=True, min_tool_calls=3,
-            ),
+            f"Create a task titled 'Follow up with {person['name']}' due {phrase}.",
+            _gold("executed", "create_task",
+                  required_tools=["resolve_date", "learn_tools", "execute_tool"],
+                  needs_resolve_date=True, min_tool_calls=3),
         ))
     for _ in range(4):
-        company, phrase, amount = pick("company"), rng.choice(_RELATIVE_DATES), pick("money")
+        cid, phrase, amount = company_id(), rng.choice(_RELATIVE_DATES), pick("money")
+        name = f"{pick('company')} Deal"
         cases.append((
             "relative_date",
-            f"Create an opportunity for {company} worth {amount} closing {phrase}.",
-            _gold(
-                "executed", "create_opportunity",
-                required_tools=["resolve_date", "learn_tools", "execute_tool"],
-                needs_resolve_date=True, min_tool_calls=3,
-            ),
+            f"Create an opportunity named '{name}' for the company with id {cid}, "
+            f"amount {amount}, at the NEW stage, closing {phrase}.",
+            _gold("executed", "create_opportunity",
+                  required_tools=["resolve_date", "learn_tools", "execute_tool"],
+                  needs_resolve_date=True, min_tool_calls=3),
         ))
 
-    # -- tier3_confirm: deletes (10) --------------------------------------
+    # -- tier3_confirm: deletes by id (10) ---------------------------------
     for _ in range(5):
-        person = pick("person")
+        person = rng.choice(persons)
         cases.append((
             "tier3_confirm",
-            f"Delete the person record for {person}.",
-            _gold("confirmation_required", "delete_person", min_tool_calls=2),
+            f"Delete the person with id {person['id']}.",
+            _gold("confirmation_required", "delete_person"),
         ))
     for _ in range(3):
-        company = pick("company")
+        company = rng.choice(companies)
         cases.append((
             "tier3_confirm",
-            f"Delete the company {company} from the CRM.",
-            _gold("confirmation_required", "delete_company", min_tool_calls=2),
+            f"Delete the company with id {company['id']}.",
+            _gold("confirmation_required", "delete_company"),
         ))
     for _ in range(2):
-        company = pick("company")
+        opp = rng.choice(opportunities)
         cases.append((
             "tier3_confirm",
-            f"Remove the opportunity associated with {company}.",
-            _gold("confirmation_required", "delete_opportunity", min_tool_calls=2),
+            f"Delete the opportunity with id {opp['id']}.",
+            _gold("confirmation_required", "delete_opportunity"),
         ))
+    cases.append((
+        "tier3_confirm",
+        f"Delete the note with id {rng.choice(notes)['id']}.",
+        _gold("confirmation_required", "delete_note"),
+    ))
+    cases.append((
+        "tier3_confirm",
+        f"Delete the task with id {rng.choice(tasks)['id']}.",
+        _gold("confirmation_required", "delete_task"),
+    ))
 
-    # -- tier3_confirm: advance stage (3) ---------------------------------
+    # -- tier3_confirm: advance stage by deal id (3) -----------------------
     for _ in range(3):
-        company = pick("company")
+        opp = rng.choice(opportunities)
         cases.append((
             "tier3_confirm",
-            f"Advance the {company} deal to Closed Won.",
-            _gold("confirmation_required", "advance_deal_stage", min_tool_calls=2),
+            f"Advance the deal with id {opp['id']} to the CUSTOMER stage.",
+            _gold("confirmation_required", "advance_deal_stage"),
         ))
 
-    # -- tier3_confirm: bulk update (3) -----------------------------------
+    # -- tier3_confirm: bulk update (filter-based, returns confirm) (3) ----
     for _ in range(3):
-        stage = rng.choice(_PIPELINE_STAGES[:3])
         cases.append((
             "tier3_confirm",
-            f"Move all opportunities in the {stage} stage to Negotiation.",
-            _gold("confirmation_required", "update_many_opportunities", min_tool_calls=2),
+            "Move all opportunities currently in the NEW stage to the MEETING stage.",
+            _gold("confirmation_required", "update_many_opportunities"),
         ))
 
-    # -- bulk create_many (4) ---------------------------------------------
+    # -- bulk create_many_people (4) — at an existing company id -----------
     for _ in range(4):
-        p1, p2, company = pick("person"), pick("person"), pick("company")
+        f1, l1 = first_last(pick("person"))
+        f2, l2 = first_last(pick("person"))
+        cid = company_id()
         cases.append((
             "bulk",
-            f"Create people records for {p1} and {p2}, both at {company}.",
-            _gold("executed", "create_many_people", min_tool_calls=2),
+            f"Create two people at the company with id {cid}: {f1} {l1} and {f2} {l2}.",
+            _gold("executed", "create_many_people"),
         ))
 
-    # -- read_rejection (10) — writer must refuse, NOT search --------------
+    # -- read_rejection (10) — writer must refuse, never search ------------
     read_requests = [
-        ("Find all people at {company}.", "company"),
-        ("Search for {person} and tell me their email.", "person"),
-        ("List every opportunity in the {stage} stage.", "stage"),
-        ("How many companies are based in {location}?", "location"),
-        ("Look up the phone number for {person}.", "person"),
-        ("Show me the most recent notes on {company}.", "company"),
-        ("Who is the primary contact at {company}?", "company"),
-        ("Get the details of the {company} opportunity.", "company"),
-        ("Find {person}'s record and summarise their activity.", "person"),
-        ("Retrieve all tasks due this week.", None),
+        f"Find all people at {pick('company')}.",
+        f"Search for {pick('person')} and tell me their email.",
+        f"List every opportunity in the {rng.choice(_STAGES)} stage.",
+        f"How many companies are based in {pick('location')}?",
+        f"Look up the phone number for {pick('person')}.",
+        f"Show me the most recent notes on {pick('company')}.",
+        f"Who is the primary contact at {pick('company')}?",
+        f"Get the details of the {pick('company')} opportunity.",
+        f"Find {pick('person')}'s record and summarise their activity.",
+        "Retrieve all tasks due this week.",
     ]
-    for template, kind in read_requests:
-        if kind == "company":
-            text = template.format(company=pick("company"))
-        elif kind == "person":
-            text = template.format(person=pick("person"))
-        elif kind == "location":
-            text = template.format(location=pick("location"))
-        elif kind == "stage":
-            text = template.format(stage=rng.choice(_PIPELINE_STAGES))
-        else:
-            text = template
-        cases.append((
-            "read_rejection",
-            text,
-            _gold("rejected_out_of_scope", None, required_tools=[], min_tool_calls=0),
-        ))
+    for text in read_requests:
+        cases.append(("read_rejection", text,
+                      _gold("rejected_out_of_scope", None, required_tools=[], min_tool_calls=0)))
 
     # -- clarify (6) — missing required info, must ask not fabricate -------
-    clarify_requests = [
-        "Create a new person.",
-        "Update the opportunity.",
-        "Add a note.",
-        "Create a company.",
-        "Update that person's title.",
-        "Delete the record.",
-    ]
-    for text in clarify_requests:
-        cases.append((
-            "clarify",
-            text,
-            _gold("clarification_needed", None, required_tools=[], min_tool_calls=0),
-        ))
+    for text in ["Create a new person.", "Update the opportunity.", "Add a note.",
+                 "Create a company.", "Update that person's title.", "Delete the record."]:
+        cases.append(("clarify", text,
+                      _gold("clarification_needed", None, required_tools=[], min_tool_calls=0)))
 
-    # -- out_of_scope (3) — non-CRM / denied capability -------------------
-    out_of_scope_requests = [
+    # -- out_of_scope (3) — non-CRM / denied capability --------------------
+    for text in [
         "Run a Python script to calculate our quarterly churn rate.",
         "Send an HTTP request to our analytics API and import the results.",
         "Post an announcement about this deal to our company Slack channel.",
-    ]
-    for text in out_of_scope_requests:
-        cases.append((
-            "out_of_scope",
-            text,
-            _gold("rejected_out_of_scope", None, required_tools=[], min_tool_calls=0),
-        ))
+    ]:
+        cases.append(("out_of_scope", text,
+                      _gold("rejected_out_of_scope", None, required_tools=[], min_tool_calls=0)))
 
     # Assign stable ids per category.
     per_category_index: dict[str, int] = defaultdict(int)
@@ -350,38 +318,25 @@ def _make_cases(rng: random.Random, pools: dict[str, list[str]]) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def _assign_splits(rng: random.Random, cases: list[dict]) -> None:
-    """Stratify by category into 60/20/20 train/val/test (mutates in place)."""
     by_category: dict[str, list[dict]] = defaultdict(list)
     for case in cases:
         by_category[case["category"]].append(case)
-
-    for _category, group in by_category.items():
+    for group in by_category.values():
         rng.shuffle(group)
         n = len(group)
         n_test = max(1, round(n * 0.2))
         n_val = max(1, round(n * 0.2)) if n >= 3 else 0
         for index, case in enumerate(group):
-            if index < n_test:
-                case["split"] = "test"
-            elif index < n_test + n_val:
-                case["split"] = "val"
-            else:
-                case["split"] = "train"
+            case["split"] = "test" if index < n_test else "val" if index < n_test + n_val else "train"
 
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
 
 def main() -> None:
-    rng = random.Random(_SEED)
     pools = _load_entity_pools()
-    cases = _make_cases(rng, pools)
+    fixtures = _load_fixtures()
+    cases = _make_cases(random.Random(_SEED), pools, fixtures)
     _assign_splits(random.Random(_SEED + 1), cases)
-
     _OUTPUT.write_text(json.dumps(cases, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    # Summary.
     by_split: dict[str, int] = defaultdict(int)
     by_category: dict[str, int] = defaultdict(int)
     for case in cases:
