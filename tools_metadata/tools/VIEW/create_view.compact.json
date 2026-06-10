@@ -1,0 +1,94 @@
+{
+  "name": "create_view",
+  "description": "Create a new view for an object. Views define how records are displayed. For KANBAN views, mainGroupByFieldName is required and must be a SELECT field (e.g., \"stage\", \"status\"). For CALENDAR views, calendarFieldName and calendarLayout are required.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "View name",
+        "type": "string"
+      },
+      "objectNameSingular": {
+        "description": "Object name this view is for (e.g., \"task\", \"person\", \"company\")",
+        "type": "string"
+      },
+      "icon": {
+        "description": "Icon identifier (e.g., \"IconList\", \"IconCheckbox\")",
+        "default": "IconList",
+        "type": "string"
+      },
+      "type": {
+        "description": "View type",
+        "default": "TABLE",
+        "type": "string",
+        "enum": [
+          "TABLE",
+          "KANBAN",
+          "CALENDAR"
+        ]
+      },
+      "visibility": {
+        "description": "View visibility",
+        "default": "WORKSPACE",
+        "type": "string",
+        "enum": [
+          "WORKSPACE",
+          "UNLISTED"
+        ]
+      },
+      "mainGroupByFieldName": {
+        "description": "Field name to group by (required for KANBAN views, must be a SELECT field, e.g., \"stage\", \"status\")",
+        "type": "string"
+      },
+      "kanbanAggregateOperation": {
+        "description": "Aggregate operation for kanban columns (e.g., \"SUM\", \"AVG\", \"COUNT\")",
+        "type": "string",
+        "enum": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "SUM",
+          "COUNT",
+          "COUNT_UNIQUE_VALUES",
+          "COUNT_EMPTY",
+          "COUNT_NOT_EMPTY",
+          "COUNT_TRUE",
+          "COUNT_FALSE",
+          "PERCENTAGE_EMPTY",
+          "PERCENTAGE_NOT_EMPTY"
+        ]
+      },
+      "kanbanAggregateOperationFieldName": {
+        "description": "Field name for the kanban aggregate operation (e.g., \"amount\")",
+        "type": "string"
+      },
+      "calendarLayout": {
+        "description": "Calendar layout (required for CALENDAR views, e.g., \"DAY\", \"WEEK\", \"MONTH\")",
+        "type": "string",
+        "enum": [
+          "DAY",
+          "WEEK",
+          "MONTH"
+        ]
+      },
+      "calendarFieldName": {
+        "description": "Date field name to use for the calendar (required for CALENDAR views, must be a DATE or DATE_TIME field, e.g., \"createdAt\", \"dueAt\")",
+        "type": "string"
+      },
+      "fieldNames": {
+        "description": "Field names to display in the view as columns (for TABLE) or cards (for KANBAN/CALENDAR). Fields are displayed in the order provided. Use get_field_metadata to find available field names.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "objectNameSingular",
+      "icon",
+      "type",
+      "visibility"
+    ]
+  }
+}

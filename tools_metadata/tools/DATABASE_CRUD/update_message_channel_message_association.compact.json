@@ -1,0 +1,61 @@
+{
+  "name": "update_message_channel_message_association",
+  "description": "Update an existing Message Channel Message Association record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "messageExternalId": {
+        "description": "Message id from the messaging provider",
+        "type": "string"
+      },
+      "messageThreadExternalId": {
+        "description": "Thread id from the messaging provider",
+        "type": "string"
+      },
+      "direction": {
+        "description": "Message Direction",
+        "type": "string",
+        "enum": [
+          "INCOMING",
+          "OUTGOING"
+        ]
+      },
+      "messageChannelId": {
+        "description": "Message Channel Id",
+        "type": "string",
+        "format": "uuid"
+      },
+      "messageId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "messageThreadId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "name": "update_view_filter",
+  "description": "Update a filter on a view. Use get_view_filters to find the filter ID.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "ID of the view filter to update",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "operand": {
+        "description": "New filter operator",
+        "type": "string",
+        "enum": [
+          "IS",
+          "IS_NOT_NULL",
+          "IS_NOT",
+          "LESS_THAN_OR_EQUAL",
+          "GREATER_THAN_OR_EQUAL",
+          "IS_BEFORE",
+          "IS_AFTER",
+          "CONTAINS",
+          "DOES_NOT_CONTAIN",
+          "IS_EMPTY",
+          "IS_NOT_EMPTY",
+          "IS_RELATIVE",
+          "IS_IN_PAST",
+          "IS_IN_FUTURE",
+          "IS_TODAY",
+          "VECTOR_SEARCH"
+        ]
+      },
+      "value": {
+        "description": "New filter value",
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        ]
+      },
+      "subFieldName": {
+        "description": "New sub-field name for composite fields",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "additionalProperties": false
+  }
+}

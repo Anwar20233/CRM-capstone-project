@@ -1,0 +1,17 @@
+{
+  "name": "delete_view_filter",
+  "description": "Remove a filter from a view. Use get_view_filters to find the filter ID.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "ID of the view filter to delete",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

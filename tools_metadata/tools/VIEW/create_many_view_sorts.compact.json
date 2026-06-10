@@ -1,0 +1,47 @@
+{
+  "name": "create_many_view_sorts",
+  "description": "Add multiple sorts to a view in one call. Use list_object_metadata_items to get fieldMetadataId values.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "sorts": {
+        "description": "Array of sorts to create (1-10 items)",
+        "minItems": 1,
+        "maxItems": 10,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "viewId": {
+              "description": "ID of the view to add the sort to",
+              "type": "string",
+              "format": "uuid"
+            },
+            "fieldMetadataId": {
+              "description": "ID of the field to sort by. Use list_object_metadata_items to find field IDs.",
+              "type": "string",
+              "format": "uuid"
+            },
+            "direction": {
+              "description": "Sort direction: ASC (ascending) or DESC (descending)",
+              "default": "ASC",
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          "required": [
+            "viewId",
+            "fieldMetadataId",
+            "direction"
+          ]
+        }
+      }
+    },
+    "required": [
+      "sorts"
+    ]
+  }
+}

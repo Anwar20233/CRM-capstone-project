@@ -1,0 +1,62 @@
+[
+  {
+    "name": "get_view_fields",
+    "description": "List the columns (fields) displayed in a specific view. A view field controls which columns appear in a table or kanban view, their visibility, width, position, and aggregate operation. Use get_views first to find the view ID, then call this to inspect its column configuration.",
+    "category": "VIEW_FIELD",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "get_view_fields"
+    },
+    "icon": "IconTable"
+  },
+  {
+    "name": "create_view_field",
+    "description": "Add a new column to a view. View fields define which columns are shown in table or kanban views. First call get_field_metadata to find the fieldMetadataId of the column to add, and get_views to find the target viewId.",
+    "category": "VIEW_FIELD",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_view_field"
+    },
+    "icon": "IconTable"
+  },
+  {
+    "name": "update_view_field",
+    "description": "Update properties of a column in a view. You can change its visibility, width (size in pixels), display position, or aggregate operation. Use get_view_fields to find the view field ID. Constraints: position must not be -1, must not precede the label identifier field, and must not conflict with another field's position.",
+    "category": "VIEW_FIELD",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_view_field"
+    },
+    "icon": "IconTable"
+  },
+  {
+    "name": "delete_view_field",
+    "description": "Remove a column from a view. This removes the field from the view's displayed columns. Use get_view_fields to find the view field ID to delete.",
+    "category": "VIEW_FIELD",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "delete_view_field"
+    },
+    "icon": "IconTable"
+  },
+  {
+    "name": "create_many_view_fields",
+    "description": "Add multiple columns to a view at once. More efficient than calling create_view_field multiple times. Each item follows the same schema as create_view_field. All view fields can target the same or different views.",
+    "category": "VIEW_FIELD",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_many_view_fields"
+    },
+    "icon": "IconTable"
+  },
+  {
+    "name": "update_many_view_fields",
+    "description": "Update multiple columns in a view at once. More efficient than calling update_view_field multiple times. Each item must include the view field ID and properties to update. Same constraints as update_view_field apply to each item.",
+    "category": "VIEW_FIELD",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_many_view_fields"
+    },
+    "icon": "IconTable"
+  }
+]

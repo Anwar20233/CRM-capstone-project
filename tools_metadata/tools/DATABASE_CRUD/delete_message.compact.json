@@ -1,0 +1,17 @@
+{
+  "name": "delete_message",
+  "description": "Delete a Message record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "The unique UUID of the record to delete",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

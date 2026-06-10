@@ -1,0 +1,63 @@
+{
+  "name": "create_message_channel_message_association",
+  "description": "Create a new Message Channel Message Association record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "messageExternalId": {
+        "description": "Message id from the messaging provider",
+        "type": "string"
+      },
+      "messageThreadExternalId": {
+        "description": "Thread id from the messaging provider",
+        "type": "string"
+      },
+      "direction": {
+        "description": "Message Direction",
+        "type": "string",
+        "enum": [
+          "INCOMING",
+          "OUTGOING"
+        ]
+      },
+      "messageChannelId": {
+        "description": "Message Channel Id",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+      },
+      "messageId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+      },
+      "messageThreadId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+      }
+    },
+    "required": [
+      "position",
+      "direction"
+    ],
+    "additionalProperties": false
+  }
+}

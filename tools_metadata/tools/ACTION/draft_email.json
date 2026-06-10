@@ -1,0 +1,93 @@
+{
+  "name": "draft_email",
+  "description": "Create a draft email using a connected account. The email will be saved as a draft, not sent.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "recipients": {
+        "description": "Recipients object with to, cc, and bcc fields (comma-separated)",
+        "type": "object",
+        "properties": {
+          "to": {
+            "default": "",
+            "description": "Comma-separated recipient email addresses (To)",
+            "type": "string"
+          },
+          "cc": {
+            "default": "",
+            "description": "Comma-separated CC email addresses",
+            "type": "string"
+          },
+          "bcc": {
+            "default": "",
+            "description": "Comma-separated BCC email addresses",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "cc",
+          "bcc"
+        ],
+        "additionalProperties": false
+      },
+      "subject": {
+        "description": "The email subject line",
+        "type": "string"
+      },
+      "body": {
+        "description": "The email body content in HTML format",
+        "type": "string"
+      },
+      "connectedAccountId": {
+        "description": "The UUID of the connected account to send the email from. Provide this only if you have it; otherwise, leave blank.",
+        "type": "string"
+      },
+      "files": {
+        "default": [],
+        "description": "Array of file objects to attach to the email",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "size": {
+              "type": "number"
+            },
+            "type": {
+              "type": "string"
+            },
+            "createdAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "size",
+            "type",
+            "createdAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "inReplyTo": {
+        "description": "The RFC 2822 Message-ID of an existing email to reply to. When provided, the email is sent as a reply in the same thread.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "recipients",
+      "subject",
+      "body",
+      "files"
+    ],
+    "additionalProperties": false
+  }
+}

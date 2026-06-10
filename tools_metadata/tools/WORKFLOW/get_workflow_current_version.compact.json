@@ -1,0 +1,17 @@
+{
+  "name": "get_workflow_current_version",
+  "description": "Get the current version of a workflow. Returns the draft version if one exists, otherwise the last published version.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workflowId": {
+        "description": "The UUID of the workflow to get the current version for",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "workflowId"
+    ]
+  }
+}

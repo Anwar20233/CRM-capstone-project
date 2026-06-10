@@ -1,0 +1,137 @@
+[
+  {
+    "name": "get_views",
+    "description": "List views in the workspace. Views define how records are displayed, filtered, and sorted.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "get_views"
+    }
+  },
+  {
+    "name": "get_view_query_parameters",
+    "description": "Get filter and sort parameters from a view. Use these parameters with find_* tools to query records matching the view.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "get_view_query_parameters"
+    }
+  },
+  {
+    "name": "get_view_filters",
+    "description": "List all filters applied to a view. Each filter defines a condition that records must match to appear in the view.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "get_view_filters"
+    }
+  },
+  {
+    "name": "get_view_sorts",
+    "description": "List all sorts applied to a view. Each sort defines a field and direction that determines the order records appear in the view.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "get_view_sorts"
+    }
+  },
+  {
+    "name": "create_view",
+    "description": "Create a new view for an object. Views define how records are displayed. For KANBAN views, mainGroupByFieldName is required and must be a SELECT field (e.g., \"stage\", \"status\"). For CALENDAR views, calendarFieldName and calendarLayout are required.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_view"
+    }
+  },
+  {
+    "name": "update_view",
+    "description": "Update an existing view. You can change the name and icon.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_view"
+    }
+  },
+  {
+    "name": "delete_view",
+    "description": "Delete a view by its ID.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "delete_view"
+    }
+  },
+  {
+    "name": "create_view_filter",
+    "description": "Add a filter to a view. Use list_object_metadata_items to get fieldMetadataId values.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_view_filter"
+    }
+  },
+  {
+    "name": "create_many_view_filters",
+    "description": "Add multiple filters to a view in one call. Use list_object_metadata_items to get fieldMetadataId values.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_many_view_filters"
+    }
+  },
+  {
+    "name": "update_view_filter",
+    "description": "Update a filter on a view. Use get_view_filters to find the filter ID.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_view_filter"
+    }
+  },
+  {
+    "name": "delete_view_filter",
+    "description": "Remove a filter from a view. Use get_view_filters to find the filter ID.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "delete_view_filter"
+    }
+  },
+  {
+    "name": "create_view_sort",
+    "description": "Add a sort to a view. Use list_object_metadata_items to get fieldMetadataId values.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_view_sort"
+    }
+  },
+  {
+    "name": "create_many_view_sorts",
+    "description": "Add multiple sorts to a view in one call. Use list_object_metadata_items to get fieldMetadataId values.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_many_view_sorts"
+    }
+  },
+  {
+    "name": "update_view_sort",
+    "description": "Update a sort on a view. Use get_view_sorts to find the sort ID.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_view_sort"
+    }
+  },
+  {
+    "name": "delete_view_sort",
+    "description": "Remove a sort from a view. Use get_view_sorts to find the sort ID.",
+    "category": "VIEW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "delete_view_sort"
+    }
+  }
+]
