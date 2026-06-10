@@ -46,10 +46,23 @@ training env routes the worker and DSPy LMs at OpenAI using `OPENAI_API_KEY` fro
 
 Make sure the Twenty server / agent-bridge is running (`NODE_BRIDGE_BASE_URL`).
 
+## Id-based dataset (important)
+
+The Writer is **write-only and never searches**, and the CRM keys everything by
+UUID. So every case that touches an existing record carries a **real record id**,
+not a name — mirroring production, where the orchestrator resolves names→ids and
+hands the writer ids. Those ids come from `fixtures.py`, which seeds prerequisite
+records (companies, people, opportunities, notes, tasks) into the workspace and
+writes `dataset/fixtures.json`. **Ids are workspace-specific**, so re-seed (and
+regenerate cases) whenever you point at a different workspace.
+
 ## Workflow
 
 ```bash
-# 1. (Re)generate the dataset (optional — writer_cases.json is committed)
+# 0. Seed prerequisite records + capture their ids (run once per workspace)
+.venv/bin/python optimization/dataset/fixtures.py --seed
+
+# 1. (Re)generate the dataset from those fixtures (bakes the ids into the cases)
 .venv/bin/python optimization/dataset/generate_cases.py
 
 # 2. Baseline the current production prompt on the held-out test split

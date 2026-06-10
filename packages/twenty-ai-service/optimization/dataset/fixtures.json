@@ -1,0 +1,96 @@
+{
+  "companies": [
+    {
+      "id": "b4a3b902-0370-435a-8cc5-12d8d77ae2ca",
+      "name": "Northwind Trading",
+      "city": "Dubai"
+    },
+    {
+      "id": "a26fa854-918d-4e43-a1a0-5089db6efd35",
+      "name": "Helios Robotics",
+      "city": "Riyadh"
+    },
+    {
+      "id": "c18831a0-2fe9-4883-9938-caa79de91077",
+      "name": "Atlas Freight",
+      "city": "Amman"
+    },
+    {
+      "id": "9d6c1df6-78bd-4614-9ec2-c6f4fa4008f3",
+      "name": "Verdant Foods",
+      "city": "Cairo"
+    }
+  ],
+  "persons": [
+    {
+      "id": "af3e5aa8-17de-4182-87a7-5d1e636038ce",
+      "name": "Maya Haddad",
+      "title": "Head of Operations",
+      "companyId": "b4a3b902-0370-435a-8cc5-12d8d77ae2ca"
+    },
+    {
+      "id": "3163a404-0363-48a8-89ef-c4a04a84b834",
+      "name": "Omar Saleh",
+      "title": "Procurement Lead",
+      "companyId": "a26fa854-918d-4e43-a1a0-5089db6efd35"
+    },
+    {
+      "id": "6e867e3b-5e20-4533-bc47-f21bdbf1964b",
+      "name": "Lena Fischer",
+      "title": "VP Sales",
+      "companyId": "c18831a0-2fe9-4883-9938-caa79de91077"
+    },
+    {
+      "id": "5e98078a-3e3e-4542-bbfa-69cf93af59e8",
+      "name": "Tariq Nasser",
+      "title": "CTO",
+      "companyId": "9d6c1df6-78bd-4614-9ec2-c6f4fa4008f3"
+    },
+    {
+      "id": "9bd95f78-deda-4d2a-9561-6c7a8daf1e0f",
+      "name": "Priya Menon",
+      "title": "Account Manager",
+      "companyId": "b4a3b902-0370-435a-8cc5-12d8d77ae2ca"
+    },
+    {
+      "id": "d7934b34-2784-4a47-9919-31b3416791bb",
+      "name": "Sven Larsson",
+      "title": "Finance Director",
+      "companyId": "a26fa854-918d-4e43-a1a0-5089db6efd35"
+    }
+  ],
+  "opportunities": [
+    {
+      "id": "6635df33-410b-44e9-82c8-d5d15a96a51b",
+      "name": "Northwind Q3 Expansion"
+    },
+    {
+      "id": "e6896f21-b469-4566-86a7-54c369a4c453",
+      "name": "Helios Pilot Program"
+    },
+    {
+      "id": "3d3a17f2-277e-430b-9d87-683044262608",
+      "name": "Atlas Renewal"
+    }
+  ],
+  "notes": [
+    {
+      "id": "b58c7790-2172-4422-839e-b3ed2a88230c",
+      "title": "Kickoff summary"
+    },
+    {
+      "id": "3d3f9b76-2210-414f-b913-9f279fa53f8b",
+      "title": "Discovery call recap"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "3725e16a-d0f2-4370-9220-663037c7a964",
+      "title": "Send proposal"
+    },
+    {
+      "id": "654d4aa7-47ba-4bcf-b3f7-60c315223134",
+      "title": "Schedule follow-up"
+    }
+  ]
+}
