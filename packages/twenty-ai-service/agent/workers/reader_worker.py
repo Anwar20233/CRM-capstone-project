@@ -16,7 +16,7 @@ Usage::
 
 from __future__ import annotations
 
-from agent.masking import PIISessionMap
+from agent.masking import EntityHandleMap
 from agent.tool_scope import READER_SCOPE
 from agent.workers.base_worker import BaseWorker
 
@@ -95,7 +95,7 @@ class ReaderWorker(BaseWorker):
         session_id: str = "default",
         model: str | None = None,
         *,
-        pii_map: PIISessionMap | None = None,
+        pii_map: EntityHandleMap | None = None,
     ) -> None:
         super().__init__(
             scope=READER_SCOPE,

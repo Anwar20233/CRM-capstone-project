@@ -142,3 +142,72 @@ class TestBaseWorkerOverride:
     def test_override_replaces_crm_tools(self, identity_env: None) -> None:
         worker = BaseWorker(scope=READER_SCOPE, system_prompt="x", tools_override=[])
         assert worker.tools == []
+
+
+class TestDisambiguation:
+    """The mask-time gate: an ambiguous name asks the user, then binds the choice."""
+
+    def _wire(self, orch: Orchestrator, candidates: list[dict]) -> None:
+        from agent.masking import EntityHandleMap, Resolution
+
+        def extractor(text: str) -> list[dict]:
+            index = text.find("John")
+            return (
+                [{"label": "person", "text": "John", "start": index, "end": index + 4}]
+                if index >= 0
+                else []
+            )
+
+        orch.pii_map = EntityHandleMap(extractor=extractor)
+
+        class StubResolver:
+            async def resolve_company(self, name: str) -> Resolution:
+                return Resolution("none", "company", name, [])
+
+            async def resolve_person(self, name: str, company_name: str | None = None) -> Resolution:
+                return Resolution("multiple", "person", name, candidates)
+
+        orch.resolver = StubResolver()  # type: ignore[assignment]
+
+    @pytest.mark.asyncio
+    async def test_ambiguous_name_asks_and_does_not_run_worker(self, identity_env: None) -> None:
+        orch = Orchestrator(session_id="test")
+        self._wire(
+            orch,
+            [
+                {"id": "p1", "name": {"firstName": "John", "lastName": "Doe"},
+                 "emails": {"primaryEmail": "john@acme.com"}},
+                {"id": "p2", "name": {"firstName": "John", "lastName": "Smith"}},
+            ],
+        )
+        orch._worker.run = AsyncMock(return_value={"response": "done", "tool_calls": []})
+
+        result = await orch.handle("email John")
+
+        assert "John" in result["response"]
+        assert "1." in result["response"] and "2." in result["response"]
+        orch._worker.run.assert_not_awaited()
+        assert orch._pending is not None
+
+    @pytest.mark.asyncio
+    async def test_choice_binds_handle_and_resumes_original(self, identity_env: None) -> None:
+        orch = Orchestrator(session_id="test")
+        candidates = [
+            {"id": "p1", "name": {"firstName": "John", "lastName": "Doe"},
+             "emails": {"primaryEmail": "john@acme.com"}},
+            {"id": "p2", "name": {"firstName": "John", "lastName": "Smith"}},
+        ]
+        self._wire(orch, candidates)
+        orch._worker.run = AsyncMock(return_value={"response": "done", "tool_calls": []})
+
+        await orch.handle("email John")  # turn 1: ambiguous
+        result = await orch.handle("1")  # turn 2: pick the first candidate
+
+        # Worker ran on the resumed original message, ambiguity cleared.
+        orch._worker.run.assert_awaited_once()
+        assert orch._worker.run.call_args.args[0] == "email John"
+        assert orch._pending is None
+        # The chosen record is now a resolved handle.
+        handle = orch.pii_map.handle_for_surface("John")
+        assert handle is not None and handle.record_id == "p1"
+        assert result["response"] == "done"

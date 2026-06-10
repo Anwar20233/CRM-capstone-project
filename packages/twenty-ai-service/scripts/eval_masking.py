@@ -33,7 +33,7 @@ import time
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from agent.masking import PIISessionMap  # noqa: E402
+from agent.masking import EntityHandleMap  # noqa: E402
 from pipelines import load_models, models_loaded  # noqa: E402
 
 CSV_PATH = pathlib.Path(__file__).resolve().parent.parent / "tests" / "data" / "customers-1000.csv"
@@ -100,7 +100,7 @@ def main() -> None:
             rate = index / max(time.time() - started, 1e-6)
             print(f"  …{index}/{len(rows)} rows ({rate:.1f}/s)", file=sys.stderr)
         note = build_note(row)
-        session = PIISessionMap()  # fresh map per note — isolates the measurement
+        session = EntityHandleMap()  # fresh map per note — isolates the measurement
         masked = session.mask_text(note)
 
         # Recall: each gold value should be gone from the masked text.

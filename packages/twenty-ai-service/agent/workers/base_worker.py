@@ -28,7 +28,7 @@ from typing import Any
 
 from langchain_core.tools import StructuredTool
 
-from agent.masking import PIISessionMap
+from agent.masking import EntityHandleMap
 from agent.tool_scope import ToolScope
 from agent.workers.write_policy import WritePolicy
 
@@ -37,13 +37,20 @@ from agent.workers.write_policy import WritePolicy
 # tokens as opaque identifiers instead of trying to "fix" or expand them.
 _MASKING_SYSTEM_NOTE = """
 
-## Privacy tokens
+## Entity handles
 
-Some names, emails, phone numbers, companies, and locations appear as opaque
-tokens like [PERSON_1], [COMPANY_2], or [EMAIL_1]. These stand in for real
-private values. Treat each token as a stable identifier: reuse it verbatim in
-your replies and tool arguments, and never invent, rename, or guess the value
-behind a token. The system translates tokens back to real values automatically.
+Real people, companies, emails, phone numbers, and locations are replaced with
+opaque handles like person001, company002, or email001. Each handle stands in
+for a private value the system translates back automatically.
+
+- Reuse handles verbatim — never invent, rename, or guess the value behind one.
+- A resolved person/company handle exposes fields via dotted access. Use
+  person001.id when a tool needs the record's id, person001.name for its name,
+  company002.domainName for a domain, and so on. The handles available to you,
+  with their fields, are listed below.
+- Use the bare handle (person001) in prose replies; it renders as the name.
+- Only use handles that appear in the list below. If you need a record that has
+  no handle, search for it with the tools rather than fabricating an id.
 """
 
 
@@ -76,7 +83,7 @@ class BaseWorker:
         this worker (hot-swap). Per-call override is also available via
         ``run(..., model=...)``.
     pii_map:
-        The session's ``PIISessionMap``. The worker masks inbound text (prompt,
+        The session's ``EntityHandleMap``. The worker masks inbound text (prompt,
         tool results) and unmasks outbound text (tool arguments, final answer)
         against it. Pass a shared map to keep tokens consistent across workers
         (e.g. reader and writer in one session); omit it for a fresh per-worker
@@ -102,7 +109,7 @@ class BaseWorker:
         extra_tools: list[StructuredTool] | None = None,
         tools_override: list[StructuredTool] | None = None,
         model: str | None = None,
-        pii_map: PIISessionMap | None = None,
+        pii_map: EntityHandleMap | None = None,
         mask_pii: bool = True,
         unmasked_tools: frozenset[str] | None = None,
     ) -> None:
@@ -113,14 +120,14 @@ class BaseWorker:
         self.model = model
         self.unmasked_tools = unmasked_tools or frozenset()
         # The masking hook is a single session map; None disables masking.
-        # Note the explicit None check: an empty PIISessionMap is falsy
-        # (``__len__`` is 0), so ``pii_map or PIISessionMap()`` would discard it.
+        # Note the explicit None check: an empty EntityHandleMap is falsy
+        # (``__len__`` is 0), so ``pii_map or EntityHandleMap()`` would discard it.
         if not mask_pii:
-            self.pii_map: PIISessionMap | None = None
+            self.pii_map: EntityHandleMap | None = None
         elif pii_map is not None:
             self.pii_map = pii_map
         else:
-            self.pii_map = PIISessionMap()
+            self.pii_map = EntityHandleMap()
 
         # Set once the map has been rebuilt from the chat's stored history, so a
         # multi-turn session primes only on the first turn.
@@ -258,6 +265,9 @@ class BaseWorker:
         system_prompt = self.system_prompt
         if self.pii_map is not None:
             system_prompt += _MASKING_SYSTEM_NOTE
+            handle_context = self.pii_map.handle_context()
+            if handle_context:
+                system_prompt += "\n\n" + handle_context
             # Rebuild the map from stored history once, so a reopened chat keeps
             # its existing tokens before the new message is masked against them.
             # Prefer the flat `history`; fall back to the replayed conversation.
@@ -320,12 +330,30 @@ class BaseWorker:
                 except json.JSONDecodeError:
                     args = {}
 
-                # Outbound: unmask tokens in the args so the real CRM is hit.
+                # Outbound: unmask handle references so the real CRM is hit.
+                unresolved: list[str] = []
                 if self.pii_map is not None:
                     args = self.pii_map.unmask_value(args)
+                    unresolved = self.pii_map.find_unresolved_references(args)
 
                 _emit({"type": "tool_call", "name": name, "args": args})
-                result = await self.invoke_tool(name, args)
+                if unresolved:
+                    # A handle reference didn't resolve (unknown handle or field).
+                    # Reject before hitting the CRM so the model can self-correct.
+                    result: dict = {
+                        "ok": False,
+                        "error": {
+                            "code": "UNRESOLVED_HANDLE",
+                            "message": (
+                                "These handle references are not valid: "
+                                + ", ".join(sorted(set(unresolved)))
+                                + ". Use only a handle (and field) listed in the "
+                                "entity-handles section, or search for the record first."
+                            ),
+                        },
+                    }
+                else:
+                    result = await self.invoke_tool(name, args)
                 _emit({"type": "tool_result", "name": name, "result": result})
                 tool_calls_log.append({"name": name, "args": args, "result": result})
 
