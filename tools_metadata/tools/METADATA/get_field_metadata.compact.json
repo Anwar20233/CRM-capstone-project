@@ -1,0 +1,28 @@
+{
+  "name": "get_field_metadata",
+  "description": "Find fields metadata. Retrieve information about the fields of objects in the workspace data model.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "Unique identifier for the field metadata. If provided, returns a single field.",
+        "type": "string",
+        "format": "uuid"
+      },
+      "objectMetadataId": {
+        "description": "Filter fields by object metadata ID.",
+        "type": "string",
+        "format": "uuid"
+      },
+      "limit": {
+        "default": 100,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required": [
+      "limit"
+    ]
+  }
+}

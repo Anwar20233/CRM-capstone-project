@@ -1,0 +1,33 @@
+{
+  "name": "create_view_sort",
+  "description": "Add a sort to a view. Use list_object_metadata_items to get fieldMetadataId values.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "ID of the view to add the sort to",
+        "type": "string",
+        "format": "uuid"
+      },
+      "fieldMetadataId": {
+        "description": "ID of the field to sort by. Use list_object_metadata_items to find field IDs.",
+        "type": "string",
+        "format": "uuid"
+      },
+      "direction": {
+        "description": "Sort direction: ASC (ascending) or DESC (descending)",
+        "default": "ASC",
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      }
+    },
+    "required": [
+      "viewId",
+      "fieldMetadataId",
+      "direction"
+    ]
+  }
+}

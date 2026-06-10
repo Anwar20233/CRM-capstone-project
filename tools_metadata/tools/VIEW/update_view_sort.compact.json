@@ -1,0 +1,25 @@
+{
+  "name": "update_view_sort",
+  "description": "Update a sort on a view. Use get_view_sorts to find the sort ID.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "ID of the view sort to update",
+        "type": "string",
+        "format": "uuid"
+      },
+      "direction": {
+        "description": "New sort direction: ASC or DESC",
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

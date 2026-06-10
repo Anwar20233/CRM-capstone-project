@@ -1,0 +1,28 @@
+{
+  "name": "update_view_sort",
+  "description": "Update a sort on a view. Use get_view_sorts to find the sort ID.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "ID of the view sort to update",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "direction": {
+        "description": "New sort direction: ASC or DESC",
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "additionalProperties": false
+  }
+}

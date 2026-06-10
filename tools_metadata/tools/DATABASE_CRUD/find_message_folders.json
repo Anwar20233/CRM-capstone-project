@@ -1,0 +1,691 @@
+{
+  "name": "find_message_folders",
+  "description": "Search for Message Folders records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "limit": {
+        "description": "Maximum number of records to return (default: 10, max: 100). Start small and increase only if needed.",
+        "default": 10,
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 100
+      },
+      "offset": {
+        "description": "Number of records to skip (default: 0)",
+        "default": 0,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "orderBy": {
+        "description": "Sort records by field(s). CRITICAL for \"top N\", \"largest\", \"smallest\" queries. Each item is an object with exactly ONE property: field name as key, sort direction as value. Example: [{\"employees\": \"DescNullsLast\"}] sorts employees descending. Use \"DescNullsLast\" for top/largest, \"AscNullsFirst\" for bottom/smallest.",
+        "type": "array",
+        "items": {
+          "description": "Object with exactly ONE property: field name as key, OrderByDirection as value. Example: {\"employees\": \"DescNullsLast\"}",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "AscNullsFirst",
+              "AscNullsLast",
+              "DescNullsFirst",
+              "DescNullsLast"
+            ]
+          }
+        }
+      },
+      "name": {
+        "description": "Filter by name (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "syncCursor": {
+        "description": "Filter by syncCursor (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "isSentFolder": {
+        "description": "Filter by isSentFolder (boolean field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "boolean"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "isSynced": {
+        "description": "Filter by isSynced (boolean field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "boolean"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "parentFolderId": {
+        "description": "Filter by parentFolderId (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "externalId": {
+        "description": "Filter by externalId (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "pendingSyncAction": {
+        "description": "Filter by pendingSyncAction (select field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string",
+            "enum": [
+              "FOLDER_DELETION",
+              "NONE"
+            ]
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string",
+            "enum": [
+              "FOLDER_DELETION",
+              "NONE"
+            ]
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "FOLDER_DELETION",
+                "NONE"
+              ]
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "messageChannelId": {
+        "description": "Filter by messageChannelId (UUID field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "or": {
+        "description": "OR condition - matches if ANY of the filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "and": {
+        "description": "AND condition - matches if ALL filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "not": {
+        "description": "NOT condition - matches if the filter does NOT match",
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "required": [
+      "limit",
+      "offset"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Filter by name (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "syncCursor": {
+            "description": "Filter by syncCursor (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "isSentFolder": {
+            "description": "Filter by isSentFolder (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "isSynced": {
+            "description": "Filter by isSynced (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "parentFolderId": {
+            "description": "Filter by parentFolderId (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "externalId": {
+            "description": "Filter by externalId (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "pendingSyncAction": {
+            "description": "Filter by pendingSyncAction (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "FOLDER_DELETION",
+                  "NONE"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "FOLDER_DELETION",
+                  "NONE"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "FOLDER_DELETION",
+                    "NONE"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "messageChannelId": {
+            "description": "Filter by messageChannelId (UUID field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

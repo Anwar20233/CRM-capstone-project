@@ -1,0 +1,17 @@
+{
+  "name": "find_one_dashboard",
+  "description": "Retrieve a single Dashboard record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "The unique UUID of the record to retrieve",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

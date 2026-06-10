@@ -1,0 +1,62 @@
+{
+  "name": "delete_workflow_version_edge",
+  "description": "Delete a connection (edge) between workflow steps.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version",
+        "type": "string",
+        "format": "uuid"
+      },
+      "source": {
+        "description": "The source step: \"trigger\" or a step UUID",
+        "anyOf": [
+          {
+            "type": "string",
+            "const": "trigger"
+          },
+          {
+            "type": "string",
+            "format": "uuid"
+          }
+        ]
+      },
+      "target": {
+        "description": "The UUID of the target step",
+        "type": "string",
+        "format": "uuid"
+      },
+      "sourceConnectionOptions": {
+        "description": "Optional connection options for iterator steps",
+        "type": "object",
+        "properties": {
+          "connectedStepType": {
+            "type": "string",
+            "const": "ITERATOR"
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "isConnectedToLoop": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "isConnectedToLoop"
+            ]
+          }
+        },
+        "required": [
+          "connectedStepType",
+          "settings"
+        ]
+      }
+    },
+    "required": [
+      "workflowVersionId",
+      "source",
+      "target"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "get_view_filters",
+  "description": "List all filters applied to a view. Each filter defines a condition that records must match to appear in the view.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "ID of the view to list filters for. Obtain this from get_views.",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "viewId"
+    ]
+  }
+}

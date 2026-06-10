@@ -1,0 +1,103 @@
+{
+  "name": "create_attachment",
+  "description": "Create a new Attachment record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "Attachment name",
+        "type": "string"
+      },
+      "file": {
+        "description": "Attachment file",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileId",
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "fullPath": {
+        "description": "Attachment full path",
+        "type": "string"
+      },
+      "fileCategory": {
+        "description": "Attachment file category",
+        "type": "string",
+        "enum": [
+          "ARCHIVE",
+          "AUDIO",
+          "IMAGE",
+          "PRESENTATION",
+          "SPREADSHEET",
+          "TEXT_DOCUMENT",
+          "VIDEO",
+          "OTHER"
+        ]
+      },
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "targetTask": {
+        "description": "Attachment target",
+        "type": "string"
+      },
+      "targetNote": {
+        "description": "Attachment target",
+        "type": "string"
+      },
+      "targetPerson": {
+        "description": "Attachment target",
+        "type": "string"
+      },
+      "targetCompany": {
+        "description": "Attachment target",
+        "type": "string"
+      },
+      "targetOpportunity": {
+        "description": "Attachment target",
+        "type": "string"
+      },
+      "targetDashboard": {
+        "description": "Attachment target",
+        "type": "string"
+      },
+      "targetWorkflow": {
+        "description": "Attachment target",
+        "type": "string"
+      }
+    },
+    "required": [
+      "fileCategory",
+      "position"
+    ],
+    "additionalProperties": false
+  }
+}

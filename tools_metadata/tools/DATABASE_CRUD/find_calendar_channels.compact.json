@@ -1,0 +1,413 @@
+{
+  "name": "find_calendar_channels",
+  "description": "Search for Calendar Channels records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+  "inputSchema": {
+    "type": "object",
+    "required": [
+      "limit",
+      "offset"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "$ref": "#/$defs/_f2"
+          },
+          "visibility": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "METADATA",
+                  "SHARE_EVERYTHING"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "METADATA",
+                  "SHARE_EVERYTHING"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "METADATA",
+                    "SHARE_EVERYTHING"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "isContactAutoCreationEnabled": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "contactAutoCreationPolicy": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "AS_PARTICIPANT_AND_ORGANIZER",
+                  "AS_PARTICIPANT",
+                  "AS_ORGANIZER",
+                  "NONE"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "AS_PARTICIPANT_AND_ORGANIZER",
+                  "AS_PARTICIPANT",
+                  "AS_ORGANIZER",
+                  "NONE"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "AS_PARTICIPANT_AND_ORGANIZER",
+                    "AS_PARTICIPANT",
+                    "AS_ORGANIZER",
+                    "NONE"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "isSyncEnabled": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "syncCursor": {
+            "$ref": "#/$defs/_f2"
+          },
+          "syncStatus": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "ONGOING",
+                  "NOT_SYNCED",
+                  "ACTIVE",
+                  "FAILED_INSUFFICIENT_PERMISSIONS",
+                  "FAILED_UNKNOWN"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "ONGOING",
+                  "NOT_SYNCED",
+                  "ACTIVE",
+                  "FAILED_INSUFFICIENT_PERMISSIONS",
+                  "FAILED_UNKNOWN"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ONGOING",
+                    "NOT_SYNCED",
+                    "ACTIVE",
+                    "FAILED_INSUFFICIENT_PERMISSIONS",
+                    "FAILED_UNKNOWN"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "syncStage": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "$ref": "#/$defs/_f7"
+              },
+              "neq": {
+                "$ref": "#/$defs/_f7"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/_f7"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "syncStageStartedAt": {
+            "$ref": "#/$defs/_f9"
+          },
+          "syncedAt": {
+            "$ref": "#/$defs/_f9"
+          },
+          "throttleFailureCount": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "number"
+              },
+              "neq": {
+                "type": "number"
+              },
+              "gt": {
+                "type": "number"
+              },
+              "gte": {
+                "type": "number"
+              },
+              "lt": {
+                "type": "number"
+              },
+              "lte": {
+                "type": "number"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "connectedAccountId": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "neq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f2": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string"
+          },
+          "neq": {
+            "type": "string"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "type": "string"
+          },
+          "ilike": {
+            "type": "string"
+          },
+          "startsWith": {
+            "type": "string"
+          },
+          "endsWith": {
+            "type": "string"
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      },
+      "_f7": {
+        "type": "string",
+        "enum": [
+          "CALENDAR_EVENT_LIST_FETCH_PENDING",
+          "CALENDAR_EVENT_LIST_FETCH_SCHEDULED",
+          "CALENDAR_EVENT_LIST_FETCH_ONGOING",
+          "CALENDAR_EVENTS_IMPORT_PENDING",
+          "CALENDAR_EVENTS_IMPORT_SCHEDULED",
+          "CALENDAR_EVENTS_IMPORT_ONGOING",
+          "FAILED",
+          "PENDING_CONFIGURATION"
+        ]
+      },
+      "_f9": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "neq": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gte": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lte": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      }
+    },
+    "properties": {
+      "limit": {
+        "default": 10,
+        "type": "integer",
+        "maximum": 100
+      },
+      "offset": {
+        "default": 0,
+        "type": "integer",
+        "minimum": 0
+      },
+      "orderBy": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "AscNullsFirst",
+              "AscNullsLast",
+              "DescNullsFirst",
+              "DescNullsLast"
+            ]
+          }
+        }
+      }
+    },
+    "allOf": [
+      {
+        "$ref": "#/$defs/__schema0"
+      }
+    ]
+  }
+}

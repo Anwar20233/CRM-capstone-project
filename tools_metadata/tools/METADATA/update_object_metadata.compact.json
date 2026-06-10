@@ -1,0 +1,63 @@
+{
+  "name": "update_object_metadata",
+  "description": "Update an existing object metadata. Provide the object ID and the fields to update.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "ID of the object to update",
+        "type": "string",
+        "format": "uuid"
+      },
+      "labelSingular": {
+        "description": "Display label in singular form",
+        "type": "string"
+      },
+      "labelPlural": {
+        "description": "Display label in plural form",
+        "type": "string"
+      },
+      "nameSingular": {
+        "description": "Singular name for the object",
+        "type": "string"
+      },
+      "namePlural": {
+        "description": "Plural name for the object",
+        "type": "string"
+      },
+      "description": {
+        "description": "Description of the object",
+        "type": "string"
+      },
+      "icon": {
+        "description": "Icon identifier for the object",
+        "type": "string"
+      },
+      "shortcut": {
+        "description": "Keyboard shortcut for the object",
+        "type": "string"
+      },
+      "isActive": {
+        "description": "Whether the object is active",
+        "type": "boolean"
+      },
+      "labelIdentifierFieldMetadataId": {
+        "description": "ID of the field used as label identifier",
+        "type": "string",
+        "format": "uuid"
+      },
+      "imageIdentifierFieldMetadataId": {
+        "description": "ID of the field used as image identifier",
+        "type": "string",
+        "format": "uuid"
+      },
+      "isLabelSyncedWithName": {
+        "description": "Whether label should sync with name changes",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

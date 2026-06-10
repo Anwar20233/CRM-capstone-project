@@ -1,0 +1,49 @@
+{
+  "name": "create_many_message_threads",
+  "description": "Create multiple Message Threads records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "records": {
+        "description": "Array of records to create. Each record should contain the required fields. Maximum 20 records per call.",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "first"
+                },
+                {
+                  "type": "string",
+                  "const": "last"
+                }
+              ]
+            },
+            "subject": {
+              "description": "Subject",
+              "type": "string"
+            }
+          },
+          "required": [
+            "position"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "records"
+    ],
+    "additionalProperties": false
+  }
+}

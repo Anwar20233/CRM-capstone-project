@@ -1,0 +1,37 @@
+{
+  "name": "code_interpreter",
+  "description": "Execute Python code in a sandboxed environment for data analysis, CSV processing, calculations, and chart generation. Returns stdout, stderr, and generated files. Input files are available at /home/user/{filename}. Save output files (charts, reports) to /home/user/output/ using plt.savefig() for matplotlib charts.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "code": {
+        "description": "Python code to execute",
+        "type": "string"
+      },
+      "files": {
+        "description": "Files to make available in the execution environment",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "description": "Name of the file",
+              "type": "string"
+            },
+            "fileId": {
+              "description": "ID of the uploaded file (from user attachments)",
+              "type": "string"
+            }
+          },
+          "required": [
+            "filename",
+            "fileId"
+          ]
+        }
+      }
+    },
+    "required": [
+      "code"
+    ]
+  }
+}
