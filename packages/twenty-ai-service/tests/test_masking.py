@@ -179,6 +179,45 @@ class TestRecordRegistration:
         assert handle is not None and handle.is_resolved
         assert handle.fields["id"] == "company-uuid-1"
 
+    def test_email_field_not_masked_as_person_surface(self) -> None:
+        # The email address stored on a person record is a field value, not a
+        # masking surface. Adding it to surfaces caused the LLM to see "person001"
+        # where an email should appear and unmask it to the person's display name
+        # (the Patrick Collison / Dario Amodei bug).
+        handle_map = EntityHandleMap(extractor=lambda text: [])
+        person = {
+            "id": "p1",
+            "name": {"firstName": "Dario", "lastName": "Amodei"},
+            "emails": {"primaryEmail": "dario@anthropic.com"},
+        }
+        handle_map.register_resolved("person", person)
+
+        result = {"email": "dario@anthropic.com", "name": "Dario Amodei"}
+        masked = handle_map.mask_value(result)
+        assert masked["email"] == "dario@anthropic.com", (
+            f"email was masked away: {masked['email']!r}"
+        )
+        assert "Dario" not in masked["name"]
+
+    def test_company_name_not_replaced_inside_url(self) -> None:
+        # A company name that appears as a substring inside its own domain URL must
+        # not be substituted (the "https://company010.com" Anthropic bug). The name
+        # is still replaced in plain prose.
+        handle_map = EntityHandleMap(extractor=lambda text: [])
+        company = {
+            "id": "c1",
+            "name": "Anthropic",
+            "domainName": {"primaryLinkUrl": "https://anthropic.com"},
+        }
+        handle_map.register_resolved("company", company)
+
+        result = {"website": "https://anthropic.com", "note": "Contact Anthropic"}
+        masked = handle_map.mask_value(result)
+        assert masked["website"] == "https://anthropic.com", (
+            f"URL was corrupted: {masked['website']!r}"
+        )
+        assert "Anthropic" not in masked["note"]
+
 
 # ---------------------------------------------------------------------------
 # CRM resolver

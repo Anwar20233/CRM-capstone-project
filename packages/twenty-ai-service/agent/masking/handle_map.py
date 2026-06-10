@@ -395,17 +395,40 @@ class EntityHandleMap:
         for normalized, handle in self._by_surface.items():
             yield normalized, handle
 
-    @staticmethod
-    def _replace(text: str, pairs: list[tuple[str, str]]) -> str:
+    # Matches URLs (http/https/www) and bare email addresses. These tokens are
+    # stashed behind placeholders before name replacement runs so that a company
+    # name like "Anthropic" is never substituted inside "https://anthropic.com"
+    # or a person's name inside their email address domain.
+    _PROTECTED_TOKEN_RE = re.compile(
+        r"https?://\S+|www\.\S+|\S+@\S+\.\S+",
+        re.IGNORECASE,
+    )
+
+    @classmethod
+    def _replace(cls, text: str, pairs: list[tuple[str, str]]) -> str:
         """Replace each surface with its handle, longest-first, case-insensitively.
 
         Longest-first stops a short surface ("Acme") from corrupting a longer
         one ("Acme Corp"); alnum look-arounds keep us from masking inside a word.
+        URLs and email addresses are stashed behind null-byte sentinels before
+        replacement runs and restored afterwards — preventing a company name from
+        being substituted inside its own domain (e.g. "anthropic" in a URL).
         Surfaces already equal to their handle name are skipped (idempotent).
         """
         if not text:
             return text
-        seen: set[str] = set()
+
+        # Stash URLs / emails so name replacement never touches them.
+        protected: list[str] = []
+
+        def stash(match: re.Match[str]) -> str:
+            slot = f"\x00P{len(protected)}\x00"
+            protected.append(match.group(0))
+            return slot
+
+        text = cls._PROTECTED_TOKEN_RE.sub(stash, text)
+
+        seen: set[tuple[str, str]] = set()
         for surface, name in sorted(pairs, key=lambda pair: len(pair[0]), reverse=True):
             if not surface or surface == name or (surface, name) in seen:
                 continue
@@ -415,6 +438,11 @@ class EntityHandleMap:
                 re.IGNORECASE,
             )
             text = pattern.sub(lambda _match, replacement=name: replacement, text)
+
+        # Restore stashed tokens verbatim.
+        for index, original in enumerate(protected):
+            text = text.replace(f"\x00P{index}\x00", original)
+
         return text
 
     @classmethod
@@ -475,11 +503,14 @@ def _record_display(record: dict[str, Any]) -> tuple[str, set[str], dict[str, An
     email = _primary(record.get("emails"), "primaryEmail")
     if email:
         fields["email"] = email
-        surfaces.add(email)
+        # Email is a field value, not a name surface — adding it to surfaces would
+        # cause the person handle to replace the email string wherever it appears
+        # (e.g. in tool results), making the LLM output the person's name instead
+        # of the actual email address.
     phone = _primary(record.get("phones"), "primaryPhoneNumber")
     if phone:
         fields["phone"] = phone
-        surfaces.add(phone)
+        # Same as email: phone numbers are field values, not masking surfaces.
     domain = _primary(record.get("domainName"), "primaryLinkUrl")
     if domain:
         fields["domainName"] = domain
