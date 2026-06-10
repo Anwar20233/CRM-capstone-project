@@ -1,0 +1,11 @@
+# Prompt-optimization toolchain (DSPy). Kept separate from the prod
+# requirements.txt so the runtime image never ships the optimizer stack.
+#
+# Install into the same venv as requirements.txt:
+#   .venv/bin/pip install -r requirements-optimization.txt
+#
+# Pinned for reproducible optimization runs.
+dspy-ai==2.6.27
+# dspy pulls these in, pinned here so optimization runs are reproducible.
+litellm>=1.51.0
+pandas>=2.0

@@ -1,0 +1,1571 @@
+[
+  {
+    "id": "W-CREATE_PERSON-01",
+    "category": "create_person",
+    "request": "Create a person record for Dev Lee, Director of Digital Transformation at Crescent Group.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-02",
+    "category": "create_person",
+    "request": "Create a person record for Patricia, Account Manager at TechBase.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-CREATE_PERSON-03",
+    "category": "create_person",
+    "request": "Create a person record for Claudia Renz, VP Sales at Stellar Group.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-04",
+    "category": "create_person",
+    "request": "Create a person record for Sarah Park, General Counsel at Monday.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-05",
+    "category": "create_person",
+    "request": "Create a person record for Linda, Partnership Manager at Nexus Capital.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-CREATE_PERSON-06",
+    "category": "create_person",
+    "request": "Create a person record for Mike Turner, Head of Operations at Fusion Labs.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CREATE_PERSON-07",
+    "category": "create_person",
+    "request": "Create a person record for Mike Turner, Head of Technology at TechBloom.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CREATE_PERSON-08",
+    "category": "create_person",
+    "request": "Create a person record for Wendy Cross, Project Manager at NovaTech Solutions.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-09",
+    "category": "create_person",
+    "request": "Create a person record for Marco Bellini, Regional Director at Apple.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-10",
+    "category": "create_person",
+    "request": "Create a person record for Mike, Head of RevOps at Navara Group.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-11",
+    "category": "create_person",
+    "request": "Create a person record for Diane Cho, CPO at Cyberdyne Systems.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CREATE_PERSON-12",
+    "category": "create_person",
+    "request": "Create a person record for Erik Andersen, Head of Technology at Hartmann AG.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-13",
+    "category": "create_person",
+    "request": "Create a person record for David Kim, CISO at NovaTech.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-CREATE_PERSON-14",
+    "category": "create_person",
+    "request": "Create a person record for James, Account Executive at Target.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-15",
+    "category": "create_person",
+    "request": "Create a person record for James, Account Manager at Saudi National Bank.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_PERSON-16",
+    "category": "create_person",
+    "request": "Create a person record for Rami, CPTO at Apple.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_COMPANY-01",
+    "category": "create_company",
+    "request": "Add a new company Saudi National Bank based in Jeddah to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-CREATE_COMPANY-02",
+    "category": "create_company",
+    "request": "Add a new company BlueRidge Capital based in Dubai to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CREATE_COMPANY-03",
+    "category": "create_company",
+    "request": "Add a new company Ardent Systems based in Madrid to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_COMPANY-04",
+    "category": "create_company",
+    "request": "Add a new company TechBase based in Bahrain to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-CREATE_COMPANY-05",
+    "category": "create_company",
+    "request": "Add a new company Fusion Tech based in Dubai to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_COMPANY-06",
+    "category": "create_company",
+    "request": "Add a new company Velo Corp based in Jordan to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CREATE_COMPANY-07",
+    "category": "create_company",
+    "request": "Add a new company ByteStream Inc. based in Mexico City to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_COMPANY-08",
+    "category": "create_company",
+    "request": "Add a new company TechForward Group based in Canary Wharf to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_COMPANY-09",
+    "category": "create_company",
+    "request": "Add a new company GlobalServ based in Phoenix to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_COMPANY-10",
+    "category": "create_company",
+    "request": "Add a new company FordWorks based in Canary Wharf to the CRM.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-01",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for Crestview Corp worth $9,600 at the Proposal stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-02",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for Surge Dynamics worth $30k at the Discovery stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-03",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for NordCom Group worth $8,500/month at the Negotiation stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-04",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for Falcon Industries worth GBP 40,000 at the Discovery stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-05",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for SkyGroup worth $8,500/month at the Discovery stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-06",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for DataSphere worth $799/month at the Negotiation stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-07",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for Comet Technologies worth $25,000 at the Negotiation stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-CREATE_OPPORTUNITY-08",
+    "category": "create_opportunity",
+    "request": "Create an opportunity for NorthStar worth $45,000 at the Discovery stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-UPDATE_PERSON-01",
+    "category": "update_person",
+    "request": "Update Anna Lee's email address to t.reyes@helixgroup.com.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-UPDATE_PERSON-02",
+    "category": "update_person",
+    "request": "Update Khalid Al-Mansouri's email address to omar.nassif@gulfretail.com.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-UPDATE_PERSON-03",
+    "category": "update_person",
+    "request": "Update Mike Turner's email address to omar.nassif@gulfretail.com.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-UPDATE_PERSON-04",
+    "category": "update_person",
+    "request": "Update Paul Chen's email address to po@deltatech.com.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-UPDATE_COMPANY-01",
+    "category": "update_company",
+    "request": "Update the address of Fusion Tech to Jordan.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-UPDATE_COMPANY-02",
+    "category": "update_company",
+    "request": "Update the address of TechForward Group to Madrid.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-UPDATE_OPPORTUNITY-01",
+    "category": "update_opportunity",
+    "request": "Update the opportunity for Cortex to the Proposal stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-UPDATE_OPPORTUNITY-02",
+    "category": "update_opportunity",
+    "request": "Update the opportunity for Bridgeway Corp to the Proposal stage.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "update_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-NOTE_TASK-01",
+    "category": "note_task",
+    "request": "Add a note to Sarah saying they confirmed interest in a demo.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_note",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-NOTE_TASK-02",
+    "category": "note_task",
+    "request": "Add a note to Helena Voss saying they confirmed interest in a demo.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_note",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-NOTE_TASK-03",
+    "category": "note_task",
+    "request": "Add a note to Sophie Laurent saying they confirmed interest in a demo.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_note",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-NOTE_TASK-04",
+    "category": "note_task",
+    "request": "Add a note to Marco Bellini saying they confirmed interest in a demo.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_note",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-NOTE_TASK-05",
+    "category": "note_task",
+    "request": "Add a note to Ben Strauss saying they confirmed interest in a demo.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_note",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-NOTE_TASK-06",
+    "category": "note_task",
+    "request": "Create a follow-up task to call Sarah Kim about the proposal.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-NOTE_TASK-07",
+    "category": "note_task",
+    "request": "Create a follow-up task to call Jane Summers about the proposal.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-NOTE_TASK-08",
+    "category": "note_task",
+    "request": "Create a follow-up task to call Ahmed Al-Rashid about the proposal.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-NOTE_TASK-09",
+    "category": "note_task",
+    "request": "Create a follow-up task to call Nina Clarke about the proposal.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-NOTE_TASK-10",
+    "category": "note_task",
+    "request": "Create a follow-up task to call Rami about the proposal.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-RELATIVE_DATE-01",
+    "category": "relative_date",
+    "request": "Create a task to follow up with Roland Becker end of month.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-RELATIVE_DATE-02",
+    "category": "relative_date",
+    "request": "Create a task to follow up with Isabella Moreno next week.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-RELATIVE_DATE-03",
+    "category": "relative_date",
+    "request": "Create a task to follow up with Julia end of month.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-RELATIVE_DATE-04",
+    "category": "relative_date",
+    "request": "Create a task to follow up with Max in 2 weeks.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-RELATIVE_DATE-05",
+    "category": "relative_date",
+    "request": "Create a task to follow up with Marcus Webb in 2 weeks.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-RELATIVE_DATE-06",
+    "category": "relative_date",
+    "request": "Create a task to follow up with Tara Mills end of month.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_task",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-RELATIVE_DATE-07",
+    "category": "relative_date",
+    "request": "Create an opportunity for Prism Tech worth $150/seat/month closing tomorrow.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-RELATIVE_DATE-08",
+    "category": "relative_date",
+    "request": "Create an opportunity for Monday worth $87,000 closing next Friday.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-RELATIVE_DATE-09",
+    "category": "relative_date",
+    "request": "Create an opportunity for StormEdge Technologies worth $299/month closing tomorrow.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-RELATIVE_DATE-10",
+    "category": "relative_date",
+    "request": "Create an opportunity for Lincoln worth 50,000 USD closing end of month.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_opportunity",
+      "required_tools": [
+        "resolve_date",
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": true,
+      "min_tool_calls": 3
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-01",
+    "category": "tier3_confirm",
+    "request": "Delete the person record for David Kim.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-02",
+    "category": "tier3_confirm",
+    "request": "Delete the person record for Josh.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-03",
+    "category": "tier3_confirm",
+    "request": "Delete the person record for sara.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-04",
+    "category": "tier3_confirm",
+    "request": "Delete the person record for Paula Schneider.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-05",
+    "category": "tier3_confirm",
+    "request": "Delete the person record for Dev Lee.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_person",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-06",
+    "category": "tier3_confirm",
+    "request": "Delete the company Edison Group from the CRM.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-07",
+    "category": "tier3_confirm",
+    "request": "Delete the company NovaBridge from the CRM.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-08",
+    "category": "tier3_confirm",
+    "request": "Delete the company apex from the CRM.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_company",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-09",
+    "category": "tier3_confirm",
+    "request": "Remove the opportunity associated with Titan Corp.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-10",
+    "category": "tier3_confirm",
+    "request": "Remove the opportunity associated with Cyberdyne Systems.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "delete_opportunity",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-11",
+    "category": "tier3_confirm",
+    "request": "Advance the techcorp deal to Closed Won.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "advance_deal_stage",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-12",
+    "category": "tier3_confirm",
+    "request": "Advance the Lincoln deal to Closed Won.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "advance_deal_stage",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-13",
+    "category": "tier3_confirm",
+    "request": "Advance the Orbit Labs deal to Closed Won.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "advance_deal_stage",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-14",
+    "category": "tier3_confirm",
+    "request": "Move all opportunities in the Discovery stage to Negotiation.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "update_many_opportunities",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-15",
+    "category": "tier3_confirm",
+    "request": "Move all opportunities in the Proposal stage to Negotiation.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "update_many_opportunities",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-TIER3_CONFIRM-16",
+    "category": "tier3_confirm",
+    "request": "Move all opportunities in the Discovery stage to Negotiation.",
+    "gold": {
+      "outcome": "confirmation_required",
+      "primary_action": "update_many_opportunities",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-BULK-01",
+    "category": "bulk",
+    "request": "Create people records for Hana Abdelaziz and Natasha Wells, both at Meridian Group.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_many_people",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-BULK-02",
+    "category": "bulk",
+    "request": "Create people records for Linda Chen and Yara Hassan, both at Gulf Retail Corp.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_many_people",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-BULK-03",
+    "category": "bulk",
+    "request": "Create people records for James Whitfield and Claudia Renz, both at Nexus Capital.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_many_people",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-BULK-04",
+    "category": "bulk",
+    "request": "Create people records for Priya Nair and Sarah Park, both at HealthAxis MENA.",
+    "gold": {
+      "outcome": "executed",
+      "primary_action": "create_many_people",
+      "required_tools": [
+        "learn_tools",
+        "execute_tool"
+      ],
+      "needs_resolve_date": false,
+      "min_tool_calls": 2
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-READ_REJECTION-01",
+    "category": "read_rejection",
+    "request": "Find all people at Coda Enterprises.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-READ_REJECTION-02",
+    "category": "read_rejection",
+    "request": "Search for Nina Clarke and tell me their email.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-READ_REJECTION-03",
+    "category": "read_rejection",
+    "request": "List every opportunity in the Closed Lost stage.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-READ_REJECTION-04",
+    "category": "read_rejection",
+    "request": "How many companies are based in Abu Dhabi?",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-READ_REJECTION-05",
+    "category": "read_rejection",
+    "request": "Look up the phone number for Julia.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-READ_REJECTION-06",
+    "category": "read_rejection",
+    "request": "Show me the most recent notes on Target.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-READ_REJECTION-07",
+    "category": "read_rejection",
+    "request": "Who is the primary contact at MENA FSI?",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-READ_REJECTION-08",
+    "category": "read_rejection",
+    "request": "Get the details of the Edison Group opportunity.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-READ_REJECTION-09",
+    "category": "read_rejection",
+    "request": "Find Nadia Osei's record and summarise their activity.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-READ_REJECTION-10",
+    "category": "read_rejection",
+    "request": "Retrieve all tasks due this week.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CLARIFY-01",
+    "category": "clarify",
+    "request": "Create a new person.",
+    "gold": {
+      "outcome": "clarification_needed",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CLARIFY-02",
+    "category": "clarify",
+    "request": "Update the opportunity.",
+    "gold": {
+      "outcome": "clarification_needed",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CLARIFY-03",
+    "category": "clarify",
+    "request": "Add a note.",
+    "gold": {
+      "outcome": "clarification_needed",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-CLARIFY-04",
+    "category": "clarify",
+    "request": "Create a company.",
+    "gold": {
+      "outcome": "clarification_needed",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-CLARIFY-05",
+    "category": "clarify",
+    "request": "Update that person's title.",
+    "gold": {
+      "outcome": "clarification_needed",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-CLARIFY-06",
+    "category": "clarify",
+    "request": "Delete the record.",
+    "gold": {
+      "outcome": "clarification_needed",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  },
+  {
+    "id": "W-OUT_OF_SCOPE-01",
+    "category": "out_of_scope",
+    "request": "Run a Python script to calculate our quarterly churn rate.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "val"
+  },
+  {
+    "id": "W-OUT_OF_SCOPE-02",
+    "category": "out_of_scope",
+    "request": "Send an HTTP request to our analytics API and import the results.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "test"
+  },
+  {
+    "id": "W-OUT_OF_SCOPE-03",
+    "category": "out_of_scope",
+    "request": "Post an announcement about this deal to our company Slack channel.",
+    "gold": {
+      "outcome": "rejected_out_of_scope",
+      "primary_action": null,
+      "required_tools": [],
+      "needs_resolve_date": false,
+      "min_tool_calls": 0
+    },
+    "split": "train"
+  }
+]
