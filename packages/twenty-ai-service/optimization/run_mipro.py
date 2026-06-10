@@ -11,9 +11,12 @@ point against GEPA.
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
-import optimization._bootstrap  # noqa: F401
+# Put the service root on sys.path before importing the optimization package.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import dspy
 
 from optimization.harness import config

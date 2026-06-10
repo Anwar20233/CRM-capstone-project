@@ -20,6 +20,23 @@ from optimization.harness.worker_program import WriterProgram, load_dataset
 
 _REPORTS = Path(__file__).resolve().parent.parent / "reports"
 
+_masking_warmed = False
+
+
+def warm_up_masking() -> bool:
+    """Load the Presidio NER model once, up front, so masking reliably engages
+    (and we surface a clear status instead of silently degrading mid-run)."""
+    global _masking_warmed
+    if _masking_warmed:
+        return True
+    from pipelines import load_models, models_loaded
+
+    load_models()
+    available = models_loaded()
+    print(f"[masking] Presidio NER {'loaded' if available else 'UNAVAILABLE (masking disabled)'}")
+    _masking_warmed = True
+    return available
+
 
 def evaluate_prompt(
     prompt: str,
@@ -30,6 +47,7 @@ def evaluate_prompt(
     label: str = "prompt",
 ) -> dict[str, Any]:
     """Run *prompt* over *split* (optionally repeated) and return a report dict."""
+    warm_up_masking()
     program = WriterProgram(
         prompt, model=model, teardown=True, run_carrier=False
     )
