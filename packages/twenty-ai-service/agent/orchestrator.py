@@ -29,12 +29,21 @@ The in-session ``remember``/``recall`` tools are separate stubs (see
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass, field
 from typing import Any
 
 from agent.agent_registry import build_default_registry
 from agent.agent_scope import ORCHESTRATOR_SCOPE
 from agent.agent_tools import build_agent_tools
-from agent.masking import PIISessionMap
+from agent.masking import (
+    DEFAULT_LABEL_TO_TYPE,
+    RESOLVABLE_TYPES,
+    CRMResolver,
+    EntityHandleMap,
+    Resolution,
+    build_bridge_search,
+)
 from agent.stubs.memory_stubs import SessionMemory, build_memory_tools
 from agent.tool_scope import READER_SCOPE
 from agent.workers.base_worker import BaseWorker
@@ -59,11 +68,15 @@ coordinate specialist sub-agents — you never read or write the CRM yourself.
    see how to instruct the ones you need. NEVER assume which agents exist or what
    they accept — always discover them.
 3. Activate sub-agents with ``delegate_to_agent`` (one clear instruction each).
-   Respect dependencies: resolve entities FIRST (the reader turns a name like
-   "John" into a concrete record), THEN act (give the writer the resolved record
-   id), THEN any follow-up/scheduling/research.
+   People and companies in the user's message are already resolved into handles
+   (e.g. person001, company002) listed in the entity-handles section. Pass the
+   handle or a field like person001.id straight to the writer — you usually do
+   NOT need the reader to resolve a name that already has a handle. Use the
+   reader only for lookups with no handle yet. Resolve FIRST, then act, then any
+   follow-up/scheduling/research.
 4. If the reader returns ``resolution: "multiple"`` or ``"none"``, ask the user
-   to disambiguate instead of guessing.
+   to disambiguate instead of guessing. (Ambiguous names in the user's message
+   are already turned into a clarifying question before you run.)
 5. Use ``remember``/``recall``/``get_session_context`` to carry key facts (e.g.
    the record currently in focus) across turns.
 6. When all sub-tasks are done, reply to the user with one consolidated,
@@ -88,6 +101,77 @@ def _estimate_tokens(text: str) -> int:
         return len(text) // 4
 
 
+@dataclass
+class _Ambiguity:
+    """A name in the user's message that matched more than one CRM record."""
+
+    entity_type: str  # "person" | "company"
+    query: str  # the name as the user wrote it
+    candidates: list[dict[str, Any]]  # the matching records
+
+
+@dataclass
+class _PendingDisambiguation:
+    """State carried to the next turn while waiting for the user to choose."""
+
+    original_message: str
+    ambiguities: list[_Ambiguity] = field(default_factory=list)
+
+
+def _candidate_label(record: dict[str, Any]) -> str:
+    """A short human label distinguishing one candidate from another."""
+    name = record.get("name")
+    if isinstance(name, dict):
+        display = " ".join(
+            part for part in (name.get("firstName"), name.get("lastName")) if part
+        )
+    else:
+        display = str(name or "").strip()
+    email = _primary(record.get("emails"), "primaryEmail")
+    company = record.get("company")
+    company_name = company.get("name") if isinstance(company, dict) else None
+    detail = email or company_name
+    return f"{display} ({detail})" if detail else display or record.get("id", "?")
+
+
+def _primary(value: Any, key: str) -> str | None:
+    return value.get(key) if isinstance(value, dict) else None
+
+
+def _format_disambiguation(ambiguities: list[_Ambiguity]) -> str:
+    """Build the clarifying question listing each ambiguous name's candidates."""
+    blocks: list[str] = []
+    for ambiguity in ambiguities:
+        lines = [f'Which "{ambiguity.query}" ({ambiguity.entity_type}) did you mean?']
+        for index, candidate in enumerate(ambiguity.candidates, start=1):
+            lines.append(f"  {index}. {_candidate_label(candidate)}")
+        blocks.append("\n".join(lines))
+    return "\n\n".join(blocks)
+
+
+def _match_choice(reply: str, candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Resolve a user's reply to one candidate, by ordinal or distinguishing text.
+
+    Accepts "1"/"2" (1-based), or any candidate whose label/email/company name
+    the reply contains. Returns ``None`` when the reply is too ambiguous to bind.
+    """
+    normalized = reply.strip().casefold()
+
+    ordinals = re.findall(r"\b(\d+)\b", normalized)
+    if len(ordinals) == 1:
+        index = int(ordinals[0]) - 1
+        if 0 <= index < len(candidates):
+            return candidates[index]
+
+    matches: list[dict[str, Any]] = []
+    for candidate in candidates:
+        label = _candidate_label(candidate).casefold()
+        email = (_primary(candidate.get("emails"), "primaryEmail") or "").casefold()
+        if (label and label in normalized) or (email and email in normalized):
+            matches.append(candidate)
+    return matches[0] if len(matches) == 1 else None
+
+
 class Orchestrator:
     """Planner/activator agent: plans intents and activates sub-agents."""
 
@@ -97,14 +181,21 @@ class Orchestrator:
         model: str | None = None,
         *,
         compaction_token_limit: int = MEMORY_COMPACTION_TOKEN_LIMIT,
+        resolver: CRMResolver | None = None,
     ) -> None:
         self.session_id = session_id
         self.model = model
         self.compaction_token_limit = compaction_token_limit
         # Mask/unmask is owned by the inner worker; exposed for REPL/trace tools.
 
-        # One PII map shared with every sub-agent so tokens stay consistent.
-        self.pii_map = PIISessionMap()
+        # One handle map shared with every sub-agent so handles stay consistent.
+        self.pii_map = EntityHandleMap()
+        # Deterministic name → CRM record resolution at mask time. Injectable for
+        # tests; defaults to the reader-scoped bridge search.
+        self.resolver = resolver or CRMResolver(build_bridge_search())
+        # Candidates awaiting the user's disambiguation, set when a name in the
+        # last message matched more than one record (see _resolve_message).
+        self._pending: _PendingDisambiguation | None = None
         self.memory = SessionMemory(session_id)
         self.registry = build_default_registry(
             session_id=session_id, model=model, pii_map=self.pii_map
@@ -137,17 +228,131 @@ class Orchestrator:
         *,
         on_event: Any = None,
     ) -> dict[str, Any]:
-        """Plan and activate sub-agents for one user message; return the result."""
+        """Plan and activate sub-agents for one user message; return the result.
+
+        Before any LLM work, the message's people/companies are resolved to CRM
+        records and registered as handles in the shared map. If a name matches
+        more than one record, we short-circuit and ask the user to choose rather
+        than guessing — the chosen record is bound on the next turn.
+        """
+        # If we're waiting on a disambiguation, try to bind the user's choice and
+        # resume the original request; otherwise treat this as a fresh message.
+        message, gate = await self._resolve_turn(user_message)
+        if gate is not None:
+            self._turns.append({"role": "user", "content": user_message})
+            self._turns.append({"role": "assistant", "content": gate})
+            return {"response": gate, "tool_calls": []}
+
         await self._maybe_compact()
         prior = self._build_prior_messages()
 
         result = await self._worker.run(
-            user_message, prior_messages=prior, on_event=on_event
+            message, prior_messages=prior, on_event=on_event
         )
 
         self._turns.append({"role": "user", "content": user_message})
         self._turns.append({"role": "assistant", "content": result["response"]})
         return result
+
+    # -- Mask-time resolution & disambiguation --------------------------
+
+    async def _resolve_turn(self, user_message: str) -> tuple[str, str | None]:
+        """Resolve entities for this turn into handles.
+
+        Returns ``(message_to_run, gate)``. When *gate* is non-``None`` the turn
+        is a clarifying question to the user and no sub-agent should run. The
+        returned *message_to_run* is the original message, or — when a pending
+        disambiguation is satisfied here — the message that triggered it.
+        """
+        message = user_message
+        if self._pending is not None:
+            # Try to bind the reply to a pending candidate; on success resume the
+            # request that needed it. Either way the pending state is consumed —
+            # if the reply was a new topic, it's re-resolved fresh below.
+            if self._bind_pending_choice(user_message):
+                message = self._pending.original_message
+            self._pending = None
+
+        ambiguities = await self._resolve_message(message)
+        if ambiguities:
+            self._pending = _PendingDisambiguation(
+                original_message=message, ambiguities=ambiguities
+            )
+            return message, _format_disambiguation(ambiguities)
+        return message, None
+
+    async def _resolve_message(self, message: str) -> list[_Ambiguity]:
+        """Detect entities, resolve people/companies, register handles.
+
+        People are resolved with the single mentioned company as context (joint
+        search with fallbacks lives in the resolver). Returns the list of names
+        that matched several records.
+        """
+        spans = self.pii_map.detect(message)
+        by_type: dict[str, list[str]] = {}
+        for span in spans:
+            entity_type = DEFAULT_LABEL_TO_TYPE.get(span.get("label", ""))
+            surface = (span.get("text") or "").strip()
+            if entity_type and surface:
+                by_type.setdefault(entity_type, []).append(surface)
+
+        companies = by_type.get("company", [])
+        company_context = companies[0] if len(companies) == 1 else None
+
+        ambiguities: list[_Ambiguity] = []
+        for name in companies:
+            if self._already_resolved(name):
+                continue
+            ambiguities += self._register(await self.resolver.resolve_company(name), name)
+        for name in by_type.get("person", []):
+            if self._already_resolved(name):
+                continue
+            ambiguities += self._register(
+                await self.resolver.resolve_person(name, company_context), name
+            )
+        # Privacy-only entities (email/phone/location/url) are masked, not resolved.
+        for entity_type, surfaces in by_type.items():
+            if entity_type in RESOLVABLE_TYPES:
+                continue
+            for surface in surfaces:
+                self.pii_map.register_privacy(entity_type, surface)
+        return ambiguities
+
+    def _already_resolved(self, name: str) -> bool:
+        """True if *name* already maps to a CRM-backed handle (resolved earlier).
+
+        Skips re-resolving — both within a turn and after a disambiguation choice
+        is bound — so a name the user already pinned down isn't re-questioned.
+        """
+        handle = self.pii_map.handle_for_surface(name)
+        return handle is not None and handle.is_resolved
+
+    def _register(self, resolution: Resolution, name: str) -> list[_Ambiguity]:
+        """Apply one resolution to the handle map; collect ambiguities.
+
+        ``single`` → a resolved handle. ``none`` → a privacy handle (masked, but
+        unresolved; the writer may create the record). ``multiple`` → deferred:
+        no handle is created yet so the chosen record can cleanly claim the
+        surface once the user disambiguates.
+        """
+        if resolution.status == "single" and resolution.record is not None:
+            self.pii_map.register_resolved(resolution.entity_type, resolution.record)
+            return []
+        if resolution.status == "multiple":
+            return [_Ambiguity(resolution.entity_type, name, resolution.records)]
+        self.pii_map.register_privacy(resolution.entity_type, name)
+        return []
+
+    def _bind_pending_choice(self, reply: str) -> bool:
+        """Bind the user's reply to pending candidates; True if all resolved."""
+        assert self._pending is not None
+        bound_any = False
+        for ambiguity in self._pending.ambiguities:
+            chosen = _match_choice(reply, ambiguity.candidates)
+            if chosen is not None:
+                self.pii_map.register_resolved(ambiguity.entity_type, chosen)
+                bound_any = True
+        return bound_any
 
     # ``handle`` is the orchestrator's entry-point; ``run`` is an alias so it is
     # drop-in compatible with the ``BaseWorker``-driven REPL/trace harness.

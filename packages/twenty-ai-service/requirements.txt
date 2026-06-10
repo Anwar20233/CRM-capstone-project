@@ -2,7 +2,11 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 pydantic==2.10.4
-gliner==0.2.13
+# PII detection: Presidio analyzer over a spaCy NLP model. The transformer
+# model (en_core_web_trf, installed separately via `python -m spacy download`)
+# is the default; PRESIDIO_SPACY_MODEL can swap in a lighter model.
+presidio-analyzer==2.2.355
+spacy==3.7.5
 torch==2.5.1
 transformers==4.47.1
 httpx==0.28.1

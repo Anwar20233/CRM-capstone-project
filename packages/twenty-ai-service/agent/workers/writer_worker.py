@@ -23,7 +23,7 @@ Usage::
 
 from __future__ import annotations
 
-from agent.masking import PIISessionMap
+from agent.masking import EntityHandleMap
 from agent.stubs.safety_tools import build_utility_tools
 from agent.tool_scope import WRITER_SCOPE
 from agent.workers.base_worker import BaseWorker
@@ -89,7 +89,7 @@ class WriterWorker(BaseWorker):
         session_id: str = "default",
         model: str | None = None,
         *,
-        pii_map: PIISessionMap | None = None,
+        pii_map: EntityHandleMap | None = None,
     ) -> None:
         policy = WritePolicy(session_id=session_id)
 
