@@ -357,6 +357,16 @@ class BaseWorker:
                 _emit({"type": "tool_result", "name": name, "result": result})
                 tool_calls_log.append({"name": name, "args": args, "result": result})
 
+                # If delegate_to_agent returned a writer interrupt, short-circuit
+                # immediately — no more LLM calls until the user approves/rejects.
+                if (
+                    isinstance(result, dict)
+                    and result.get("ok")
+                    and isinstance(result.get("data"), dict)
+                    and result["data"].get("type") == "interrupt"
+                ):
+                    return result["data"]  # {"type":"interrupt","interrupt":...,"thread_id":...}
+
                 # Inbound: mask any PII the tool returned before the LLM sees it.
                 # Control-plane tools (e.g. get_agent_catalog) are exempt — their
                 # payloads are system metadata, not CRM data, and masking them

@@ -18,6 +18,7 @@ import { MetadataResolver } from 'src/engine/api/graphql/graphql-config/decorato
 import { UUIDScalarType } from 'src/engine/api/graphql/workspace-schema-builder/graphql-types/scalars';
 import { BillingUsageService } from 'src/engine/core-modules/billing/services/billing-usage.service';
 import { RedisClientService } from 'src/engine/core-modules/redis-client/redis-client.service';
+import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { toDisplayCredits } from 'src/engine/core-modules/usage/utils/to-display-credits.util';
 import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { AuthUserWorkspaceId } from 'src/engine/decorators/auth/auth-user-workspace-id.decorator';
@@ -55,6 +56,7 @@ export class AgentChatResolver {
     private readonly billingUsageService: BillingUsageService,
     private readonly aiModelRegistryService: AiModelRegistryService,
     private readonly redisClientService: RedisClientService,
+    private readonly twentyConfigService: TwentyConfigService,
     @InjectRepository(AgentChatThreadEntity)
     private readonly threadRepository: Repository<AgentChatThreadEntity>,
   ) {}
@@ -118,21 +120,29 @@ export class AgentChatResolver {
     @AuthUserWorkspaceId() userWorkspaceId: string,
     @AuthWorkspace() workspace: WorkspaceEntity,
   ): Promise<SendChatMessageResultDTO> {
-    if (this.aiModelRegistryService.getAvailableModels().length === 0) {
-      throw new AiException(
-        'No AI models are available. Configure at least one AI provider.',
-        AiExceptionCode.API_KEY_NOT_CONFIGURED,
-      );
-    }
-
-    const resolvedModelId = modelId ?? workspace.smartModel;
-
-    this.aiModelRegistryService.validateModelAvailability(
-      resolvedModelId,
-      workspace,
+    // The external Python orchestrator brings its own LLM, so Twenty's model
+    // registry/billing checks don't apply when it owns the turn.
+    const useExternalOrchestrator = this.twentyConfigService.get(
+      'AI_AGENT_USE_EXTERNAL_ORCHESTRATOR',
     );
 
-    await this.billingUsageService.hasAvailableCreditsOrThrow(workspace.id);
+    if (!useExternalOrchestrator) {
+      if (this.aiModelRegistryService.getAvailableModels().length === 0) {
+        throw new AiException(
+          'No AI models are available. Configure at least one AI provider.',
+          AiExceptionCode.API_KEY_NOT_CONFIGURED,
+        );
+      }
+
+      const resolvedModelId = modelId ?? workspace.smartModel;
+
+      this.aiModelRegistryService.validateModelAvailability(
+        resolvedModelId,
+        workspace,
+      );
+
+      await this.billingUsageService.hasAvailableCreditsOrThrow(workspace.id);
+    }
 
     const thread = await this.threadRepository.findOne({
       where: { id: threadId, userWorkspaceId },
@@ -187,6 +197,34 @@ export class AgentChatResolver {
       queued: false,
       streamId: result.streamId,
     };
+  }
+
+  @Mutation(() => Boolean)
+  async resumeAgentChatStream(
+    @Args('threadId', { type: () => UUIDScalarType }) threadId: string,
+    @Args('approved') approved: boolean,
+    @AuthUserWorkspaceId() userWorkspaceId: string,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ): Promise<boolean> {
+    const thread = await this.threadRepository.findOne({
+      where: { id: threadId, userWorkspaceId },
+    });
+
+    if (!isDefined(thread)) {
+      throw new AiException(
+        'Thread not found',
+        AiExceptionCode.THREAD_NOT_FOUND,
+      );
+    }
+
+    await this.agentChatStreamingService.resumeAgentChat({
+      threadId,
+      userWorkspaceId,
+      workspace,
+      approved,
+    });
+
+    return true;
   }
 
   @Mutation(() => Boolean)
