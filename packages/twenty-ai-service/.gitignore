@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .cache/
 .pytest_cache/
+.env.training
+optimization/reports/
