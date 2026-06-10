@@ -43,6 +43,12 @@ class LLMClient:
         self._api_key = config["api_key"]
         # Explicit override > env default; both flow through the registry.
         self._model_spec: ModelSpec = resolve_model(model or config["model"])
+        # Direct OpenAI expects bare ids ("gpt-4o-mini"), not OpenRouter-style
+        # "openai/" slugs. Strip the prefix when talking to OpenAI directly.
+        model_id = self._model_spec.id
+        if self._provider == "openai" and model_id.startswith("openai/"):
+            model_id = model_id.split("/", 1)[1]
+        self._model_id = model_id
         self._client = OpenAI(base_url=self._base_url, api_key=self._api_key)
 
     @property
@@ -51,8 +57,8 @@ class LLMClient:
 
     @property
     def model(self) -> str:
-        """The resolved OpenRouter model slug passed to the API."""
-        return self._model_spec.id
+        """The model id passed to the API (bare id for OpenAI, slug for OpenRouter)."""
+        return self._model_id
 
     @property
     def model_spec(self) -> ModelSpec:
@@ -83,9 +89,9 @@ def _load_config() -> dict[str, str]:
         )
 
     provider = values["LLM_PROVIDER"]
-    if provider != "openrouter":
+    if provider not in ("openrouter", "openai"):
         raise ConfigurationError(
-            f"LLM_PROVIDER must be 'openrouter', got {provider!r}"
+            f"LLM_PROVIDER must be 'openrouter' or 'openai', got {provider!r}"
         )
 
     return {
