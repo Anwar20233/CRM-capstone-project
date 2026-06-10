@@ -10,9 +10,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-import optimization._bootstrap  # noqa: F401
+# Put the service root on sys.path before importing the optimization package.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from optimization.harness import config
 from optimization.harness.evaluation import (
     evaluate_prompt,
