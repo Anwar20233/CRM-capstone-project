@@ -9,8 +9,13 @@ regression gate compares to). Run it before optimizing.
 from __future__ import annotations
 
 import argparse
+import sys
+from pathlib import Path
 
-import optimization._bootstrap  # noqa: F401  (sys.path side effect)
+# Put the service root on sys.path before importing the optimization package
+# (running this file directly only adds optimization/ to the path).
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from optimization.harness import config
 from optimization.harness.evaluation import evaluate_prompt, print_summary, save_report
 from optimization.harness.worker_program import seed_prompt
