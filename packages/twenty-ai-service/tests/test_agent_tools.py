@@ -29,6 +29,7 @@ def _spec(name: str, invoke) -> AgentSpec:
     return AgentSpec(
         name=name,
         role=f"{name} role",
+        when_to_use=f"{name} when_to_use",
         description=f"{name} description",
         input_schema={"type": "object"},
         output_schema={"type": "object"},
@@ -62,7 +63,8 @@ class TestCatalog:
         catalog = _get_tool(build_agent_tools(registry, BOTH), "get_agent_catalog")
         result = await catalog.ainvoke({})
         entry = result["data"]["agents"][0]
-        assert set(entry) == {"name", "role"}  # no schemas in the catalog view
+        # Lightweight routing view — name/role/when_to_use, but no schemas.
+        assert set(entry) == {"name", "role", "when_to_use"}
 
 
 class TestLearn:
