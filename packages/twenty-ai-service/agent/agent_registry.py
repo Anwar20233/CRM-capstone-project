@@ -41,6 +41,7 @@ class AgentSpec:
 
     name: str
     role: str  # one-line catalog description
+    when_to_use: str  # routing cue: which kinds of sub-tasks belong to this agent
     description: str  # fuller "how to interact" text for learn_agent
     input_schema: dict[str, Any]
     output_schema: dict[str, Any]
@@ -49,13 +50,28 @@ class AgentSpec:
 
     def catalog_entry(self) -> dict[str, str]:
         """Lightweight view returned by get_agent_catalog."""
-        return {"name": self.name, "role": self.role}
+        return {"name": self.name, "role": self.role, "when_to_use": self.when_to_use}
+
+    def roster_entry(self) -> dict[str, Any]:
+        """Planner-facing view embedded directly in the orchestrator prompt.
+
+        Carries enough to route and phrase a delegation without a learn_agent
+        round-trip: role, routing cue, and how to instruct the agent.
+        """
+        return {
+            "name": self.name,
+            "role": self.role,
+            "when_to_use": self.when_to_use,
+            "how_to_instruct": self.description,
+            "is_stub": self.is_stub,
+        }
 
     def learn_entry(self) -> dict[str, Any]:
         """Detailed interaction schema returned by learn_agent."""
         return {
             "name": self.name,
             "role": self.role,
+            "when_to_use": self.when_to_use,
             "description": self.description,
             "input_schema": self.input_schema,
             "output_schema": self.output_schema,
@@ -92,6 +108,19 @@ class AgentRegistry:
             if spec is not None and is_agent_allowed(spec.name, scope):
                 entries.append(spec.learn_entry())
         return entries
+
+    def roster(self, scope: AgentScope) -> list[dict[str, Any]]:
+        """Planner-facing entries for every in-scope agent.
+
+        Richer than ``catalog`` (adds routing + how-to-instruct), used to embed
+        the full, stable roster in the orchestrator's system prompt so it can
+        route and delegate without re-running discovery every turn.
+        """
+        return [
+            spec.roster_entry()
+            for spec in self._agents.values()
+            if is_agent_allowed(spec.name, scope)
+        ]
 
 
 # ---------------------------------------------------------------------------
@@ -170,12 +199,22 @@ def build_default_registry(
     registry.register(
         AgentSpec(
             name="reader",
-            role="Resolves people, companies, opportunities, notes, and tasks to concrete CRM records.",
+            role="Looks up and resolves existing CRM records (people, companies, opportunities, notes, tasks) to concrete records + IDs.",
+            when_to_use=(
+                "Any sub-task that needs to find, list, read, or resolve existing "
+                "data — turn a name or handle into a record, list a company's people "
+                "or deals, fetch a record's details. Always run the reader BEFORE the "
+                "writer so writes act on resolved IDs."
+            ),
             description=(
-                "Send a natural-language lookup instruction (e.g. 'Find the person "
-                "John who we just had a call with'). The reader resolves the entity "
-                "and returns a structured resolution. Use it to turn names into "
-                "record IDs BEFORE asking the writer to change anything."
+                "Give ONE self-contained lookup about ONE target. The reader resolves "
+                "a single entity per call and CANNOT chase a relationship it was not "
+                "handed. For relational lookups, pass the anchor you already have: "
+                "e.g. 'List the people at company001' or 'Find the person named Dana "
+                "at company001'. NEVER send a riddle like 'find the email of the "
+                "person who works at Notion' — first resolve Notion to a company "
+                "handle, then ask the reader for that company's people. It returns a "
+                "structured resolution: single | multiple | none."
             ),
             input_schema=_INSTRUCTION_INPUT_SCHEMA,
             output_schema=_READER_OUTPUT_SCHEMA,
@@ -185,12 +224,18 @@ def build_default_registry(
     registry.register(
         AgentSpec(
             name="writer",
-            role="Creates, updates, or deletes CRM records following write policies.",
+            role="Creates, updates, deletes, or advances CRM records, enforcing write policies.",
+            when_to_use=(
+                "Any sub-task that CHANGES data — create / update / delete a record, "
+                "advance a deal stage. Run only AFTER the reader has resolved every "
+                "target the write touches to a handle or ID."
+            ),
             description=(
-                "Send a specific write instruction including any record IDs the "
-                "reader resolved (e.g. 'Update opportunity <id> amount to 50000'). "
-                "High-risk writes may require a confirmation step. Do not ask the "
-                "writer to search — resolve entities with the reader first."
+                "Send a specific write instruction that already contains the handles "
+                "or IDs the reader resolved (e.g. 'Update opportunity002 amount to "
+                "50000'). Do NOT ask the writer to search or resolve names — that is "
+                "the reader's job. High-risk writes (deletes, terminal stage moves, "
+                "bulk updates) pause for the user's approval automatically."
             ),
             input_schema=_INSTRUCTION_INPUT_SCHEMA,
             output_schema=_WRITER_OUTPUT_SCHEMA,
@@ -201,6 +246,10 @@ def build_default_registry(
         AgentSpec(
             name="followup",
             role="Handles calendar scheduling, reminders, and draft preparation.",
+            when_to_use=(
+                "Scheduling, reminders, or draft preparation that runs after the core "
+                "read/write work (e.g. book a meeting, draft a follow-up email). STUB."
+            ),
             description=(
                 "Delegate scheduling/reminder/draft tasks here (e.g. 'Book a 1-hour "
                 "meeting at 9:30am Monday and prepare a draft'). Currently a stub."
@@ -215,6 +264,10 @@ def build_default_registry(
         AgentSpec(
             name="researcher",
             role="Gathers background details or external/internal context.",
+            when_to_use=(
+                "Enrichment or background research that is not already in the CRM "
+                "(e.g. recent news about a company). STUB."
+            ),
             description=(
                 "Delegate research/enrichment tasks here (e.g. 'Find recent news "
                 "about Acme Corp'). Currently a stub."

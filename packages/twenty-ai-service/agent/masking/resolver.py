@@ -142,17 +142,37 @@ def _outcome(entity_type: str, query: str, records: list[dict[str, Any]]) -> Res
 
 
 def _records(envelope: dict[str, Any]) -> list[dict[str, Any]]:
-    """Pull the record list out of a bridge envelope, tolerant of its shape."""
+    """Pull the record list out of a bridge envelope, tolerant of its shape.
+
+    The find tools wrap the real records under ``data.result.records`` and ALSO
+    return a parallel ``data.recordReferences`` list of id-less stubs
+    (``{objectNameSingular, recordId, displayName}``). We must return the real
+    records — picking the references instead leaves every record without an
+    ``id``/``name``, so ``register_resolved`` silently downgrades a resolved match
+    to a *private* handle (the record looks unresolvable). Earlier this grabbed
+    the first list-of-dicts, which was ``recordReferences``.
+    """
     if not isinstance(envelope, dict) or not envelope.get("ok"):
         return []
     data = envelope.get("data")
     if isinstance(data, list):
         return [item for item in data if isinstance(item, dict)]
-    if isinstance(data, dict):
-        # Find the first value that is a list of record-shaped dicts.
-        for value in data.values():
-            if isinstance(value, list) and all(isinstance(item, dict) for item in value):
-                return value
+    if not isinstance(data, dict):
+        return []
+
+    # Preferred: the bridge find envelope (data.result.records).
+    result = data.get("result")
+    if isinstance(result, dict) and isinstance(result.get("records"), list):
+        return [item for item in result["records"] if isinstance(item, dict)]
+    # Flatter shape used by some callers/tests: data.records.
+    if isinstance(data.get("records"), list):
+        return [item for item in data["records"] if isinstance(item, dict)]
+    # Fallback: first list-of-dicts, but never the id-less references list.
+    for key, value in data.items():
+        if key == "recordReferences":
+            continue
+        if isinstance(value, list) and all(isinstance(item, dict) for item in value):
+            return value
     return []
 
 
