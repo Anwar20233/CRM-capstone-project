@@ -99,7 +99,7 @@ class CRMResolver:
     async def _search_people(self, name: str, company_id: str | None) -> Resolution:
         name_filter = _person_name_filter(name)
         if company_id:
-            args: dict[str, Any] = {"and": [{"company": {"eq": company_id}}, name_filter]}
+            args: dict[str, Any] = {"and": [{"companyId": {"eq": company_id}}, name_filter]}
         else:
             args = name_filter
         records = await self._run(PERSON_TOOL, args)
