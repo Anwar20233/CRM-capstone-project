@@ -120,7 +120,7 @@ export class DatabaseToolProvider implements ToolProvider {
       if (permission.canReadObjectRecords) {
         descriptors.push({
           name: `find_${snakePlural}`,
-          description: `Search for ${objectMetadata.labelPlural} records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: "record-id" } }. Returns an array of matching records with their full data.`,
+          description: `Search for ${objectMetadata.labelPlural} records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. Filter fields are top-level alongside limit/offset/orderBy (no "filter" wrapper). To find by ID: { id: { eq: "record-id" }, limit: 1 }. For name search: { name: { ilike: "%term%" } }. Returns an array of matching records with their full data.`,
           category: ToolCategory.DATABASE_CRUD,
           ...(includeSchemas && {
             inputSchema: z.toJSONSchema(

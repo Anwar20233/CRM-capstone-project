@@ -26,8 +26,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from agent.orchestrator import Orchestrator  # noqa: E402
-from agent.tool_scope import READER_SCOPE  # noqa: E402
-from agent.workers import BaseWorker, WriterWorker  # noqa: E402
+from agent.workers import ReaderWorker, WriterWorker  # noqa: E402
 from pipelines import load_models, models_loaded  # noqa: E402
 
 
@@ -114,16 +113,7 @@ def build_worker(agent: str, model: str | None, session_id: str):
     if agent == "writer":
         return WriterWorker(session_id=session_id, model=model)
     if agent == "reader":
-        return BaseWorker(
-            scope=READER_SCOPE,
-            system_prompt=(
-                "You are a CRM Read Agent for Twenty CRM. Resolve and return "
-                "records. Use get_tool_catalog → learn_tools → execute_tool. "
-                "Never guess tool names or argument shapes."
-            ),
-            session_id=session_id,
-            model=model,
-        )
+        return ReaderWorker(session_id=session_id, model=model)
     raise SystemExit(f"Unknown agent '{agent}' (use 'orchestrator', 'writer', or 'reader').")
 
 

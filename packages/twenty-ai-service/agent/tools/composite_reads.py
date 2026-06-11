@@ -36,6 +36,7 @@ from typing import Any
 from langchain_core.tools import StructuredTool
 
 from bridge_client import forward
+from agent.tools.bridge_args import find_tool_args
 from agent.tool_scope import ToolScope
 
 
@@ -106,10 +107,51 @@ async def _get_company_overview(company_id: str) -> dict:
 
     company_call, people_call, opps_call, notes_call, tasks_call = await asyncio.gather(
         forward("execute", _exec("find_one_company", {"id": company_id}, ident)),
-        forward("execute", _exec("find_people", {"filter": {"company": {"id": {"eq": company_id}}}, "orderBy": {"name": {"firstName": "AscNullsLast"}}}, ident)),
-        forward("execute", _exec("find_opportunities", {"filter": {"company": {"id": {"eq": company_id}}, "stage": {"neq": "CLOSED_LOST"}}, "orderBy": {"updatedAt": "DescNullsLast"}}, ident)),
-        forward("execute", _exec("find_notes", {"filter": {"noteTargets": {"some": {"companyId": {"eq": company_id}}}}, "orderBy": {"updatedAt": "DescNullsLast"}, "first": 10}, ident)),
-        forward("execute", _exec("find_tasks", {"filter": {"taskTargets": {"some": {"companyId": {"eq": company_id}}}, "status": {"neq": "DONE"}}, "orderBy": {"dueAt": "AscNullsLast"}}, ident)),
+        forward(
+            "execute",
+            _exec(
+                "find_people",
+                find_tool_args({"companyId": {"eq": company_id}}, order_by={"name": {"firstName": "AscNullsLast"}}),
+                ident,
+            ),
+        ),
+        forward(
+            "execute",
+            _exec(
+                "find_opportunities",
+                find_tool_args(
+                    {"companyId": {"eq": company_id}, "stage": {"neq": "CLOSED_LOST"}},
+                    order_by={"updatedAt": "DescNullsLast"},
+                ),
+                ident,
+            ),
+        ),
+        forward(
+            "execute",
+            _exec(
+                "find_notes",
+                find_tool_args(
+                    {"noteTargets": {"some": {"companyId": {"eq": company_id}}}},
+                    limit=10,
+                    order_by={"updatedAt": "DescNullsLast"},
+                ),
+                ident,
+            ),
+        ),
+        forward(
+            "execute",
+            _exec(
+                "find_tasks",
+                find_tool_args(
+                    {
+                        "taskTargets": {"some": {"companyId": {"eq": company_id}}},
+                        "status": {"neq": "DONE"},
+                    },
+                    order_by={"dueAt": "AscNullsLast"},
+                ),
+                ident,
+            ),
+        ),
     )
 
     ok_company, company = _extract(company_call, "company")
@@ -183,8 +225,22 @@ async def _get_entity_timeline(
         return _err("UNKNOWN_ENTITY_TYPE", f"entity_type must be person, company, or opportunity — got '{entity_type}'")
 
     notes_call, tasks_call = await asyncio.gather(
-        forward("execute", _exec("find_notes", {"filter": note_filter, "orderBy": {"updatedAt": "DescNullsLast"}, "first": limit}, ident)),
-        forward("execute", _exec("find_tasks", {"filter": task_filter, "orderBy": {"updatedAt": "DescNullsLast"}, "first": limit}, ident)),
+        forward(
+            "execute",
+            _exec(
+                "find_notes",
+                find_tool_args(note_filter, limit=limit, order_by={"updatedAt": "DescNullsLast"}),
+                ident,
+            ),
+        ),
+        forward(
+            "execute",
+            _exec(
+                "find_tasks",
+                find_tool_args(task_filter, limit=limit, order_by={"updatedAt": "DescNullsLast"}),
+                ident,
+            ),
+        ),
     )
 
     _, notes_data = _extract(notes_call, "notes")
@@ -233,9 +289,26 @@ async def _get_related_entities(entity_id: str, entity_type: str) -> dict:
     if entity_type_lower == "person":
         person_call, opps_call, notes_call, tasks_call = await asyncio.gather(
             forward("execute", _exec("find_one_person", {"id": entity_id}, ident)),
-            forward("execute", _exec("find_opportunities", {"filter": {"pointOfContactId": {"eq": entity_id}}}, ident)),
-            forward("execute", _exec("find_notes", {"filter": {"noteTargets": {"some": {"personId": {"eq": entity_id}}}}}, ident)),
-            forward("execute", _exec("find_tasks", {"filter": {"taskTargets": {"some": {"personId": {"eq": entity_id}}}}}, ident)),
+            forward(
+                "execute",
+                _exec("find_opportunities", find_tool_args({"pointOfContactId": {"eq": entity_id}}), ident),
+            ),
+            forward(
+                "execute",
+                _exec(
+                    "find_notes",
+                    find_tool_args({"noteTargets": {"some": {"personId": {"eq": entity_id}}}}),
+                    ident,
+                ),
+            ),
+            forward(
+                "execute",
+                _exec(
+                    "find_tasks",
+                    find_tool_args({"taskTargets": {"some": {"personId": {"eq": entity_id}}}}),
+                    ident,
+                ),
+            ),
         )
         _, person = _extract(person_call, "person")
         company_id = (person or {}).get("company", {}) and (person or {}).get("company", {}).get("id")
@@ -261,10 +334,30 @@ async def _get_related_entities(entity_id: str, entity_type: str) -> dict:
     elif entity_type_lower == "company":
         company_call, people_call, opps_call, notes_call, tasks_call = await asyncio.gather(
             forward("execute", _exec("find_one_company", {"id": entity_id}, ident)),
-            forward("execute", _exec("find_people", {"filter": {"company": {"id": {"eq": entity_id}}}}, ident)),
-            forward("execute", _exec("find_opportunities", {"filter": {"company": {"id": {"eq": entity_id}}}}, ident)),
-            forward("execute", _exec("find_notes", {"filter": {"noteTargets": {"some": {"companyId": {"eq": entity_id}}}}}, ident)),
-            forward("execute", _exec("find_tasks", {"filter": {"taskTargets": {"some": {"companyId": {"eq": entity_id}}}}}, ident)),
+            forward(
+                "execute",
+                _exec("find_people", find_tool_args({"companyId": {"eq": entity_id}}), ident),
+            ),
+            forward(
+                "execute",
+                _exec("find_opportunities", find_tool_args({"companyId": {"eq": entity_id}}), ident),
+            ),
+            forward(
+                "execute",
+                _exec(
+                    "find_notes",
+                    find_tool_args({"noteTargets": {"some": {"companyId": {"eq": entity_id}}}}),
+                    ident,
+                ),
+            ),
+            forward(
+                "execute",
+                _exec(
+                    "find_tasks",
+                    find_tool_args({"taskTargets": {"some": {"companyId": {"eq": entity_id}}}}),
+                    ident,
+                ),
+            ),
         )
         _, company = _extract(company_call, "company")
         _, people = _extract(people_call, "people")
@@ -284,8 +377,22 @@ async def _get_related_entities(entity_id: str, entity_type: str) -> dict:
     elif entity_type_lower in ("opportunity", "deal"):
         opp_call, notes_call, tasks_call = await asyncio.gather(
             forward("execute", _exec("find_one_opportunity", {"id": entity_id}, ident)),
-            forward("execute", _exec("find_notes", {"filter": {"noteTargets": {"some": {"opportunityId": {"eq": entity_id}}}}}, ident)),
-            forward("execute", _exec("find_tasks", {"filter": {"taskTargets": {"some": {"opportunityId": {"eq": entity_id}}}}}, ident)),
+            forward(
+                "execute",
+                _exec(
+                    "find_notes",
+                    find_tool_args({"noteTargets": {"some": {"opportunityId": {"eq": entity_id}}}}),
+                    ident,
+                ),
+            ),
+            forward(
+                "execute",
+                _exec(
+                    "find_tasks",
+                    find_tool_args({"taskTargets": {"some": {"opportunityId": {"eq": entity_id}}}}),
+                    ident,
+                ),
+            ),
         )
         _, opp = _extract(opp_call, "opportunity")
         _, notes = _extract(notes_call, "notes")
@@ -320,9 +427,31 @@ async def _search_all_records(query: str, limit: int = 5) -> dict:
     ident = _identity(_search_all_records._scope)  # type: ignore[attr-defined]
 
     people_call, companies_call, opps_call = await asyncio.gather(
-        forward("execute", _exec("find_people", {"filter": {"or": [{"name": {"firstName": {"like": f"%{query}%"}}}, {"name": {"lastName": {"like": f"%{query}%"}}}, {"emails": {"primaryEmail": {"like": f"%{query}%"}}}]}, "first": limit}, ident)),
-        forward("execute", _exec("find_companies", {"filter": {"name": {"like": f"%{query}%"}}, "first": limit}, ident)),
-        forward("execute", _exec("find_opportunities", {"filter": {"name": {"like": f"%{query}%"}}, "first": limit}, ident)),
+        forward(
+            "execute",
+            _exec(
+                "find_people",
+                find_tool_args(
+                    {
+                        "or": [
+                            {"name": {"firstName": {"ilike": f"%{query}%"}}},
+                            {"name": {"lastName": {"ilike": f"%{query}%"}}},
+                            {"emails": {"primaryEmail": {"ilike": f"%{query}%"}}},
+                        ]
+                    },
+                    limit=limit,
+                ),
+                ident,
+            ),
+        ),
+        forward(
+            "execute",
+            _exec("find_companies", find_tool_args({"name": {"ilike": f"%{query}%"}}, limit=limit), ident),
+        ),
+        forward(
+            "execute",
+            _exec("find_opportunities", find_tool_args({"name": {"ilike": f"%{query}%"}}, limit=limit), ident),
+        ),
     )
 
     _, people = _extract(people_call, "people")
