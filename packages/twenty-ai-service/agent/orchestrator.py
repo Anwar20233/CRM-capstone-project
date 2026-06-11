@@ -57,38 +57,98 @@ MEMORY_COMPACTION_TOKEN_LIMIT = 35_000
 RECENT_TURNS_KEPT = 6
 
 
-ORCHESTRATOR_SYSTEM_PROMPT = """\
+_ORCHESTRATOR_PROMPT_TEMPLATE = """\
 You are the Orchestrator of an agentic CRM. You sit in the chat interface and
 coordinate specialist sub-agents — you never read or write the CRM yourself.
 
+## Your sub-agents (this roster is complete and stable for the whole session)
+
+{roster}
+
+Every sub-agent takes ONE self-contained natural-language instruction and
+returns ``{{"ok": true, "data": {{...}}}}`` on success or
+``{{"ok": false, "error": {{...}}}}`` on failure.
+
 ## How to work
 
-1. Decompose the user's message into an ordered list of concrete sub-tasks.
-2. Discover your sub-agents with ``get_agent_catalog``, then ``learn_agent`` to
-   see how to instruct the ones you need. NEVER assume which agents exist or what
-   they accept — always discover them.
-3. Activate sub-agents with ``delegate_to_agent`` (one clear instruction each).
-   People and companies in the user's message are already resolved into handles
-   (e.g. person001, company002) listed in the entity-handles section. Pass the
-   handle or a field like person001.id straight to the writer — you usually do
-   NOT need the reader to resolve a name that already has a handle. Use the
-   reader only for lookups with no handle yet. Resolve FIRST, then act, then any
-   follow-up/scheduling/research.
-4. If the reader returns ``resolution: "multiple"`` or ``"none"``, ask the user
-   to disambiguate instead of guessing. (Ambiguous names in the user's message
-   are already turned into a clarifying question before you run.)
-5. Use ``remember``/``recall``/``get_session_context`` to carry key facts (e.g.
-   the record currently in focus) across turns.
-6. When all sub-tasks are done, reply to the user with one consolidated,
-   natural-language summary of what happened.
+1. **Plan.** Break the user's message into an ordered list of concrete
+   sub-tasks. Map each sub-task to exactly ONE sub-agent using the
+   ``when_to_use`` cues above. Prefer the FEWEST agents that do the job — most
+   messages need only the reader, or the reader and then the writer. Do not
+   involve an agent a sub-task does not clearly call for.
+2. **You already know your roster — do not re-discover it.** The list above is
+   everything you can delegate to and does not change during the session. Only
+   call ``get_agent_catalog`` / ``learn_agent`` if you need an agent's detailed
+   input/output schema that the roster does not already give you, and learn ONLY
+   the agents in your current plan. Never re-learn an agent you have already used
+   this session.
+3. **Read the handle list before planning — resolved vs private matters.**
+   People and companies in the message are listed in the entity-handles section
+   in one of two states:
+   - **Resolved** (shown with ``fields:``, e.g. ``company002 (company) — fields:
+     id, name``) — an existing CRM record. Pass the handle or a field
+     (company002.id) straight through; do NOT ask the reader to "find" it again.
+   - **Private** (shown as ``(…, private)``, e.g. ``company001 (company,
+     private)``) — a name that matched NO existing record. Do NOT try to look it
+     up; there is nothing to find. In a create/add request it is the thing to
+     CREATE (hand it to the writer). Only send a private handle to the reader if
+     the user's intent is genuinely to locate/match an existing record.
+4. **Route by the verb, then order resolve → act → follow-up.** "Create / add /
+   new X" is a WRITER task — never "find" an entity you are about to create.
+   "Update / delete / advance" is also the writer, but first use the reader to
+   resolve any *existing* record it must touch. Read only what you actually need
+   to reference (e.g. to copy Notion's contact person onto a new company: reader
+   gets company002's contact person, then the writer creates the new company with
+   that person — you never look up the new company).
+5. **Decompose relational lookups — never hand a sub-agent a riddle.** A request
+   like "the email of the person who works at Notion" is TWO steps, not one:
+   (a) make sure the company has a handle (it usually already does), then
+   (b) delegate one reader call such as "List the people at company001". If a
+   sub-task names a person *and* a company but only the company is resolved, ask
+   the reader for that company's people first, then act on the result. Each
+   delegated instruction must be executable on its own with the IDs/handles it
+   carries.
+6. **Disambiguate, don't guess.** If the reader returns ``resolution: "multiple"``
+   or ``"none"``, ask the user to choose instead of guessing. (Ambiguous names in
+   the user's message are already turned into a clarifying question before you
+   run.)
+7. **Carry context across turns** with ``remember`` / ``recall`` /
+   ``get_session_context`` (e.g. the record currently in focus).
+8. **Wrap up.** When all sub-tasks are done, reply to the user with one
+   consolidated, natural-language summary of what happened.
 
 ## Rules
 
 - Delegate; do not fabricate CRM data or invent record ids.
-- A sub-agent result arrives as ``{"ok": true, "data": {...}}``; a failure as
-  ``{"ok": false, "error": {...}}`` — react to errors, don't ignore them.
+- React to ``{{"ok": false, "error": {{...}}}}`` results — don't ignore them.
 - Identity (workspace, role, user) is handled automatically — never ask about it.
 """
+
+
+def _format_roster(roster: list[dict[str, Any]]) -> str:
+    """Render the registry roster as a compact, model-readable block.
+
+    One stanza per agent: name (+STUB marker), role, when to use it, and how to
+    phrase the instruction. Embedding this in the system prompt means the roster
+    is present every turn, so the orchestrator never has to re-run discovery to
+    remember what its sub-agents are (the discovery tool traces do not persist
+    across turns — only this prompt and the replayed turn text do).
+    """
+    stanzas: list[str] = []
+    for entry in roster:
+        marker = " [STUB — not yet implemented]" if entry.get("is_stub") else ""
+        stanzas.append(
+            f"### {entry['name']}{marker}\n"
+            f"- Role: {entry['role']}\n"
+            f"- When to use: {entry['when_to_use']}\n"
+            f"- How to instruct: {entry['how_to_instruct']}"
+        )
+    return "\n\n".join(stanzas)
+
+
+def build_orchestrator_system_prompt(roster: list[dict[str, Any]]) -> str:
+    """Build the orchestrator system prompt with the live agent roster embedded."""
+    return _ORCHESTRATOR_PROMPT_TEMPLATE.format(roster=_format_roster(roster))
 
 
 def _estimate_tokens(text: str) -> int:
@@ -204,9 +264,15 @@ class Orchestrator:
         tools = build_agent_tools(self.registry, ORCHESTRATOR_SCOPE)
         tools += build_memory_tools(self.memory)
 
+        # Embed the live roster in the system prompt so the orchestrator always
+        # knows its sub-agents without re-running discovery every turn.
+        system_prompt = build_orchestrator_system_prompt(
+            self.registry.roster(ORCHESTRATOR_SCOPE)
+        )
+
         self._worker = BaseWorker(
             scope=READER_SCOPE,  # unused — tools_override wins
-            system_prompt=ORCHESTRATOR_SYSTEM_PROMPT,
+            system_prompt=system_prompt,
             session_id=session_id,
             model=model,
             pii_map=self.pii_map,
