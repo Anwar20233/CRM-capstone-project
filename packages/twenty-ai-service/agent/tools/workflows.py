@@ -47,6 +47,7 @@ from typing import Any
 from langchain_core.tools import StructuredTool
 
 from bridge_client import forward
+from agent.tools.bridge_args import find_tool_args
 from agent.tool_scope import ToolScope
 
 
@@ -151,10 +152,32 @@ async def _account_health_check(company_id: str) -> dict:
 
     company_r, people_r, opps_r, overdue_tasks_r, notes_r = await asyncio.gather(
         _run("find_one_company", {"id": company_id}, ident),
-        _run("find_people", {"filter": {"company": {"id": {"eq": company_id}}}}, ident),
-        _run("find_opportunities", {"filter": {"company": {"id": {"eq": company_id}}, "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]}}}, ident),
-        _run("find_tasks", {"filter": {"taskTargets": {"some": {"companyId": {"eq": company_id}}}, "status": {"neq": "DONE"}, "dueAt": {"lt": datetime.datetime.now(datetime.timezone.utc).isoformat()}}}, ident),
-        _run("find_notes", {"filter": {"noteTargets": {"some": {"companyId": {"eq": company_id}}}}, "orderBy": {"updatedAt": "DescNullsLast"}, "first": 1}, ident),
+        _run("find_people", find_tool_args({"companyId": {"eq": company_id}}), ident),
+        _run(
+            "find_opportunities",
+            find_tool_args(
+                {"companyId": {"eq": company_id}, "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]}},
+            ),
+            ident,
+        ),
+        _run(
+            "find_tasks",
+            find_tool_args({
+                "taskTargets": {"some": {"companyId": {"eq": company_id}}},
+                "status": {"neq": "DONE"},
+                "dueAt": {"lt": datetime.datetime.now(datetime.timezone.utc).isoformat()},
+            }),
+            ident,
+        ),
+        _run(
+            "find_notes",
+            find_tool_args(
+                {"noteTargets": {"some": {"companyId": {"eq": company_id}}}},
+                limit=1,
+                order_by={"updatedAt": "DescNullsLast"},
+            ),
+            ident,
+        ),
     )
 
     ok_co, company = _pull(company_r)
@@ -220,8 +243,23 @@ async def _deal_risk_report(opportunity_id: str) -> dict:
 
     opp_r, notes_r, tasks_r = await asyncio.gather(
         _run("find_one_opportunity", {"id": opportunity_id}, ident),
-        _run("find_notes", {"filter": {"noteTargets": {"some": {"opportunityId": {"eq": opportunity_id}}}}, "orderBy": {"updatedAt": "DescNullsLast"}, "first": 3}, ident),
-        _run("find_tasks", {"filter": {"taskTargets": {"some": {"opportunityId": {"eq": opportunity_id}}}, "status": {"neq": "DONE"}}}, ident),
+        _run(
+            "find_notes",
+            find_tool_args(
+                {"noteTargets": {"some": {"opportunityId": {"eq": opportunity_id}}}},
+                limit=3,
+                order_by={"updatedAt": "DescNullsLast"},
+            ),
+            ident,
+        ),
+        _run(
+            "find_tasks",
+            find_tool_args({
+                "taskTargets": {"some": {"opportunityId": {"eq": opportunity_id}}},
+                "status": {"neq": "DONE"},
+            }),
+            ident,
+        ),
     )
 
     ok_opp, opp = _pull(opp_r)
@@ -447,8 +485,15 @@ async def _qualify_and_create_deal(
     last_name = " ".join(rest) if rest else ""
 
     people_r, companies_r = await asyncio.gather(
-        _run("find_people", {"filter": {"name": {"firstName": {"like": f"%{first_name}%"}, "lastName": {"like": f"%{last_name}%"}}}, "first": 1}, ident),
-        _run("find_companies", {"filter": {"name": {"like": f"%{company_name}%"}}, "first": 1}, ident),
+        _run(
+            "find_people",
+            find_tool_args(
+                {"name": {"firstName": {"ilike": f"%{first_name}%"}, "lastName": {"ilike": f"%{last_name}%"}}},
+                limit=1,
+            ),
+            ident,
+        ),
+        _run("find_companies", find_tool_args({"name": {"ilike": f"%{company_name}%"}}, limit=1), ident),
     )
 
     existing_people = _edges(people_r)
@@ -699,8 +744,20 @@ async def _upsert_contact_at_company(
     ident = _identity(_upsert_contact_at_company._scope)  # type: ignore[attr-defined]
 
     people_r, companies_r = await asyncio.gather(
-        _run("find_people", {"filter": {"name": {"firstName": {"like": f"%{person_first_name}%"}, "lastName": {"like": f"%{person_last_name}%"}}}, "first": 1}, ident),
-        _run("find_companies", {"filter": {"name": {"like": f"%{company_name}%"}}, "first": 1}, ident),
+        _run(
+            "find_people",
+            find_tool_args(
+                {
+                    "name": {
+                        "firstName": {"ilike": f"%{person_first_name}%"},
+                        "lastName": {"ilike": f"%{person_last_name}%"},
+                    }
+                },
+                limit=1,
+            ),
+            ident,
+        ),
+        _run("find_companies", find_tool_args({"name": {"ilike": f"%{company_name}%"}}, limit=1), ident),
     )
 
     existing_co = _edges(companies_r)
@@ -807,12 +864,13 @@ async def _bulk_update_deal_stage(
     if new_stage not in VALID_STAGES:
         return _err("INVALID_STAGE", f"'{new_stage}' is not a valid stage. Valid: {sorted(VALID_STAGES)}")
 
-    opps_r = await _run("find_opportunities", {
-        "filter": {
-            "company": {"id": {"eq": company_id}},
-            "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]},
-        }
-    }, ident)
+    opps_r = await _run(
+        "find_opportunities",
+        find_tool_args(
+            {"companyId": {"eq": company_id}, "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]}},
+        ),
+        ident,
+    )
     open_opps = _edges(opps_r)
 
     if not open_opps:
@@ -880,7 +938,13 @@ async def _reassign_account(
 
     company_r, opps_r = await asyncio.gather(
         _run("find_one_company", {"id": company_id}, ident),
-        _run("find_opportunities", {"filter": {"company": {"id": {"eq": company_id}}, "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]}}}, ident),
+        _run(
+            "find_opportunities",
+            find_tool_args(
+                {"companyId": {"eq": company_id}, "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]}},
+            ),
+            ident,
+        ),
     )
     ok_co, company = _pull(company_r)
     if not ok_co:
@@ -976,7 +1040,14 @@ async def _convert_lead_to_opportunity(
     if not person_r.get("ok"):
         first, *rest = person_name_or_id.strip().split()
         last = " ".join(rest) if rest else ""
-        people_r = await _run("find_people", {"filter": {"name": {"firstName": {"like": f"%{first}%"}, "lastName": {"like": f"%{last}%"}}}, "first": 1}, ident)
+        people_r = await _run(
+            "find_people",
+            find_tool_args(
+                {"name": {"firstName": {"ilike": f"%{first}%"}, "lastName": {"ilike": f"%{last}%"}}},
+                limit=1,
+            ),
+            ident,
+        )
         people = _edges(people_r)
         if not people:
             return _err("PERSON_NOT_FOUND", f"Cannot find person '{person_name_or_id}'")
@@ -1094,7 +1165,13 @@ async def _emergency_account_escalation(
 
     company_r, opps_r = await asyncio.gather(
         _run("find_one_company", {"id": company_id}, ident),
-        _run("find_opportunities", {"filter": {"company": {"id": {"eq": company_id}}, "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]}}}, ident),
+        _run(
+            "find_opportunities",
+            find_tool_args(
+                {"companyId": {"eq": company_id}, "stage": {"notIn": ["CLOSED_WON", "CLOSED_LOST"]}},
+            ),
+            ident,
+        ),
     )
     ok_co, company = _pull(company_r)
     if not ok_co:
