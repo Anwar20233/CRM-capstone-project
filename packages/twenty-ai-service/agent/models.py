@@ -36,6 +36,9 @@ class ModelSpec:
 MODEL_REGISTRY: dict[str, ModelSpec] = {
     "deepseek-v4-flash": ModelSpec("deepseek/deepseek-v4-flash", "DeepSeek V4 Flash"),
     "deepseek-v4-pro": ModelSpec("deepseek/deepseek-v4-pro", "DeepSeek V4 Pro"),
+    "qwen3-next-80b": ModelSpec(
+        "qwen/qwen3-next-80b-a3b-instruct", "Qwen3 Next 80B A3B Instruct"
+    ),
     "gpt-4o": ModelSpec("openai/gpt-4o", "OpenAI GPT-4o"),
     "gpt-4o-mini": ModelSpec("openai/gpt-4o-mini", "OpenAI GPT-4o mini"),
     # Free OpenRouter tier — handy for burning-credit-free smoke tests.
