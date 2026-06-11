@@ -29,6 +29,7 @@ The in-session ``remember``/``recall`` tools are separate stubs (see
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from typing import Any
@@ -48,6 +49,11 @@ from agent.stubs.memory_stubs import SessionMemory, build_memory_tools
 from agent.tool_scope import READER_SCOPE
 from agent.workers.base_worker import BaseWorker
 
+
+# Default model for the orchestrator's planning loop when neither the caller nor
+# the ORCHESTRATOR_MODEL env var specifies one. Kept distinct from the sub-agent
+# default (env LLM_MODEL) so routing stays cheap/fast independent of the workers.
+DEFAULT_ORCHESTRATOR_MODEL = "deepseek/deepseek-v4-flash"
 
 # Replay the conversation verbatim until it exceeds this many tokens, then
 # compact older turns into a summary. Tunable — start at 35k and watch.
@@ -240,11 +246,21 @@ class Orchestrator:
         session_id: str = "default",
         model: str | None = None,
         *,
+        orchestrator_model: str | None = None,
         compaction_token_limit: int = MEMORY_COMPACTION_TOKEN_LIMIT,
         resolver: CRMResolver | None = None,
     ) -> None:
         self.session_id = session_id
+        # Two models, decoupled on purpose: the orchestrator's own planning loop
+        # (and memory compaction) runs on ORCHESTRATOR_MODEL — a fast model for
+        # cheap routing — while sub-agents (reader/writer) fall back to the env
+        # LLM_MODEL default unless an explicit *model* is passed.
         self.model = model
+        self.orchestrator_model = (
+            orchestrator_model
+            or os.environ.get("ORCHESTRATOR_MODEL")
+            or DEFAULT_ORCHESTRATOR_MODEL
+        )
         self.compaction_token_limit = compaction_token_limit
         # Mask/unmask is owned by the inner worker; exposed for REPL/trace tools.
 
@@ -274,7 +290,7 @@ class Orchestrator:
             scope=READER_SCOPE,  # unused — tools_override wins
             system_prompt=system_prompt,
             session_id=session_id,
-            model=model,
+            model=self.orchestrator_model,
             pii_map=self.pii_map,
             tools_override=tools,
             # Agent-discovery results are control metadata (agent names, schemas),
@@ -481,7 +497,7 @@ class Orchestrator:
             f"Existing summary:\n{prior_summary or '(none)'}\n\n"
             f"New turns to fold in:\n{transcript}"
         )
-        client = LLMClient(model=self.model)
+        client = LLMClient(model=self.orchestrator_model)
         openai_client = client.get_openai_client()
         response = openai_client.chat.completions.create(
             model=client.model,
