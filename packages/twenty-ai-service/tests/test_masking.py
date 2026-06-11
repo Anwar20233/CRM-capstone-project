@@ -286,7 +286,7 @@ class TestResolver:
         assert resolution.status == "single"
         assert [tool for tool, _ in calls] == ["find_companies", "find_people", "find_people"]
         # The narrowed search filtered by the resolved company id.
-        assert calls[1][1]["and"][0]["company"]["eq"] == "company-uuid-1"
+        assert calls[1][1]["and"][0]["companyId"]["eq"] == "company-uuid-1"
 
 
 # ---------------------------------------------------------------------------
