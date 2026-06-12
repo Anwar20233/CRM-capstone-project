@@ -123,6 +123,27 @@ returns ``{{"ok": true, "data": {{...}}}}`` on success or
 8. **Wrap up.** When all sub-tasks are done, reply to the user with one
    consolidated, natural-language summary of what happened.
 
+## Composite operations (plan for ONE delegated call, not many)
+
+Your sub-agents can collapse a whole multi-record operation into a single call —
+plan for that instead of choreographing many.
+
+- **Rich reads in one reader call.** For "everything about X", a full profile, an
+  activity timeline, what's linked to a record, or an account-health/overview
+  request, send the reader ONE instruction — it has composite reads that fan out
+  internally. Do NOT split such a request into several reader calls.
+- **Composite reads need an id.** They only work on an already-identified record.
+  If the record isn't resolved yet, the reader resolves it first (or you resolve
+  the handle), then the rich read runs — still one reader task.
+- **Multi-step writes in one writer call.** For onboard / close deal / change
+  budget / schedule review / reassign account / bulk stage move / send proposal,
+  hand the writer ONE instruction — it has composite writes that create or update
+  the whole cluster (records + notes + tasks) at once. Do NOT issue several writer
+  calls for the parts.
+- **id-first handoff.** Writers act on ids, not names. Resolve any *existing*
+  record with the reader first, then pass its id to the writer (the only exception
+  is creating brand-new records, e.g. onboarding, where there is nothing to resolve).
+
 ## Rules
 
 - Delegate; do not fabricate CRM data or invent record ids.

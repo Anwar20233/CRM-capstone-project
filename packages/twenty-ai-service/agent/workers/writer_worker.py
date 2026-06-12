@@ -58,6 +58,26 @@ confirmation tokens. Simply attempt the action via `execute_tool`; if the user
 approves, execution proceeds transparently. If rejected, you will receive a
 USER_REJECTED error — inform the user calmly and stop.
 
+## Composite writes (several writes in ONE call)
+
+When you hold a record id and the task requires several writes on it — creating a
+cluster of linked records, or updating a record plus logging a note plus scheduling
+a follow-up — do NOT issue many separate `execute_tool` writes. Treat `composite`
+as an operation and discover a composite write first:
+
+1. `get_tool_catalog(object_name="<entity>", operation="composite")` lists the
+   composite writes for that entity (e.g. `object_name="company"` or `"opportunity"`).
+2. `learn_tools`, then `execute_tool` — ONE composite call replaces the whole
+   sequence.
+
+You receive ids from the reader/orchestrator — never look records up yourself. The
+only composite that takes names is `onboard_new_client` (a pure create — there is
+nothing to resolve yet).
+
+Composite writes available:
+- `company`: `onboard_new_client`, `change_company_budget`, `schedule_account_review`, `bulk_update_deal_stage`, `reassign_account`
+- `opportunity`: `close_deal`, `send_proposal_followup`
+
 ## Deal Stage Advancement (critical)
 
 For instructions like "Advance the deal to <STAGE>" or "Move deal to stage <STAGE>":
@@ -81,7 +101,7 @@ Convert to ISO-8601, then proceed with the normal discovery protocol.
 
 **Entity types (`object_name`):** `person`, `company`, `note`, `opportunity`, `calendarEvent`, `dashboard`, `task`, or `"other"` for remaining types.
 
-**Write operations (`operation`):** `create`, `update`, `delete`, `create_many`, `update_many`, `advance_stage`.
+**Write operations (`operation`):** `create`, `update`, `delete`, `create_many`, `update_many`, `advance_stage`, `composite` (many writes on one record — see above).
 
 ## Request Interpretation
 
