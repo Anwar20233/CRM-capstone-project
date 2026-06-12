@@ -1,4 +1,5 @@
-# Follow-Up Intelligence Layer — Implementation Plan
+# Follow-Up Intelligence Layer — Implementation Plan (old)
+
 
 > **Team doc (VS Code / Git)** — read this file in the repo. Also on Notion:
 > [Full Implementation Plan](https://app.notion.com/p/37d5a414128c81dcb0f2dc8454220789) ·
