@@ -247,10 +247,17 @@ class BaseWorker:
         import json
 
         from agent.llm_client import LLMClient
+        from agent.progress import get_progress_sink
+
+        # Inherit the caller's progress sink when none was passed explicitly, so a
+        # sub-agent delegated to deep inside the orchestrator's loop still reports
+        # its own steps as stages (the sink is republished around tool dispatch
+        # below, so any further nesting inherits in turn).
+        effective_on_event = on_event or get_progress_sink()
 
         def _emit(event: dict[str, Any]) -> None:
-            if on_event:
-                on_event(event)
+            if effective_on_event:
+                effective_on_event(event)
 
         client = LLMClient(model=model or self.model)
         openai_client = client.get_openai_client()
@@ -353,7 +360,18 @@ class BaseWorker:
                         },
                     }
                 else:
-                    result = await self.invoke_tool(name, args)
+                    # Publish our sink for the duration of the call so a delegated
+                    # sub-agent inherits it and its steps surface as stages too.
+                    from agent.progress import (
+                        reset_progress_sink,
+                        set_progress_sink,
+                    )
+
+                    sink_token = set_progress_sink(effective_on_event)
+                    try:
+                        result = await self.invoke_tool(name, args)
+                    finally:
+                        reset_progress_sink(sink_token)
                 _emit({"type": "tool_result", "name": name, "result": result})
                 tool_calls_log.append({"name": name, "args": args, "result": result})
 

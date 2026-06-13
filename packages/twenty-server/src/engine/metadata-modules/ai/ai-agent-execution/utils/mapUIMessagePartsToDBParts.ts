@@ -80,6 +80,14 @@ export const mapUIMessagePartsToDBParts = (
         case 'data-thread-title':
           // Thread title is a transient notification for the client
           return null;
+        case 'data-write-confirmation':
+          // A high-risk write paused for approval. Persist the full payload in
+          // the generic jsonb column so the approval card survives a thread
+          // reload (the refetch triggered right after the stream ends).
+          return {
+            ...basePart,
+            toolInput: part.data,
+          };
         default:
           {
             if (isToolPart(part)) {

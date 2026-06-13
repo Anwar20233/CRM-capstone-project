@@ -187,6 +187,15 @@ def build_writer_graph(
             response = _call()
 
         ai_msg = _parse_ai_message(response.choices[0].message)
+
+        # Surface the writer's concrete actions as progress (the writer is a
+        # graph, not a BaseWorker, so it emits here rather than via on_event).
+        # Fires before write_gate, so a gated delete shows its label then pauses.
+        from agent.progress import emit_progress
+
+        for tc in ai_msg.tool_calls or []:
+            emit_progress({"type": "tool_call", "name": tc.get("name"), "args": tc.get("args", {})})
+
         return {"messages": [ai_msg]}
 
     # -- Assemble graph ----------------------------------------------------
