@@ -266,6 +266,71 @@ These will be added as additional routers on the same app without changing the d
 
 ---
 
+## Seeding Test Data (`seed_data.py`)
+
+`seed_data.py` populates your **local** Twenty database with a realistic, interconnected
+dataset for testing the Follow-Up Intelligence Agent — five deal scenarios (Airbnb, Stripe,
+Notion, Figma, Datadog) with full email threads, call notes, tasks, a week of calendar
+events, plus the agent's own derived profile/shadow/risk data.
+
+It writes into Twenty's **real** schema (no invented CRM tables):
+
+| Data | Twenty tables |
+|---|---|
+| Companies / contacts / deals | `company` / `person` / `opportunity` |
+| Emails | `message`, `messageThread`, `messageParticipant`, `messageChannelMessageAssociation`, `connectedAccount`, `messageChannel` |
+| Calls & notes | `note`, `noteTarget` |
+| Meetings | `calendarEvent`, `calendarEventParticipant`, `calendarChannel` |
+| Tasks | `task`, `taskTarget` |
+| Sales reps (Sarah Chen, Marcus Webb) | `core.user`, `core.userWorkspace`, `workspaceMember` |
+| Agent-derived data (profile facts, relationships, shadow entities, risk snapshots) | new `followup_agent` schema, **created automatically in the same DB** |
+
+It is **safe and idempotent** — deterministic `uuid5` ids + `ON CONFLICT (id) DO NOTHING`.
+Re-running never duplicates rows. It also **reconciles with Twenty's demo data**: if your
+workspace already ships the Airbnb/Stripe/Figma/Notion companies (unique domain) or any
+matching person (unique email), it reuses those rows instead of erroring, and attaches the
+new activities to them. The target workspace schema and id are **discovered at runtime**, so
+it works against any local workspace without editing the script.
+
+### How a teammate runs it on their local DB
+
+```bash
+# 1. Make sure Postgres + Redis are up and the workspace is initialized.
+#    (auto-detects local services vs Docker; idempotent)
+bash packages/twenty-utils/setup-dev-env.sh
+
+# 2. From the AI service, install deps (asyncpg is included in requirements.txt).
+cd packages/twenty-ai-service
+python -m venv .venv && source .venv/bin/activate   # if you don't have one yet
+pip install -r requirements.txt                      # or: pip install asyncpg
+
+# 3. Load PG_DATABASE_URL from the server env, then seed.
+set -a; source ../twenty-server/.env; set +a
+python seed_data.py
+```
+
+The script reads `PG_DATABASE_URL` (falls back to
+`postgres://postgres:postgres@localhost:5432/default`). On success it prints the discovered
+workspace, the per-table row counts, and how many existing records it reused.
+
+> **Note:** this connects directly to Postgres. The AI service at runtime is stateless and
+> needs no DB credentials — `seed_data.py` is a standalone dev/test utility, not part of the
+> request path.
+
+### Verifying the seed
+
+```bash
+# Opportunities + owners
+psql "$PG_DATABASE_URL" -c "SELECT name, stage FROM \"<workspace_schema>\".opportunity WHERE name LIKE '%—%';"
+# Agent-derived shadow entities
+psql "$PG_DATABASE_URL" -c "SELECT name, status FROM followup_agent.shadow_entities;"
+```
+
+Find `<workspace_schema>` with:
+`psql "$PG_DATABASE_URL" -c "SELECT table_schema FROM information_schema.tables WHERE table_name='person' AND table_schema LIKE 'workspace_%';"`
+
+---
+
 ## Running the Service
 
 ### Local (development)

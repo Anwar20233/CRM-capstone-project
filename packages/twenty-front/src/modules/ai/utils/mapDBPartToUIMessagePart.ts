@@ -1,5 +1,6 @@
 import { type ReasoningUIPart, type ToolUIPart } from 'ai';
 import {
+  type DataMessagePart,
   type ExtendedFileUIPart,
   type ExtendedUIMessagePart,
 } from 'twenty-shared/ai';
@@ -61,6 +62,11 @@ export const mapDBPartToUIMessagePart = (
           state: part.state!,
         },
       };
+    case 'data-write-confirmation':
+      return {
+        type: 'data-write-confirmation',
+        data: part.toolInput as DataMessagePart['write-confirmation'],
+      } as ExtendedUIMessagePart;
     default:
       {
         if (part.type.includes('tool-') === true) {
