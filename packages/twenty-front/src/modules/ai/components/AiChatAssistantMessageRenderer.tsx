@@ -1,8 +1,8 @@
+import { AgentLoadingIndicator } from '@/ai/components/AgentLoadingIndicator';
 import { AiChatCompactionIndicator } from '@/ai/components/AiChatCompactionIndicator';
 import { CodeExecutionDisplay } from '@/ai/components/CodeExecutionDisplay';
 import { RoutingStatusDisplay } from '@/ai/components/RoutingStatusDisplay';
 import { ThinkingStepsDisplay } from '@/ai/components/ThinkingStepsDisplay';
-import { IconDotsVertical } from 'twenty-ui/display';
 
 import { LazyMarkdownRenderer } from '@/ai/components/LazyMarkdownRenderer';
 import { ToolStepRenderer } from '@/ai/components/ToolStepRenderer';
@@ -12,8 +12,7 @@ import { isCodeInterpreterToolPart } from '@/ai/utils/isCodeInterpreterToolPart'
 import { styled } from '@linaria/react';
 import { isToolUIPart, type ToolUIPart } from 'ai';
 import { type ExtendedUIMessagePart } from 'twenty-shared/ai';
-import { useContext } from 'react';
-import { ThemeContext, themeCssVariables } from 'twenty-ui/theme-constants';
+import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 const StyledMessagePartsContainer = styled.div`
   display: flex;
@@ -23,27 +22,14 @@ const StyledMessagePartsContainer = styled.div`
 
 const StyledLoadingIconContainer = styled.div`
   align-items: center;
-  border: 1px solid ${themeCssVariables.border.color.light};
-  border-radius: ${themeCssVariables.border.radius.md};
   display: flex;
-  justify-content: center;
-  padding-inline: ${themeCssVariables.spacing[1]};
-`;
-
-const StyledLoadingIconWrapper = styled.span`
-  color: ${themeCssVariables.font.color.light};
-  display: flex;
-  transform: rotate(90deg);
+  justify-content: flex-start;
 `;
 
 const InitialLoadingIndicator = () => {
-  const { theme } = useContext(ThemeContext);
-
   return (
     <StyledLoadingIconContainer>
-      <StyledLoadingIconWrapper>
-        <IconDotsVertical size={theme.icon.size.xl} />
-      </StyledLoadingIconWrapper>
+      <AgentLoadingIndicator />
     </StyledLoadingIconContainer>
   );
 };

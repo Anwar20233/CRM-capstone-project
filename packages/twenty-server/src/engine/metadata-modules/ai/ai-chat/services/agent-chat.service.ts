@@ -248,6 +248,38 @@ export class AgentChatService {
     });
   }
 
+  // Flip the thread's most recent pending write-confirmation part to
+  // approved/rejected so the approval card stops showing live buttons once the
+  // user has decided (and a reopened thread reflects the outcome).
+  async resolveWriteConfirmation({
+    threadId,
+    approved,
+  }: {
+    threadId: string;
+    approved: boolean;
+  }): Promise<void> {
+    const part = await this.messagePartRepository
+      .createQueryBuilder('part')
+      .innerJoin('part.message', 'message')
+      .where('message.threadId = :threadId', { threadId })
+      .andWhere('part.type = :type', { type: 'data-write-confirmation' })
+      .orderBy('part.createdAt', 'DESC')
+      .getOne();
+
+    const data = part?.toolInput as
+      | { status?: string }
+      | null
+      | undefined;
+
+    if (!part || !data || data.status !== 'pending') {
+      return;
+    }
+
+    await this.messagePartRepository.update(part.id, {
+      toolInput: { ...data, status: approved ? 'approved' : 'rejected' },
+    });
+  }
+
   async queueMessage({
     threadId,
     text,

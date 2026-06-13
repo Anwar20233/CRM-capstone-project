@@ -164,6 +164,16 @@ export class AgentChatStreamingService {
       );
     }
 
+    // Mark the pending approval card as resolved before re-entering the agent,
+    // then nudge the client to refetch so the buttons flip to the outcome
+    // immediately (the resume continuation streams in as a new message).
+    await this.agentChatService.resolveWriteConfirmation({ threadId, approved });
+    await this.eventPublisherService.publish({
+      threadId,
+      workspaceId: workspace.id,
+      event: { type: 'queue-updated' },
+    });
+
     const messages = await this.agentChatService.getMessagesForThread(
       threadId,
       userWorkspaceId,

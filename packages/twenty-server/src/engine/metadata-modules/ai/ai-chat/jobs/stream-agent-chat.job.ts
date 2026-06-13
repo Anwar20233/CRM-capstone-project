@@ -10,7 +10,10 @@ import type {
 import { Repository } from 'typeorm';
 
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
-import { AgentOrchestratorClientService } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-orchestrator-client.service';
+import {
+  AgentOrchestratorClientService,
+  type OrchestratorResult,
+} from 'src/engine/metadata-modules/ai/ai-chat/services/agent-orchestrator-client.service';
 
 import { Process } from 'src/engine/core-modules/message-queue/decorators/process.decorator';
 import { Processor } from 'src/engine/core-modules/message-queue/decorators/processor.decorator';
@@ -203,22 +206,106 @@ export class StreamAgentChatJob {
     titlePromise: Promise<string | null>;
     abortSignal: AbortSignal;
   }): Promise<void> {
-    const result =
-      data.resume !== undefined
-        ? await this.agentOrchestratorClientService.resume(
-            data.threadId,
-            data.resume,
-          )
-        : await this.agentOrchestratorClientService.chat(
-            data.threadId,
-            data.lastUserMessageText,
-          );
+    const isResume = data.resume !== undefined;
+
+    // Populated as the stream runs; read after the UI stream drains to decide
+    // what to persist (a single text part, or the pending approval card).
+    let result: OrchestratorResult = { type: 'response', response: '' };
+
+    const uiStream = createUIMessageStream<ExtendedUIMessage>({
+      execute: async ({ writer }) => {
+        const generatedTitle = await titlePromise.catch(() => null);
+
+        if (generatedTitle) {
+          writer.write({
+            type: 'data-thread-title' as const,
+            id: `thread-title-${data.threadId}`,
+            data: { title: generatedTitle },
+          });
+        }
+
+        // One stable id per part so repeated writes reconcile in place: the
+        // routing-status line updates as stages change, and the text part grows
+        // delta by delta into a typed-out answer.
+        const routingStatusId = `routing-status-${data.threadId}`;
+        const textId = `text-${generateId()}`;
+        let textStarted = false;
+
+        const handlers = {
+          onStage: (text: string) => {
+            if (abortSignal.aborted) {
+              return;
+            }
+            writer.write({
+              type: 'data-routing-status' as const,
+              id: routingStatusId,
+              data: { text, state: 'loading' },
+            });
+          },
+          onToken: (delta: string) => {
+            if (abortSignal.aborted) {
+              return;
+            }
+            if (!textStarted) {
+              writer.write({ type: 'text-start', id: textId });
+              textStarted = true;
+            }
+            writer.write({ type: 'text-delta', id: textId, delta });
+          },
+        };
+
+        result = isResume
+          ? await this.agentOrchestratorClientService.resumeStream(
+              data.threadId,
+              data.resume as boolean,
+              handlers,
+            )
+          : await this.agentOrchestratorClientService.chatStream(
+              data.threadId,
+              data.lastUserMessageText,
+              handlers,
+            );
+
+        if (result.type === 'interrupt') {
+          writer.write({
+            type: 'data-write-confirmation' as const,
+            id: `write-confirmation-${generateId()}`,
+            data: {
+              threadId: data.threadId,
+              action: result.interrupt.action,
+              args: result.interrupt.args,
+              summary: result.interrupt.summary,
+              status: 'pending',
+            },
+          } as never);
+        } else if (textStarted) {
+          writer.write({ type: 'text-end', id: textId });
+        } else if (result.response.length > 0) {
+          // No tokens streamed (edge case) — emit the whole answer at once.
+          writer.write({ type: 'text-start', id: textId });
+          writer.write({ type: 'text-delta', id: textId, delta: result.response });
+          writer.write({ type: 'text-end', id: textId });
+        }
+      },
+    });
+
+    for await (const chunk of uiStream) {
+      await this.eventPublisherService.publish({
+        threadId: data.threadId,
+        workspaceId: data.workspaceId,
+        event: {
+          type: 'stream-chunk',
+          chunk: chunk as Record<string, unknown>,
+        },
+      });
+    }
 
     if (abortSignal.aborted) {
       return;
     }
 
-    // Build the assistant message parts the client will render and we persist.
+    // Persist only the durable outcome — the pending approval card, or the
+    // final text. Routing-status stages are live-only progress, not persisted.
     const assistantParts: ExtendedUIMessagePart[] =
       result.type === 'interrupt'
         ? [
@@ -235,48 +322,6 @@ export class StreamAgentChatJob {
             } as ExtendedUIMessagePart,
           ]
         : [{ type: 'text', text: result.response }];
-
-    const uiStream = createUIMessageStream<ExtendedUIMessage>({
-      execute: async ({ writer }) => {
-        const generatedTitle = await titlePromise.catch(() => null);
-
-        if (generatedTitle) {
-          writer.write({
-            type: 'data-thread-title' as const,
-            id: `thread-title-${data.threadId}`,
-            data: { title: generatedTitle },
-          });
-        }
-
-        for (const part of assistantParts) {
-          if (part.type === 'text') {
-            const textId = `text-${generateId()}`;
-
-            writer.write({ type: 'text-start', id: textId });
-            writer.write({
-              type: 'text-delta',
-              id: textId,
-              delta: part.text,
-            });
-            writer.write({ type: 'text-end', id: textId });
-          } else {
-            // Custom data-* parts pass through to the client unchanged.
-            writer.write(part as never);
-          }
-        }
-      },
-    });
-
-    for await (const chunk of uiStream) {
-      await this.eventPublisherService.publish({
-        threadId: data.threadId,
-        workspaceId: data.workspaceId,
-        event: {
-          type: 'stream-chunk',
-          chunk: chunk as Record<string, unknown>,
-        },
-      });
-    }
 
     // Persist the assistant turn so reopening the thread shows it.
     const threadStatus = await this.threadRepository.findOne({
