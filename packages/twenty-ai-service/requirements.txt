@@ -9,6 +9,3 @@ httpx==0.28.1
 # Tool abstraction for the internal LangGraph agent (agent/crm_tools.py).
 # Range, not an exact pin, so it stays compatible with the agent's langgraph.
 langchain-core>=0.3.0,<0.4.0
-# Testing (followup/tests/).
-pytest==8.3.4
-pytest-asyncio==0.25.2
