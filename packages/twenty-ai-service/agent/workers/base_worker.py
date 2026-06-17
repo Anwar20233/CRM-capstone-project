@@ -23,6 +23,10 @@ plus any extra utility tools.  The LLM model is configured via ``LLMClient``
 
 from __future__ import annotations
 
+import json
+import logging
+import os
+import sys
 from collections.abc import Callable
 from typing import Any
 
@@ -31,6 +35,41 @@ from langchain_core.tools import StructuredTool
 from agent.masking import EntityHandleMap
 from agent.tool_scope import ToolScope
 from agent.workers.write_policy import WritePolicy
+from tracing import get_traceable
+
+traceable = get_traceable()
+
+logger = logging.getLogger(__name__)
+
+
+def _dump_llm_request(
+    *, agent: str, step: int, model: str, messages: list[dict]
+) -> None:
+    """Dump the exact request payload sent to the LLM, masking included.
+
+    Opt-in via ``LLM_TRACE_REQUESTS``: ``stderr`` (or ``1``/``true``) prints to
+    stderr; any other value is treated as a file path to append JSONL to. This
+    is the ground truth of what crosses the wire — *after* masking — so it shows
+    handles (person001) rather than real PII. No-op when the env var is unset.
+    """
+    target = os.environ.get("LLM_TRACE_REQUESTS")
+    if not target:
+        return
+    from pipelines import models_loaded
+
+    record = {
+        "agent": agent,
+        "step": step,
+        "model": model,
+        "models_loaded": models_loaded(),
+        "messages": messages,
+    }
+    payload = json.dumps(record, indent=2, default=str)
+    if target.lower() in ("1", "true", "stderr"):
+        print(payload, file=sys.stderr)
+    else:
+        with open(target, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, default=str) + "\n")
 
 
 # Appended to the system prompt when masking is active so the model treats
@@ -127,7 +166,10 @@ class BaseWorker:
         elif pii_map is not None:
             self.pii_map = pii_map
         else:
-            self.pii_map = EntityHandleMap()
+            # Emails are PII the LLM must not see; the bare map preserves them, so
+            # opt into email masking. Tool args are unmasked before dispatch, so
+            # CRM lookups still hit the real address.
+            self.pii_map = EntityHandleMap(mask_emails=True)
 
         # Set once the map has been rebuilt from the chat's stored history, so a
         # multi-turn session primes only on the first turn.
@@ -164,6 +206,7 @@ class BaseWorker:
         """Sorted list of tool names this worker has access to."""
         return sorted(self._tools_by_name.keys())
 
+    @traceable(name="BaseWorker.invoke_tool", run_type="tool")
     async def invoke_tool(self, name: str, args: dict[str, Any] | None = None) -> dict:
         """Invoke a single tool by name and return the bridge envelope.
 
@@ -197,6 +240,7 @@ class BaseWorker:
                 },
             }
 
+    @traceable(name="BaseWorker.run", run_type="chain")
     async def run(
         self,
         user_message: str,
@@ -306,6 +350,9 @@ class BaseWorker:
         # Agent loop — max 15 iterations to prevent runaway.
         for step in range(1, 16):
             _emit({"type": "llm_call", "step": step})
+            _dump_llm_request(
+                agent=str(self.scope), step=step, model=model_id, messages=messages
+            )
             response = openai_client.chat.completions.create(
                 model=model_id,
                 messages=messages,
