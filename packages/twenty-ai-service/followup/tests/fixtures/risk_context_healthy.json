@@ -1,0 +1,58 @@
+{
+  "opportunity": {
+    "id": "opp-healthy-001",
+    "name": "Acme Expansion",
+    "stage": "NEW",
+    "owner_id": "user-001",
+    "updated_at": "2026-06-10T12:00:00Z",
+    "stage_entered_at": "2026-06-14T12:00:00Z"
+  },
+  "company": {
+    "id": "company-001",
+    "name": "Acme Corp",
+    "industry": "Technology"
+  },
+  "contacts": [
+    {
+      "id": "contact-001",
+      "name": "Jane Doe",
+      "role": "VP Sales",
+      "is_decision_maker": true
+    }
+  ],
+  "timeline": [
+    {
+      "type": "note",
+      "title": "Discovery call notes",
+      "summary": "Strong interest in platform",
+      "occurred_at": "2026-06-09T10:00:00Z"
+    }
+  ],
+  "tasks": [],
+  "meetings": [
+    {
+      "id": "meeting-001",
+      "title": "Follow-up demo",
+      "starts_at": "2026-06-15T14:00:00Z",
+      "status": "scheduled"
+    }
+  ],
+  "pipeline_meta": {
+    "stages": ["NEW", "SCREENING", "MEETING", "PROPOSAL", "CUSTOMER"],
+    "stage_sla_days": {
+      "NEW": 7,
+      "SCREENING": 10,
+      "MEETING": 10,
+      "PROPOSAL": 14,
+      "CUSTOMER": 365
+    },
+    "source": "crm_metadata"
+  },
+  "engagement": {
+    "days_since_last_activity": 2,
+    "activity_count_14d": 8,
+    "activity_count_prior_14d": 6,
+    "has_future_meeting": true
+  },
+  "loaded_at": "2026-06-12T08:00:00Z"
+}

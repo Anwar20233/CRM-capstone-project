@@ -1,0 +1,59 @@
+{
+  "opportunity": {
+    "id": "opp-stale-001",
+    "name": "Globex Renewal",
+    "stage": "PROPOSAL",
+    "owner_id": "user-002",
+    "updated_at": "2026-05-20T12:00:00Z",
+    "stage_entered_at": "2026-05-01T12:00:00Z"
+  },
+  "company": {
+    "id": "company-002",
+    "name": "Globex Inc",
+    "industry": "Manufacturing"
+  },
+  "contacts": [
+    {
+      "id": "contact-002",
+      "name": "Bob Smith",
+      "role": "Manager",
+      "is_decision_maker": false
+    }
+  ],
+  "timeline": [
+    {
+      "type": "note",
+      "title": "Initial outreach",
+      "summary": "Sent intro email",
+      "occurred_at": "2026-05-20T10:00:00Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-001",
+      "title": "Send pricing",
+      "status": "TODO",
+      "due_at": "2026-05-25T10:00:00Z",
+      "is_overdue": true
+    }
+  ],
+  "meetings": [],
+  "pipeline_meta": {
+    "stages": ["NEW", "SCREENING", "MEETING", "PROPOSAL", "CUSTOMER"],
+    "stage_sla_days": {
+      "NEW": 7,
+      "SCREENING": 10,
+      "MEETING": 10,
+      "PROPOSAL": 14,
+      "CUSTOMER": 365
+    },
+    "source": "crm_metadata"
+  },
+  "engagement": {
+    "days_since_last_activity": 10,
+    "activity_count_14d": 1,
+    "activity_count_prior_14d": 6,
+    "has_future_meeting": false
+  },
+  "loaded_at": "2026-06-12T08:00:00Z"
+}

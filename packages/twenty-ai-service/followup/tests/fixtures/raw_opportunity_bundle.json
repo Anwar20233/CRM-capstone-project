@@ -1,0 +1,84 @@
+{
+  "opportunity_id": "opp-stale-001",
+  "opportunity": {
+    "id": "opp-stale-001",
+    "name": "Globex Renewal",
+    "stage": "Proposal",
+    "amount": {
+      "amountMicros": 60000000000
+    },
+    "closeDate": "2026-01-31T19:25:00.000Z",
+    "updatedAt": "2026-05-20T12:00:00Z",
+    "stageEnteredAt": "2026-05-01T12:00:00Z",
+    "pointOfContactId": "contact-002",
+    "company": {
+      "id": "company-002"
+    },
+    "ownerId": "user-002"
+  },
+  "company": {
+    "id": "company-002",
+    "name": "Globex Inc",
+    "industry": "Manufacturing"
+  },
+  "point_of_contact": {
+    "id": "contact-002",
+    "name": {
+      "firstName": "Bob",
+      "lastName": "Smith"
+    },
+    "jobTitle": "Manager"
+  },
+  "notes": [
+    {
+      "id": "note-001",
+      "title": "Initial outreach",
+      "bodyV2": {
+        "markdown": "Sent intro email"
+      },
+      "updatedAt": "2026-05-20T10:00:00Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-001",
+      "title": "Send pricing",
+      "status": "TODO",
+      "dueAt": "2026-05-25T10:00:00Z",
+      "updatedAt": "2026-05-20T11:00:00Z"
+    }
+  ],
+  "timeline": [
+    {
+      "type": "note",
+      "updatedAt": "2026-05-20T10:00:00Z",
+      "item": {
+        "id": "note-001",
+        "title": "Initial outreach",
+        "bodyV2": {
+          "markdown": "Sent intro email"
+        },
+        "updatedAt": "2026-05-20T10:00:00Z"
+      }
+    },
+    {
+      "type": "task",
+      "updatedAt": "2026-05-20T11:00:00Z",
+      "item": {
+        "id": "task-001",
+        "title": "Send pricing",
+        "status": "TODO",
+        "dueAt": "2026-05-25T10:00:00Z",
+        "updatedAt": "2026-05-20T11:00:00Z"
+      }
+    }
+  ],
+  "pipeline_stages": [
+    { "value": "DISCOVERY", "label": "Discovery", "position": 0 },
+    { "value": "PROPOSAL", "label": "Proposal", "position": 1 },
+    { "value": "NEGOTIATION", "label": "Negotiation", "position": 2 },
+    { "value": "CLOSED_WON", "label": "Closed Won", "position": 3 },
+    { "value": "CLOSED_LOST", "label": "Closed Lost", "position": 4 }
+  ],
+  "fetched_at": "2026-06-12T08:00:00Z"
+}

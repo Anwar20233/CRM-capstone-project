@@ -11,6 +11,7 @@ from fastapi import FastAPI
 
 from pipelines import load_models, models_loaded
 from routers import agent, bridge, ner
+from followup.api.router import router as followup_router
 
 
 @asynccontextmanager
@@ -25,6 +26,7 @@ app = FastAPI(title="twenty-ai-service", lifespan=lifespan)
 app.include_router(ner.router)
 app.include_router(bridge.router)
 app.include_router(agent.router)
+app.include_router(followup_router)
 
 
 @app.get("/health")

@@ -1,0 +1,77 @@
+{
+  "opportunity": {
+    "id": "822639e5-9bf7-40f1-8882-a11140362339",
+    "name": "Platform Migration",
+    "stage": "PROPOSAL",
+    "amount": 60000.0,
+    "close_date": "2026-01-31T16:25:00.000Z",
+    "company_id": "company-stripe",
+    "owner_id": "user-001",
+    "updated_at": "2026-06-16T18:50:19.473Z",
+    "stage_entered_at": null
+  },
+  "company": {
+    "id": "company-stripe",
+    "name": "Stripe",
+    "industry": "Technology"
+  },
+  "contacts": [
+    {
+      "id": "person-patrick",
+      "name": "Patrick Collison",
+      "role": "CEO",
+      "is_decision_maker": false
+    }
+  ],
+  "timeline": [
+    {
+      "type": "email",
+      "title": "Follow-up on Platform Migration Proposal",
+      "summary": "The customer is concerned about data privacy and unauthorized CRM updates.",
+      "occurred_at": null,
+      "source": "opportunity.emailText",
+      "timestamp_source": "unavailable"
+    }
+  ],
+  "tasks": [],
+  "meetings": [],
+  "pipeline_meta": {
+    "stages": ["NEW", "SCREENING", "MEETING", "PROPOSAL", "CUSTOMER"],
+    "stage_sla_days": {
+      "NEW": 7,
+      "SCREENING": 10,
+      "MEETING": 10,
+      "PROPOSAL": 14,
+      "CUSTOMER": 365
+    },
+    "source": "crm_metadata"
+  },
+  "engagement": {
+    "days_since_last_activity": null,
+    "activity_count_14d": 0,
+    "activity_count_prior_14d": 0,
+    "has_future_meeting": false
+  },
+  "loaded_at": "2026-06-16T18:50:19.473Z",
+  "context_completeness": {
+    "opportunity": {"status": "loaded", "source": "agent_bridge"},
+    "company": {"status": "loaded", "source": "agent_bridge"},
+    "contacts": {"status": "loaded", "source": "agent_bridge"},
+    "timeline": {
+      "status": "partial",
+      "reason": "Opportunity scalar emailText/notes loaded, but linked CRM activity records were unavailable.",
+      "source": "opportunity_scalar_fields"
+    },
+    "tasks": {
+      "status": "unavailable",
+      "reason": "Reader tool does not expose the required opportunity relationship filter.",
+      "source": "agent_bridge"
+    },
+    "meetings": {
+      "status": "unavailable",
+      "reason": "No supported meeting query is currently configured.",
+      "source": "agent_bridge"
+    },
+    "pipeline_metadata": {"status": "loaded", "source": "crm_metadata"}
+  }
+}
