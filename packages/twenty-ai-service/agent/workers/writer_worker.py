@@ -111,6 +111,52 @@ Convert to ISO-8601, then proceed with the normal discovery protocol.
 """
 
 
+def _coerce_tool_result(content: Any) -> Any:
+    """ToolMessage content → a dict when it carries a JSON result envelope.
+
+    LangGraph's ToolNode serializes a tool's dict return to a JSON string for
+    the message content. Decode it back so callers can read ``result["ok"]``;
+    fall back to the raw content if it isn't JSON.
+    """
+    if isinstance(content, (dict, list)):
+        return content
+    if isinstance(content, str):
+        import json
+
+        try:
+            return json.loads(content)
+        except (ValueError, TypeError):
+            return content
+    return content
+
+
+def _executed_tool_calls(messages: list[Any]) -> list[dict[str, Any]]:
+    """Pair each ToolMessage with its originating tool_call → ``{name, args, result}``."""
+    from langchain_core.messages import AIMessage, ToolMessage
+
+    call_meta: dict[str, dict[str, Any]] = {}
+    for msg in messages:
+        if isinstance(msg, AIMessage):
+            for tc in msg.tool_calls or []:
+                call_meta[tc["id"]] = {
+                    "name": tc.get("name"),
+                    "args": tc.get("args", {}),
+                }
+
+    log: list[dict[str, Any]] = []
+    for msg in messages:
+        if isinstance(msg, ToolMessage):
+            meta = call_meta.get(msg.tool_call_id, {})
+            log.append(
+                {
+                    "name": meta.get("name"),
+                    "args": meta.get("args", {}),
+                    "result": _coerce_tool_result(msg.content),
+                }
+            )
+    return log
+
+
 # Class-level registry: session_id → WriterWorker instance.
 # Used by the /agent/resume endpoint to find the right worker.
 _sessions: dict[str, "WriterWorker"] = {}
@@ -147,6 +193,9 @@ class WriterWorker:
             system_prompt=_WRITER_SYSTEM_PROMPT,
             model=model,
             checkpointer=self._checkpointer,
+            # When a handle map is supplied, the graph unmasks tool args at the
+            # execute step (real values reach the bridge, never the LLM).
+            pii_map=pii_map,
         )
         self._config = {"configurable": {"thread_id": session_id}}
 
@@ -182,11 +231,11 @@ class WriterWorker:
 
             {"type": "interrupt", "interrupt": {...}, "thread_id": str}
         """
-        await self._graph.ainvoke(
+        final_state = await self._graph.ainvoke(
             {"messages": [HumanMessage(content=user_message)]},
             config=self._config,
         )
-        return self._extract_result()
+        return self._extract_result(final_state)
 
     async def resume(self, approved: bool) -> dict[str, Any]:
         """Resume after the user approves or rejects a write action.
@@ -194,24 +243,29 @@ class WriterWorker:
         Feeds ``Command(resume=approved)`` into the graph, which re-enters the
         ``write_gate`` node.  Returns the same shape as ``run()``.
         """
-        await self._graph.ainvoke(
+        final_state = await self._graph.ainvoke(
             Command(resume=approved),
             config=self._config,
         )
-        return self._extract_result()
+        return self._extract_result(final_state)
 
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
 
-    def _extract_result(self) -> dict[str, Any]:
-        """Read the current graph state and build the caller-facing result."""
-        state = self._graph.get_state(self._config)
+    def _extract_result(self, final_state: dict[str, Any]) -> dict[str, Any]:
+        """Build the caller-facing result from the value ``ainvoke`` returned.
 
-        # Graph paused at an interrupt — return the approval request.
-        if state.next:
-            interrupts = state.tasks[0].interrupts if state.tasks else []
-            interrupt_data = interrupts[0].value if interrupts else {}
+        Reads the returned channel values directly rather than ``get_state`` —
+        ``get_state`` resolves the checkpointer from the ambient run context and
+        raises "No checkpointer set" when this worker is invoked from inside
+        another graph's node (e.g. the follow-up accept graph). The returned
+        state is authoritative in both nested and top-level runs.
+        """
+        # Graph paused at an interrupt — LangGraph surfaces it on the return value.
+        interrupts = final_state.get("__interrupt__") if isinstance(final_state, dict) else None
+        if interrupts:
+            interrupt_data = getattr(interrupts[0], "value", {})
             return {
                 "type": "interrupt",
                 "interrupt": interrupt_data,
@@ -219,7 +273,7 @@ class WriterWorker:
             }
 
         # Graph finished — extract the last AIMessage as the response.
-        messages = state.values.get("messages", [])
+        messages = final_state.get("messages", []) if isinstance(final_state, dict) else []
         response = ""
         for msg in reversed(messages):
             from langchain_core.messages import AIMessage
@@ -227,7 +281,15 @@ class WriterWorker:
                 response = msg.content or ""
                 break
 
-        return {"response": response, "tool_calls": [], "type": "response"}
+        # Surface the executed tool calls + results (mirrors BaseWorker.run) so
+        # programmatic callers can verify a write actually succeeded rather than
+        # trusting the model's prose. Pairs each ToolMessage to its originating
+        # tool_call by id.
+        return {
+            "response": response,
+            "tool_calls": _executed_tool_calls(messages),
+            "type": "response",
+        }
 
     @classmethod
     def get_session(cls, session_id: str) -> "WriterWorker | None":

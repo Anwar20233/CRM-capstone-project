@@ -43,7 +43,7 @@ Usage::
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from langchain_core.tools import StructuredTool
 
@@ -56,7 +56,10 @@ from agent.tool_scope import (
     is_tool_allowed,
     is_write_tool,
 )
-from agent.workers.write_policy import WritePolicy
+
+if TYPE_CHECKING:
+    from agent.workers.write_policy import WritePolicy
+
 
 
 # ---------------------------------------------------------------------------
@@ -163,6 +166,7 @@ def build_crm_tools(
     scope: ToolScope,
     *,
     write_policy: WritePolicy | None = None,
+    pii_map: Any = None,
 ) -> list[StructuredTool]:
     """Build scope-filtered LangChain meta-tools for a worker.
 
@@ -176,6 +180,10 @@ def build_crm_tools(
     tier/safety/duplicate protocol on every write — the LLM sees either a
     normal result (tier 1/2) or a ``CONFIRMATION_REQUIRED`` error with a
     token it must pass back (tier 3).
+
+    If *pii_map* (an ``EntityHandleMap``) is provided, ``execute_tool`` unmasks
+    the tool arguments at the bridge boundary — the model operates on handles and
+    real values are substituted only at the moment of the write.
     """
 
     # -- get_tool_catalog ------------------------------------------------
@@ -308,6 +316,13 @@ def build_crm_tools(
                     error["draft"] = {"tool": tool, "args": tool_args}
 
                 return {"ok": False, "error": error}
+
+        # ── Unmask on the execute trace ────────────────────────────────
+        # Map handles back to real values at the LAST moment, right before the
+        # write hits the bridge — so the LLM only ever saw handles, never PII.
+        # (No-op when no pii_map, or when the args carry no handles.)
+        if pii_map is not None:
+            tool_args = pii_map.unmask_value(tool_args)
 
         # ── Forward to the bridge ──────────────────────────────────────
         ident = _identity(scope)
