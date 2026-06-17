@@ -1,0 +1,78 @@
+{
+  "opportunity": {
+    "id": "opp-2002",
+    "name": "Globex Inc - Renewal + Expansion",
+    "stage": "Proposal",
+    "amount": 84000,
+    "close_date": "2026-07-31T00:00:00Z",
+    "company_id": "company-2",
+    "owner_id": "user-2",
+    "updated_at": "2026-06-12T12:00:00Z"
+  },
+  "company": {
+    "id": "company-2",
+    "name": "Globex Inc",
+    "industry": "Logistics"
+  },
+  "contacts": [
+    {
+      "id": "contact-2",
+      "name": "Priya Shah",
+      "role": "VP Operations",
+      "is_decision_maker": true
+    },
+    {
+      "id": "contact-3",
+      "name": "Sam Torres",
+      "role": "IT Lead",
+      "is_decision_maker": false
+    }
+  ],
+  "timeline": [
+    {
+      "type": "meeting",
+      "title": "Discovery wrap-up call",
+      "summary": "Confirmed budget range of $75k-$90k and Q3 go-live target.",
+      "occurred_at": "2026-06-08T16:00:00Z"
+    },
+    {
+      "type": "note",
+      "title": "Stage moved to Proposal",
+      "summary": "Opportunity stage changed from Discovery to Proposal.",
+      "occurred_at": "2026-06-12T12:00:00Z"
+    }
+  ],
+  "tasks": [],
+  "meetings": [],
+  "pipeline_meta": {
+    "stages": ["Discovery", "Proposal", "Negotiation", "Closed Won", "Closed Lost"],
+    "stage_sla_days": {
+      "Discovery": 14,
+      "Proposal": 21,
+      "Negotiation": 14
+    }
+  },
+  "engagement": {
+    "days_since_last_activity": 3,
+    "activity_count_14d": 4,
+    "activity_count_prior_14d": 3,
+    "has_future_meeting": false
+  },
+  "active_facts": [
+    {
+      "fact_id": "fact-2",
+      "category": "deal_progression",
+      "fact_key": "bant_budget_status",
+      "value": "confirmed - $75k-$90k range",
+      "confidence": 0.9
+    },
+    {
+      "fact_id": "fact-3",
+      "category": "relationship_context",
+      "fact_key": "primary_champion",
+      "value": "Priya Shah (VP Operations, decision maker)",
+      "confidence": 0.9
+    }
+  ],
+  "loaded_at": "2026-06-15T08:00:00Z"
+}
