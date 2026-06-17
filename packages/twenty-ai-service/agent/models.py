@@ -48,6 +48,12 @@ MODEL_REGISTRY: dict[str, ModelSpec] = {
 # Used when neither the caller nor env specifies a model.
 DEFAULT_MODEL_ALIAS = "deepseek-v4-flash"
 
+# Follow-up agent model split: the orchestrator's own reasoning runs on a
+# smarter/faster model; its subagents (next-step, drafting) run on a cheaper
+# worker model. Both are overridable via env (see the bundle factory + deps).
+FOLLOWUP_ORCHESTRATOR_MODEL_ALIAS = "deepseek-v4-flash"
+FOLLOWUP_SUBAGENT_MODEL_ALIAS = "qwen3-next-80b"
+
 
 def resolve_model(name: str | None) -> ModelSpec:
     """Resolve an alias or raw OpenRouter slug to a ``ModelSpec``.

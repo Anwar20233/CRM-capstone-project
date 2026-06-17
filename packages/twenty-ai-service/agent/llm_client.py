@@ -1,16 +1,19 @@
-"""OpenRouter LLM client for the Python Worker framework.
+"""OpenRouter LLM client and structured JSON helper for the Python Worker framework.
 
 Reads ``LLM_*`` configuration from the process environment (or a local ``.env``
 loaded once at import) and exposes an OpenAI-compatible client pointed at
-OpenRouter. The active model is resolved through ``agent.models``, so callers can
-hot-swap models by alias without touching env — ``LLMClient(model="gpt-4o")``.
+OpenRouter or OpenAI, and structured JSON call helpers.
 """
+
+from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import TypeVar
 
 from dotenv import load_dotenv
 from openai import OpenAI
+from pydantic import BaseModel
 
 from agent.models import ConfigurationError, ModelSpec, resolve_model
 
@@ -24,6 +27,8 @@ _ENV_VARS = (
     "LLM_API_KEY",
     "LLM_MODEL",
 )
+
+ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
 class LLMClient:
@@ -49,7 +54,10 @@ class LLMClient:
         if self._provider == "openai" and model_id.startswith("openai/"):
             model_id = model_id.split("/", 1)[1]
         self._model_id = model_id
-        self._client = OpenAI(base_url=self._base_url, api_key=self._api_key)
+        raw_client = OpenAI(base_url=self._base_url, api_key=self._api_key)
+        # Wrap with LangSmith auto-tracing (no-op when tracing is disabled).
+        from tracing import wrap_client
+        self._client = wrap_client(raw_client)
 
     @property
     def provider(self) -> str:
@@ -100,3 +108,91 @@ def _load_config() -> dict[str, str]:
         "api_key": values["LLM_API_KEY"],
         "model": values["LLM_MODEL"],
     }
+
+
+class LLMCallError(Exception):
+    """Raised when the underlying LLM call or response parsing fails."""
+
+
+def _resolve_chat_model(model: str | None = None):
+    """Build a LangChain chat model from environment configuration.
+
+    ``model`` (alias or raw OpenRouter slug) overrides the env default
+    (``LLM_MODEL``) — this is how a subagent runs on its own model independent
+    of the orchestrator (e.g. the follow-up subagents on Qwen while the
+    orchestrator reasons on a smarter model).
+    """
+    try:
+        config = _load_config()
+        provider = config["provider"]
+        model_name = model or config["model"]
+        base_url = config["base_url"]
+        api_key = config["api_key"]
+    except ConfigurationError as exc:
+        # Fall back to env variables directly if structured configuration fails
+        provider = os.environ.get("LLM_PROVIDER", "openai").lower()
+        model_name = model or os.environ.get("LLM_MODEL", "gpt-4o-mini")
+        base_url = os.environ.get("LLM_BASE_URL")
+        api_key = os.environ.get("LLM_API_KEY")
+
+    spec = resolve_model(model_name)
+    model_id = spec.id
+
+    if provider in ("openai", "openrouter"):
+        from langchain_openai import ChatOpenAI
+
+        if provider == "openai" and model_id.startswith("openai/"):
+            model_id = model_id.split("/", 1)[1]
+
+        return ChatOpenAI(
+            model=model_id,
+            temperature=0,
+            api_key=api_key,
+            base_url=base_url,
+        )
+
+    if provider == "anthropic":
+        from langchain_anthropic import ChatAnthropic
+
+        return ChatAnthropic(
+            model=model_id,
+            temperature=0,
+            api_key=api_key,
+            base_url=base_url,
+        )
+
+    raise LLMCallError(f"Unsupported LLM_PROVIDER '{provider}'")
+
+
+async def call_llm_json(
+    prompt: str, schema: type[ModelT], *, model: str | None = None
+) -> ModelT:
+    """Call the configured chat model and parse the response as `schema`.
+
+    Args:
+        prompt: Fully-formed prompt string (system + context + instructions).
+        schema: Pydantic model the JSON response must conform to.
+        model: Optional alias/slug overriding ``LLM_MODEL`` — lets a caller
+            (e.g. a follow-up subagent) run on its own model.
+
+    Returns:
+        An instance of `schema` populated from the model's structured output.
+
+    Raises:
+        LLMCallError: If the model call fails or the response cannot be
+            parsed into `schema`.
+    """
+    try:
+        chat_model = _resolve_chat_model(model)
+        structured_model = chat_model.with_structured_output(schema)
+        result = await structured_model.ainvoke(prompt)
+    except Exception as exc:  # noqa: BLE001 - normalize all provider errors
+        raise LLMCallError(f"LLM call failed: {exc}") from exc
+
+    if isinstance(result, schema):
+        return result
+
+    try:
+        return schema.model_validate(result)
+    except Exception as exc:  # noqa: BLE001
+        raise LLMCallError(f"Failed to parse LLM response as {schema.__name__}: {exc}") from exc

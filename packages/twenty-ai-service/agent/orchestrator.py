@@ -34,6 +34,10 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from tracing import get_traceable
+
+traceable = get_traceable()
+
 from agent.agent_registry import build_default_registry
 from agent.agent_scope import ORCHESTRATOR_SCOPE
 from agent.agent_tools import build_agent_tools
@@ -325,6 +329,7 @@ class Orchestrator:
         self._summary: str | None = None
         self._turns: list[dict[str, str]] = []
 
+    @traceable(name="Orchestrator.handle", run_type="chain")
     async def handle(
         self,
         user_message: str,
@@ -501,6 +506,7 @@ class Orchestrator:
         self._summary = await self._summarize(self._summary, older)
         self._turns = recent
 
+    @traceable(name="Orchestrator.compact_memory", run_type="chain")
     async def _summarize(
         self, prior_summary: str | None, turns: list[dict[str, str]]
     ) -> str:
@@ -528,6 +534,30 @@ class Orchestrator:
             ],
         )
         return response.choices[0].message.content or (prior_summary or "")
+
+
+async def delegate_write(
+    instruction: str,
+    *,
+    pii_map: Any = None,
+    session_id: str,
+    model: str | None = None,
+) -> dict[str, Any]:
+    """Orchestrator → writer seam: run one write through the writer sub-agent.
+
+    Feature code (e.g. the follow-up agent) must NOT construct or call the writer
+    directly — it reaches the writer through this seam. The caller owns the handle
+    map: it has hidden the write's content behind handles (real ids stay real for
+    targeting). The writer unmasks tool args at its execute step via ``pii_map``,
+    so the writer LLM only ever sees handles — never the real content.
+
+    Returns the writer's result dict (``{"response", "tool_calls", "type"}`` or an
+    interrupt payload).
+    """
+    from agent.workers.writer_worker import WriterWorker
+
+    writer = WriterWorker(session_id=session_id, model=model, pii_map=pii_map)
+    return await writer.run(instruction)
 
 
 orchestrator = Orchestrator()

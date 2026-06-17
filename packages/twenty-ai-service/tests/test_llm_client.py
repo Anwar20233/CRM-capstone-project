@@ -47,9 +47,9 @@ def test_raises_configuration_error_for_invalid_provider(
     llm_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.setenv("LLM_PROVIDER", "invalid-provider")
 
-    with pytest.raises(ConfigurationError, match="LLM_PROVIDER must be 'openrouter'"):
+    with pytest.raises(ConfigurationError, match="LLM_PROVIDER must be 'openrouter' or 'openai'"):
         LLMClient()
 
 
