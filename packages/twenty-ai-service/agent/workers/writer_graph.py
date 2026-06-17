@@ -129,6 +129,7 @@ def build_writer_graph(
     model: str | None = None,
     *,
     checkpointer=None,
+    pii_map=None,
 ):
     """Compile and return the writer StateGraph.
 
@@ -141,12 +142,16 @@ def build_writer_graph(
     checkpointer:
         LangGraph checkpointer for state persistence.  Pass ``MemorySaver()``
         for in-process use; swap for a Redis/Postgres saver in production.
+    pii_map:
+        Optional handle map. When set, ``execute_tool`` unmasks tool arguments at
+        the execute step — mapping handles back to real values right before the
+        bridge write, so the writer LLM only ever sees handles, never PII.
     """
     from agent.llm_client import LLMClient
     from agent.workers.base_worker import _to_openai_tool
 
     # Build CRM tools WITHOUT WritePolicy — write_gate owns tier-3 gating.
-    crm_tools = build_crm_tools(WRITER_SCOPE, write_policy=None)
+    crm_tools = build_crm_tools(WRITER_SCOPE, write_policy=None, pii_map=pii_map)
     all_tools = crm_tools + build_utility_tools()
 
     client = LLMClient(model=model)

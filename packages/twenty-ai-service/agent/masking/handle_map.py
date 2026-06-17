@@ -77,6 +77,10 @@ _ENTITY_REF_RE = re.compile(
 # Splits a normalized string into words for stopword filtering / display.
 _WORD_RE = re.compile(r"[^\W_]+", re.UNICODE)
 
+# A bare email address, for the opt-in email-masking pass (``mask_emails``).
+# Applied AFTER name replacement, since ``_replace`` stashes emails untouched.
+_BARE_EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+
 
 def _normalize(text: str) -> str:
     """Casefold + collapse whitespace so casing/spacing never splits a handle."""
@@ -124,6 +128,11 @@ class EntityHandleMap:
         Presidio pipeline (lazy-imported). Inject a stub in tests.
     label_to_type:
         NER label → handle entity-type. Defaults to ``DEFAULT_LABEL_TO_TYPE``.
+    mask_emails:
+        When true, mask bare email addresses too. ``_replace`` deliberately
+        stashes emails behind sentinels so name-masking can't corrupt them, so
+        without this flag emails reach the LLM verbatim. Off by default to keep
+        callers that mask emails themselves (``ProfileMasker``) unchanged.
     """
 
     def __init__(
@@ -131,9 +140,11 @@ class EntityHandleMap:
         *,
         extractor: Extractor | None = None,
         label_to_type: dict[str, str] | None = None,
+        mask_emails: bool = False,
     ) -> None:
         self._extractor = extractor or _default_extractor
         self._label_to_type = label_to_type or dict(DEFAULT_LABEL_TO_TYPE)
+        self._mask_emails = mask_emails
 
         self._handles: dict[str, Handle] = {}  # name → handle
         self._by_record_id: dict[str, Handle] = {}  # record id → handle
@@ -215,7 +226,9 @@ class EntityHandleMap:
         if not isinstance(text, str) or not text:
             return text
         discovered = self._discover_pairs(text) if discover else []
-        return self._replace(text, self._all_pairs(extra=discovered))
+        return self._mask_email_addresses(
+            self._replace(text, self._all_pairs(extra=discovered))
+        )
 
     def mask_value(self, value: Any) -> Any:
         """Mask every string leaf in a nested dict/list (e.g. a tool result).
@@ -231,7 +244,24 @@ class EntityHandleMap:
         """
         self.register_records(value)
         pairs = self._all_pairs(extra=[])
-        return self._map_strings(value, lambda leaf: self._replace(leaf, pairs))
+        return self._map_strings(
+            value, lambda leaf: self._mask_email_addresses(self._replace(leaf, pairs))
+        )
+
+    def _mask_email_addresses(self, text: str) -> str:
+        """Replace bare emails with handles when ``mask_emails`` is enabled.
+
+        Runs after ``_replace`` (which stashes emails so name-masking skips them),
+        registering each email into this same map so unmasking stays unified.
+        """
+        if not self._mask_emails or not text:
+            return text
+
+        def replace(match: re.Match[str]) -> str:
+            handle = self.register_privacy("email", match.group(0))
+            return handle.name if handle is not None else match.group(0)
+
+        return _BARE_EMAIL_RE.sub(replace, text)
 
     # -- Unmasking (outbound: handle → raw) -----------------------------
 
