@@ -88,6 +88,20 @@ SCENARIOS: dict[str, EmailScenario] = {
         ),
         exercises="strong buying signal + commitment, positive sentiment; new legal shadow (Priya Nair); deadline",
     ),
+    "stripe_meeting_request": EmailScenario(
+        name="stripe_meeting_request",
+        sender="alex.rivera@stripe.com",
+        subject="Re: Analytics Suite — can we schedule a call?",
+        body=(
+            "Hi Sarah,\n\n"
+            "Thanks for sending over the benchmark results. The team has a few "
+            "follow-up questions before we can finalize.\n\n"
+            "Could we schedule 30 minutes next week? I'm free Tuesday 2–4pm PT or "
+            "Wednesday morning. Let me know what works on your side.\n\n"
+            "Best,\nAlex"
+        ),
+        exercises="meeting_request classification → check_calendar + draft with proposed slots",
+    ),
     "stripe_vague_checkin": EmailScenario(
         name="stripe_vague_checkin",
         sender="alex.rivera@stripe.com",
