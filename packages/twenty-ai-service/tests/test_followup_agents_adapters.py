@@ -176,6 +176,135 @@ def test_draft_type_selection_from_classification():
     assert _draft_type_for({"type": "unknown"}) == DraftType.FOLLOW_UP_EMAIL
 
 
+def test_slot_lines_formats_available_slots():
+    from followup.agents.drafting_adapter import _slot_lines
+
+    slots = [
+        {"start": "2026-06-18T14:00:00+00:00", "end": "2026-06-18T14:30:00+00:00", "available": True},
+        {"start": "2026-06-18T15:00:00+00:00", "end": "2026-06-18T15:30:00+00:00", "available": False},
+    ]
+    lines = _slot_lines(slots)
+    assert "Proposed meeting times" in lines
+    assert "2026-06-18T14:00:00+00:00" in lines
+    assert "2026-06-18T15:00:00+00:00" not in lines
+
+
+def test_drafting_adapter_injects_calendar_slots_into_prompt_context():
+    async def _run():
+        from followup.agents.drafting_adapter import OrchestratorDraftingAgent
+        from followup.contracts.drafting import DraftRequest
+        from followup.emailer.agents.drafting.schemas import DraftingAgentResult, DraftType, EmailDraft
+
+        captured: dict = {}
+
+        async def fake_run(*, context, **kwargs):
+            captured["notes"] = context.recent_notes
+            return DraftingAgentResult(
+                email_drafts=[
+                    EmailDraft(
+                        subject="Re: meeting",
+                        body="Tuesday 2pm works.",
+                        draft_type=DraftType.FOLLOW_UP_EMAIL,
+                        quality_score=0.9,
+                        reasoning="offered slot",
+                    )
+                ],
+                proposal_drafts=[],
+                reasoning="ok",
+                skipped=False,
+            )
+
+        import followup.agents.drafting_adapter as mod
+
+        original = mod.run_drafting_agent
+        mod.run_drafting_agent = fake_run
+        try:
+            deal = make_deal()
+            request = DraftRequest(
+                deal_context=deal,
+                intent="Offer meeting times",
+                classification={"type": "meeting_request", "urgency": "medium"},
+                recipient_email="dana@acme.com",
+                available_slots=[
+                    {
+                        "start": "2026-06-18T14:00:00+00:00",
+                        "end": "2026-06-18T14:30:00+00:00",
+                        "available": True,
+                    }
+                ],
+                reply_context={"sender_email": "dana@acme.com", "subject": "Schedule?", "body": "Can we meet?"},
+            )
+            result = await OrchestratorDraftingAgent().run(request)
+        finally:
+            mod.run_drafting_agent = original
+
+        assert result.body
+        assert captured["notes"]
+        assert "2026-06-18T14:00:00+00:00" in captured["notes"][0].body
+
+    asyncio.run(_run())
+
+
+def test_run_tasks_meeting_request_includes_calendar_in_state():
+    async def _run():
+        from followup.contracts.next_step import NextStepPlan, PlannedStep
+        from followup.orchestrator import FollowupTaskRegistry, FollowupTaskSpec
+        from followup.orchestrator.nodes import build_nodes
+
+        calendar_payload = {
+            "available_slots": [
+                {"start": "2026-06-18T14:00:00+00:00", "end": "2026-06-18T14:30:00+00:00", "available": True},
+            ],
+            "all_busy": False,
+            "suggested_alternatives": [],
+        }
+
+        async def calendar_handler(ctx):
+            return {"calendar": SimpleNamespace(**calendar_payload)}
+
+        async def draft_handler(ctx):
+            assert ctx.calendar is not None
+            return {
+                "draft": SimpleNamespace(
+                    subject="Re: Analytics Suite",
+                    body="How about Tuesday at 2pm?",
+                    recipient_email="alex.rivera@stripe.com",
+                )
+            }
+
+        registry = FollowupTaskRegistry()
+        registry.register(
+            FollowupTaskSpec(
+                name="check_calendar", role="r", when_to_use="w", instructions="i",
+                input_schema={}, handler=calendar_handler,
+            )
+        )
+        registry.register(
+            FollowupTaskSpec(
+                name="draft_email", role="r", when_to_use="w", instructions="i",
+                input_schema={}, handler=draft_handler,
+            )
+        )
+
+        state = _make_state(
+            NextStepPlan(
+                steps=[PlannedStep(kind="book_meeting", intent="schedule call")],
+                headline_action="schedule_meeting",
+                summary="meeting",
+            )
+        )
+        state["classification"] = {"type": "meeting_request", "urgency": "medium", "requires_calendar": True}
+
+        deps = SimpleNamespace(task_registry=registry)
+        nodes = build_nodes(deps)  # type: ignore[arg-type]
+        out = await nodes["run_tasks"](state)
+
+        assert out["calendar"].available_slots
+        assert "2pm" in out["draft"].body or "14:00" in out["draft"].body
+
+    asyncio.run(_run())
+
+
 def test_drafting_email_to_draft_result_fills_recipient_and_tone():
     deal = make_deal()
     agent = OrchestratorDraftingAgent()

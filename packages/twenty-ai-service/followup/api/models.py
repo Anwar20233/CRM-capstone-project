@@ -149,6 +149,47 @@ class RiskSweepResult(BaseModel):
     errors: int
 
 
+class EmailFetchRequest(BaseModel):
+    """Phase 1 — collect inbound emails into the queue."""
+
+    workspace_id: str
+    since: Optional[str] = None  # ISO-8601 cursor override
+
+
+class EmailFetchResult(BaseModel):
+    fetched: int
+    enqueued: int
+    skipped_duplicate: int
+
+
+class EmailReviewRequest(BaseModel):
+    """Phase 2 — process queued inbound emails."""
+
+    workspace_id: str
+    batch_size: int = 10
+
+
+class EmailReviewResult(BaseModel):
+    claimed: int
+    processed: int
+    skipped: int
+    failed: int
+
+
+class EmailSendOutboxRequest(BaseModel):
+    """Outbox poller — send accepted draft emails."""
+
+    workspace_id: str
+    batch_size: int = 20
+
+
+class EmailSendOutboxResult(BaseModel):
+    claimed: int
+    sent: int
+    skipped: int
+    failed: int
+
+
 __all__ = [
     "FollowUpEventRequest",
     "DirectFollowUpRequest",
@@ -161,4 +202,10 @@ __all__ = [
     "AcceptResult",
     "ReviseResult",
     "RiskSweepResult",
+    "EmailFetchRequest",
+    "EmailFetchResult",
+    "EmailReviewRequest",
+    "EmailReviewResult",
+    "EmailSendOutboxRequest",
+    "EmailSendOutboxResult",
 ]
