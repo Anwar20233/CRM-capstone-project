@@ -96,6 +96,30 @@ def test_to_next_step_context_engagement_from_activities():
     assert ctx.timeline[0].summary == "Call"
 
 
+def test_to_next_step_context_no_activity_is_unknown_not_sentinel():
+    """No activity → days_since_last_activity is None, never a fabricated 999."""
+    deal = make_deal(activities=[])
+    ctx = to_next_step_context(deal)
+    assert ctx.engagement.days_since_last_activity is None
+
+
+def test_inbound_signal_resets_engagement_clock():
+    """The triggering email folds into the timeline so the deal isn't 'cold'."""
+    from datetime import datetime, timezone
+
+    deal = make_deal(activities=[])
+    signal = {
+        "type": "email",
+        "date": datetime.now(timezone.utc).isoformat(),
+        "summary": "Ready to move forward",
+    }
+    ctx = to_next_step_context(deal, inbound_signal=signal)
+
+    assert ctx.engagement.days_since_last_activity == 0
+    assert ctx.engagement.activity_count_14d == 1
+    assert any(item.summary == "Ready to move forward" for item in ctx.timeline)
+
+
 def test_to_drafting_context_picks_recipient_contact():
     deal = make_deal()
     ctx = to_drafting_context(deal, recipient_email="dana@acme.com")

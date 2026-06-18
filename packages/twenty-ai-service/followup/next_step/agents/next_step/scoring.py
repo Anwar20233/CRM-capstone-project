@@ -29,7 +29,9 @@ def _matches_current_stage(action: RecommendedAction, context: DealContext) -> b
 
 
 def _addresses_engagement_gap(action: RecommendedAction, context: DealContext) -> bool:
-    if context.engagement.days_since_last_activity < _ENGAGEMENT_GAP_THRESHOLD_DAYS:
+    days = context.engagement.days_since_last_activity
+    # Unknown recency (no activity on record) is not evidence of a gap.
+    if days is None or days < _ENGAGEMENT_GAP_THRESHOLD_DAYS:
         return False
     return any(kw in _text_blob(action) for kw in _ENGAGEMENT_KEYWORDS)
 

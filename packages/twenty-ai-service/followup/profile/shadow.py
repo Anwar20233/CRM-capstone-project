@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from followup.profile.dependencies import PipelineDeps
-from followup.profile.taxonomy import PROMOTION_TITLE_KEYWORDS
+from followup.profile.taxonomy import role_signals_authority
 from followup.store.repositories import ShadowEntity
 
 # Auto-promote once this many distinct extraction runs have touched a shadow.
@@ -34,10 +34,7 @@ def _as_uuid(value: object) -> uuid.UUID:
 
 def _has_authority_title(role: Optional[str]) -> bool:
     """True if a role string contains any seniority/authority keyword."""
-    if not role:
-        return False
-    lowered = role.casefold()
-    return any(keyword in lowered for keyword in PROMOTION_TITLE_KEYWORDS)
+    return role_signals_authority(role)
 
 
 async def create_shadow(

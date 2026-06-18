@@ -35,7 +35,7 @@ from langchain_core.tools import StructuredTool
 from agent.masking import EntityHandleMap
 from agent.tool_scope import ToolScope
 from agent.workers.write_policy import WritePolicy
-from tracing import get_traceable
+from tracing import annotate_run, get_traceable
 
 traceable = get_traceable()
 
@@ -151,10 +151,15 @@ class BaseWorker:
         pii_map: EntityHandleMap | None = None,
         mask_pii: bool = True,
         unmasked_tools: frozenset[str] | None = None,
+        label: str | None = None,
     ) -> None:
         self.scope = scope
         self.system_prompt = system_prompt
         self.session_id = session_id
+        # Human-readable agent name for tracing/logs. Defaults to the scope name
+        # (reader/writer); the orchestrator overrides it since it reuses
+        # READER_SCOPE purely to satisfy the constructor (tools_override wins).
+        self.label = label or scope.name
         self.write_policy = write_policy
         self.model = model
         self.unmasked_tools = unmasked_tools or frozenset()
@@ -213,6 +218,18 @@ class BaseWorker:
         This is the programmatic entry-point for tests.  It does **not** go
         through the LLM — it runs the tool function directly.
         """
+        # Rename the span from the generic "BaseWorker.invoke_tool" to the actual
+        # tool, so the dashboard reads e.g. "tool:execute_tool". A delegation gets
+        # the richer "delegate→reader" label since it spawns a whole sub-agent.
+        if name == "delegate_to_agent" and isinstance(args, dict) and args.get("agent"):
+            span_name = f"delegate→{args['agent']}"
+        else:
+            span_name = f"tool:{name}"
+        annotate_run(
+            name=span_name,
+            metadata={"tool": name, "agent": self.label, "args": _preview(args)},
+            tags=[self.label, f"tool:{name}"],
+        )
         tool = self._tools_by_name.get(name)
         if tool is None:
             return {
@@ -307,6 +324,21 @@ class BaseWorker:
         openai_client = client.get_openai_client()
         model_id = client.model
         _emit({"type": "model", "model": model_id})
+
+        # Rename the generic "BaseWorker.run" span to the concrete agent and
+        # attach the instruction it's executing, so the trace tree reads
+        # "agent:writer" / "agent:reader" / "agent:orchestrator" with the task.
+        annotate_run(
+            name=f"agent:{self.label}",
+            metadata={
+                "agent": self.label,
+                "instruction": _preview(user_message),
+                "model": model_id,
+                "session_id": self.session_id,
+                "tool_count": len(self._tools),
+            },
+            tags=[self.label, "agent-loop"],
+        )
 
         # Build OpenAI-compatible tool schemas.
         oai_tools = [_to_openai_tool(t) for t in self._tools]
@@ -462,6 +494,20 @@ class BaseWorker:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _preview(value: Any, *, limit: int = 300) -> str:
+    """Compact, length-capped string of a value for trace metadata.
+
+    Keeps spans readable in the dashboard — full inputs are still captured by
+    ``@traceable`` itself; this is just a glanceable summary.
+    """
+    import json
+
+    if value is None:
+        return ""
+    text = value if isinstance(value, str) else json.dumps(value, default=str)
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
 
 def _to_openai_tool(tool: StructuredTool) -> dict:
     """Convert a LangChain StructuredTool to an OpenAI-compatible tool dict."""

@@ -25,9 +25,18 @@ from typing import TYPE_CHECKING, Any, Optional
 if TYPE_CHECKING:
     from followup.calendar.reader import CalendarReader
 
-# How far out to search for alternatives when every proposed time is busy.
-_ALTERNATIVE_SEARCH_DAYS = 5
-_MAX_ALTERNATIVES = 3
+# How a proposed follow-up time is chosen when we have to pick one ourselves
+# (no times in the trigger, or every proposed time was busy).
+#
+# Sales practice: don't propose "now" or same-day — give the prospect a couple of
+# business days' lead so they can actually plan, but stay well inside the ~2-week
+# window past which no-shows climb. We therefore start the search a couple of
+# business days out and scan a short span from there, returning a SINGLE concrete
+# slot (one date, one time) anchored to the top/half of the hour within the rep's
+# business hours — never a cluster of near-now options.
+_SCHEDULING_LEAD_BUSINESS_DAYS = 2
+_SEARCH_SPAN_DAYS = 5
+_SLOT_COUNT = 1
 
 
 @dataclass
@@ -80,8 +89,8 @@ async def check_availability(
         times instead of the model inventing some.
       - otherwise: empty result, no bridge call (a quiet "nothing to check").
     * **Some proposed time free** → ``all_busy=False`` and no alternatives.
-    * **All proposed times busy** → ``all_busy=True`` plus up to three
-      business-hour alternatives in the next five business days.
+    * **All proposed times busy** → ``all_busy=True`` plus a single business-hour
+      alternative a couple of business days out (see ``_scheduling_window``).
     """
     from followup.calendar.reader import _overlaps
 
@@ -140,17 +149,36 @@ async def check_availability(
     )
 
 
+def _scheduling_window(now: datetime) -> tuple[datetime, datetime]:
+    """The [start, end] window to search for a proposed slot.
+
+    Starts at midnight of the day a couple of business days out (weekends don't
+    count toward the lead), so the first business-hour candidate the search emits
+    lands on the hour/half-hour rather than "now + a few minutes". Spans a short
+    run of days from there to give the search room when that first day is full.
+    """
+    from followup.calendar.reader import BUSINESS_DAYS
+
+    search_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    business_days_added = 0
+    while business_days_added < _SCHEDULING_LEAD_BUSINESS_DAYS:
+        search_start += timedelta(days=1)
+        if search_start.weekday() in BUSINESS_DAYS:
+            business_days_added += 1
+    return search_start, search_start + timedelta(days=_SEARCH_SPAN_DAYS)
+
+
 async def _find_free_slots(
     calendar_reader: "CalendarReader", owner_user_id: str, duration_minutes: int
 ) -> list[TimeSlot]:
-    """The rep's next free business-hour slots over the alternative-search window."""
-    now = datetime.now(timezone.utc)
+    """A single proposed business-hour slot a couple of business days out."""
+    search_start, search_end = _scheduling_window(datetime.now(timezone.utc))
     return await calendar_reader.find_free_slots(
         owner_user_id,
-        now,
-        now + timedelta(days=_ALTERNATIVE_SEARCH_DAYS),
+        search_start,
+        search_end,
         duration_minutes,
-        max_slots=_MAX_ALTERNATIVES,
+        max_slots=_SLOT_COUNT,
     )
 
 

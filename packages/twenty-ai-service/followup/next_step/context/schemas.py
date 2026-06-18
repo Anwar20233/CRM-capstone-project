@@ -107,7 +107,9 @@ class PipelineMeta(BaseModel):
 class EngagementMetrics(BaseModel):
     """Derived engagement signals used by Next Step and Risk agents."""
 
-    days_since_last_activity: int
+    # None when the deal has no activity on record — callers must not invent a
+    # sentinel; absence of data is reported honestly as "unknown" downstream.
+    days_since_last_activity: int | None = None
     activity_count_14d: int
     activity_count_prior_14d: int
     has_future_meeting: bool

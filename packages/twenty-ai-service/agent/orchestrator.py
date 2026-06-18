@@ -34,7 +34,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from tracing import get_traceable
+from tracing import annotate_run, get_traceable
 
 traceable = get_traceable()
 
@@ -318,6 +318,7 @@ class Orchestrator:
             model=self.orchestrator_model,
             pii_map=self.pii_map,
             tools_override=tools,
+            label="orchestrator",
             # Agent-discovery results are control metadata (agent names, schemas),
             # not CRM data — never mask them. delegate_to_agent IS masked, since
             # it carries the sub-agent's CRM payload back to the planner.
@@ -343,6 +344,16 @@ class Orchestrator:
         more than one record, we short-circuit and ask the user to choose rather
         than guessing — the chosen record is bound on the next turn.
         """
+        # Tag the top-level turn span so a trace is searchable by session and
+        # shows the request at a glance without drilling into the tree.
+        annotate_run(
+            metadata={
+                "session_id": self.session_id,
+                "user_message": user_message[:300],
+            },
+            tags=["orchestrator", "turn"],
+        )
+
         # If we're waiting on a disambiguation, try to bind the user's choice and
         # resume the original request; otherwise treat this as a fresh message.
         message, gate = await self._resolve_turn(user_message)

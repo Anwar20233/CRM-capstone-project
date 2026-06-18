@@ -3,13 +3,16 @@
 Drives the REAL LangGraph pipeline against running services (no fakes), starting
 from a seeded inbound email and streaming every node as it fires:
 
-  extract → load_profile → classify → next_step → run_tasks → create_pending
+  extract → load_profile → assess_risk → plan → run_tasks → create_pending
 
 Each node hits live infrastructure:
   * extract       — reader+extractor resolve the sender → deal and write facts,
-  * load_profile  — ProfileService synthesizes the deal picture (real LLM),
-  * classify      — the triage LLM classifies the email,
-  * next_step     — the P2 mock recommends an action,
+  * load_profile  — ProfileService synthesizes the deal picture (real LLM) and
+                    loads contacts, close date, and relevant open tasks,
+  * assess_risk   — the risk agent re-scores from the just-extracted facts,
+  * plan          — the REAL next-step agent reads its stage playbook + BANT
+                    framework and plans from the raw email (no pre-classifier;
+                    the email path skips the classify node entirely),
   * run_tasks     — the hot-loaded task(s) run (check_calendar / draft_email),
   * create_pending— the pending action + run log are written to followup_agent.
 

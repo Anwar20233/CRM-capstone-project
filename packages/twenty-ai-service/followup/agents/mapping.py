@@ -28,6 +28,7 @@ from followup.next_step.context.schemas import (
     FactCategory,
     OpportunitySnapshot,
     ProfileFact,
+    TaskSnapshot,
     TimelineItem,
 )
 from followup.profile.schemas import DealContext as ProfileDealContext
@@ -72,8 +73,10 @@ def _engagement_from_activities(
         reverse=True,
     )
     if not dates:
+        # No activity on record — report recency as unknown (None), never a
+        # fabricated sentinel. Counts are genuinely zero; has_future_meeting too.
         return EngagementMetrics(
-            days_since_last_activity=999,
+            days_since_last_activity=None,
             activity_count_14d=0,
             activity_count_prior_14d=0,
             has_future_meeting=False,
@@ -123,16 +126,27 @@ def _next_step_facts(deal: ProfileDealContext) -> list[ProfileFact]:
     return facts
 
 
-def to_next_step_context(deal: ProfileDealContext) -> NextStepDealContext:
-    """Translate the orchestrator's in-memory deal picture for the next-step agent."""
+def to_next_step_context(
+    deal: ProfileDealContext, *, inbound_signal: dict[str, Any] | None = None
+) -> NextStepDealContext:
+    """Translate the orchestrator's in-memory deal picture for the next-step agent.
+
+    ``inbound_signal`` is the activity that triggered this run (the inbound
+    email). Folding it into the timeline keeps engagement honest: a deal whose
+    buyer just emailed is actively engaged, not cold. Shape: ``{type, date,
+    summary}`` — the same as a ``recent_activities`` item.
+    """
     now = datetime.now(timezone.utc)
-    activities = deal.recent_activities or []
+    activities = list(deal.recent_activities or [])
+    if inbound_signal:
+        activities = [inbound_signal, *activities]
 
     opportunity = OpportunitySnapshot(
         id=str(deal.opportunity_id),
         name=deal.opportunity_name,
         stage=deal.deal_stage,
         amount=deal.deal_value,
+        close_date=_parse_dt(deal.close_date),
     )
     # The next-step agent skips deals with no linked company, so always supply
     # one from the name the orchestrator resolved (id is informational here).
@@ -143,7 +157,7 @@ def to_next_step_context(deal: ProfileDealContext) -> NextStepDealContext:
             id=str(contact.crm_id),
             name=contact.name or "Unknown",
             role=contact.role,
-            is_decision_maker=False,
+            is_decision_maker=contact.is_decision_maker,
         )
         for contact in deal.contacts
     ]
@@ -158,11 +172,25 @@ def to_next_step_context(deal: ProfileDealContext) -> NextStepDealContext:
         for activity in activities
     ]
 
+    # Already relevance-filtered upstream (ProfileService drops DONE/abandoned),
+    # so every task here is a live signal the agent's engagement check reads.
+    tasks = [
+        TaskSnapshot(
+            id=str(task.get("id") or f"task-{index}"),
+            title=str(task.get("title") or "Task"),
+            status=str(task.get("status") or "open"),
+            due_at=_parse_dt(task.get("due_at")),
+            is_overdue=bool(task.get("is_overdue")),
+        )
+        for index, task in enumerate(deal.tasks or [])
+    ]
+
     return NextStepDealContext(
         opportunity=opportunity,
         company=company,
         contacts=contacts,
         timeline=timeline,
+        tasks=tasks,
         engagement=_engagement_from_activities(activities, now=now),
         active_facts=_next_step_facts(deal),
         loaded_at=now,
