@@ -236,7 +236,6 @@ The result is a `RiskAssessment` dataclass:
     "factors": [
         {
             "factor_type": "engagement_gap",
-            "factor": "engagement_gap",
             "description": "Opportunity has not been updated for 30 days.",
             "severity": "low | medium | high",
             "evidence": "updatedAt=...",
@@ -244,7 +243,6 @@ The result is a `RiskAssessment` dataclass:
             "confidence": 0.85,
         }
     ],
-    "risk_factors": "alias of factors",
     "previous_score": None,
     "assessed_at": "ISO timestamp",
     "reasoning_summary": "...",
@@ -268,7 +266,7 @@ The result is a `RiskAssessment` dataclass:
 }
 ```
 
-Implementation note: the dataclass stores factors in `factors`. `risk_factors` is a compatibility alias for P1-facing consumers.
+Implementation note: the dataclass stores factors in `factors`. `risk_factors` is a Python property alias for P1-facing consumers, and `RiskFactor.factor` is a property alias for `factor_type`. These aliases are available in Python code but are not emitted by `dataclasses.asdict(...)`.
 
 ## Notification Contract
 
@@ -344,7 +342,7 @@ Implemented behavior:
 
 ```text
 daily scheduler starts
-  -> discover active workspaces / workspace schemas
+  -> discover registered workspace schemas
   -> discover active opportunities in each workspace
   -> run DatabaseRiskAgent.evaluate_deal_risk(...) for each opportunity
   -> compare the new score/level with the last stored daily score
@@ -450,12 +448,12 @@ existing pending risk_alert:
 
 The score-level boundaries come from `evaluate_risk_context(...)`, so P1 and the sweep use the same `low`, `medium`, and `high` semantics.
 
-### Persistence Needed
+### Persistence
 
 The daily sweep persists two things:
 
 ```text
-latest risk score snapshot:
+risk_daily_scores row:
   opportunity_id
   workspace_id
   risk_score
@@ -482,13 +480,15 @@ Important: persisted previous scores are for threshold comparison only. They sho
 
 ### Notification Creation
 
-For each opportunity, the sweep creates a pending action only when:
+For each opportunity, the sweep creates a pending action only when this condition is true:
 
 ```text
 risk_result.recommended_notification.should_notify is true
 AND no pending risk_alert already exists
-AND there is no previous score and the current level is medium/high
-OR the opportunity crossed upward into medium/high risk
+AND (
+  there is no previous score and the current level is medium/high
+  OR the opportunity crossed upward into medium/high risk
+)
 ```
 
 The pending action payload should include:
@@ -533,6 +533,8 @@ database connection failure
 ```
 
 The orchestrator node wrapper catches node-level failures and marks the run failed rather than crashing the whole process. P1 should still handle failed risk calls gracefully and avoid showing stale risk as fresh output.
+
+The standalone daily sweep catches per-opportunity failures and includes the error in its JSON summary, so one bad opportunity does not stop the whole sweep. Startup-level failures such as database connection errors still fail the job.
 
 ## Mock Agent
 
@@ -848,7 +850,7 @@ These are the best local cases for validating P1 notification behavior because t
 
 ## Verification
 
-Latest verification after Risk Agent and terminal fixes:
+Latest verification after Risk Agent and daily sweep implementation:
 
 ```text
 python compile:
