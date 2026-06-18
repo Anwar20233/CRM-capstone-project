@@ -242,6 +242,34 @@ class FollowupActionExecutor:
         return str(action.opportunity_id)
 
     @staticmethod
+    def _company_id(action: Any) -> Optional[str]:
+        # Threaded through the action payload at planning time (the writer cannot
+        # read it). Absent for deals with no linked company → opp-only linking.
+        company_id = (action.action_payload or {}).get("company_id")
+        return str(company_id) if company_id else None
+
+    @classmethod
+    def _link_clause(cls, action: Any, target_tool: str) -> str:
+        """Tell the writer exactly how to link the new record to its targets.
+
+        Twenty links tasks/notes through a join record (``create_task_target`` /
+        ``create_note_target``) that takes the new record's id plus
+        ``targetOpportunity`` (and ``targetCompany`` when known) — NOT a field on
+        the create call. Spelling it out stops the writer guessing fields like
+        ``relatedOpportunityId`` (which don't exist) and flailing through
+        composite catalogs.
+        """
+        opp = cls._opportunity_id(action)
+        company = cls._company_id(action)
+        targets = f"targetOpportunity={opp}"
+        if company:
+            targets += f", targetCompany={company}"
+        return (
+            f" After creating it, link it by calling `{target_tool}` with the new "
+            f"record's id plus {targets}. Do not invent fields on the create call."
+        )
+
+    @staticmethod
     def _hide(pii_map: Any, value: str, *, entity_type: str = "content") -> str:
         """Hide a free-text value behind a handle the writer carries verbatim.
 
@@ -260,8 +288,9 @@ class FollowupActionExecutor:
         body = note.get("body") or step.get("intent") or action.reasoning or ""
         body_ref = self._hide(pii_map, body, entity_type="note")
         return (
-            f"Create a note on opportunity {self._opportunity_id(action)}. "
-            f"Use this text verbatim and unaltered as the note body: {body_ref}"
+            f"Create a note. "
+            f"Use this text verbatim and unaltered as the note body: {body_ref}."
+            + self._link_clause(action, "create_note_target")
         )
 
     def _instruction_create_task(self, step: dict[str, Any], action: Any, pii_map: Any) -> Optional[str]:
@@ -270,8 +299,9 @@ class FollowupActionExecutor:
         title = task.get("title") or step.get("intent") or "Follow-up task"
         title_ref = self._hide(pii_map, title, entity_type="task")
         return (
-            f"Create a task on opportunity {self._opportunity_id(action)}. "
-            f"Use this text verbatim and unaltered as the task title: {title_ref}"
+            f"Create a task. "
+            f"Use this text verbatim and unaltered as the task title: {title_ref}."
+            + self._link_clause(action, "create_task_target")
         )
 
     def _instruction_update_stage(self, step: dict[str, Any], action: Any, pii_map: Any) -> Optional[str]:

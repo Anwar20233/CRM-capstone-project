@@ -1,9 +1,12 @@
-"""Tests for the Next Step Intelligence Agent (Person 2).
+"""Tests for the Next Step Intelligence Agent.
 
-All external dependencies (call_llm_json) are mocked — these tests
-never make network calls and require no API keys.
+All LLM calls are mocked via _run_llm_plan — tests never make network calls
+and require no API keys. The tool-calling gather phase (Phase 1) and structured
+output phase (Phase 2) are replaced by a single function that returns a
+NextStepLLMOutput directly.
 
-No RAG/retrieval — the agent uses internal tools (tools.py) instead.
+Knowledge tools (read_stage_playbook, read_bant_framework, read_best_practices)
+are pure file reads and are exercised independently in the tool tests below.
 """
 
 from __future__ import annotations
@@ -24,6 +27,13 @@ from followup.next_step.agents.next_step.schemas import (
     RecommendedAction,
 )
 from followup.next_step.agents.next_step.scoring import score_recommendations
+from followup.next_step.agents.next_step.tools import (
+    compute_bant_gaps,
+    compute_engagement_signals,
+    read_bant_framework,
+    read_best_practices,
+    read_stage_playbook,
+)
 from followup.next_step.context.schemas import DealContext
 from followup.next_step.events.schemas import FollowUpEvent, FollowUpEventType
 
@@ -155,7 +165,6 @@ async def test_skip_on_closed_lost():
 
 @pytest.mark.asyncio
 async def test_skip_on_unified_closed_stage():
-    """The canonical 'Closed' stage (unified status) must also be skipped."""
     context = _load_context("next_step_context_proposal.json")
     context = context.model_copy(update={"opportunity": context.opportunity.model_copy(update={"stage": "Closed"})})
     event = _make_event(FollowUpEventType.OPPORTUNITY_STAGE_CHANGED, context.opportunity.id)
@@ -204,11 +213,12 @@ async def test_discovery_stage_changed_returns_recommendations(monkeypatch):
     context = _load_context("next_step_context_discovery.json")
     event = _make_event(FollowUpEventType.OPPORTUNITY_STAGE_CHANGED, context.opportunity.id)
 
-    async def fake_llm(prompt: str, schema, model=None):
-        assert schema is NextStepLLMOutput
+    async def fake_plan(messages, *, model=None):
         return _sample_llm_output(context.opportunity.id)
 
-    monkeypatch.setattr("followup.next_step.agents.next_step.next_step_agent.call_llm_json", fake_llm)
+    monkeypatch.setattr(
+        "followup.next_step.agents.next_step.next_step_agent._run_llm_plan", fake_plan
+    )
     result = await run_next_step_agent(context, event)
 
     assert result.skipped is False
@@ -222,10 +232,12 @@ async def test_every_recommendation_has_reasoning_and_evidence(monkeypatch):
     context = _load_context("next_step_context_discovery.json")
     event = _make_event(FollowUpEventType.OPPORTUNITY_STAGE_CHANGED, context.opportunity.id)
 
-    async def fake_llm(prompt: str, schema, model=None):
+    async def fake_plan(messages, *, model=None):
         return _sample_llm_output(context.opportunity.id)
 
-    monkeypatch.setattr("followup.next_step.agents.next_step.next_step_agent.call_llm_json", fake_llm)
+    monkeypatch.setattr(
+        "followup.next_step.agents.next_step.next_step_agent._run_llm_plan", fake_plan
+    )
     result = await run_next_step_agent(context, event)
 
     assert result.recommended_actions, "expected at least one recommendation"
@@ -244,10 +256,12 @@ async def test_orchestrator_instruction_contains_opportunity_id(monkeypatch):
     context = _load_context("next_step_context_discovery.json")
     event = _make_event(FollowUpEventType.OPPORTUNITY_STAGE_CHANGED, context.opportunity.id)
 
-    async def fake_llm(prompt: str, schema, model=None):
+    async def fake_plan(messages, *, model=None):
         return _sample_llm_output(context.opportunity.id)
 
-    monkeypatch.setattr("followup.next_step.agents.next_step.next_step_agent.call_llm_json", fake_llm)
+    monkeypatch.setattr(
+        "followup.next_step.agents.next_step.next_step_agent._run_llm_plan", fake_plan
+    )
     result = await run_next_step_agent(context, event)
 
     for action in result.recommended_actions:
@@ -259,10 +273,12 @@ async def test_orchestrator_action_has_tool_and_params(monkeypatch):
     context = _load_context("next_step_context_discovery.json")
     event = _make_event(FollowUpEventType.OPPORTUNITY_STAGE_CHANGED, context.opportunity.id)
 
-    async def fake_llm(prompt: str, schema, model=None):
+    async def fake_plan(messages, *, model=None):
         return _sample_llm_output(context.opportunity.id)
 
-    monkeypatch.setattr("followup.next_step.agents.next_step.next_step_agent.call_llm_json", fake_llm)
+    monkeypatch.setattr(
+        "followup.next_step.agents.next_step.next_step_agent._run_llm_plan", fake_plan
+    )
     result = await run_next_step_agent(context, event)
 
     for action in result.recommended_actions:
@@ -276,7 +292,7 @@ async def test_orchestrator_action_has_tool_and_params(monkeypatch):
 
 
 def test_priority_ordering_boosts_overdue_and_stage_actions():
-    context = _load_context("next_step_context_discovery.json")  # Discovery stage, has overdue task
+    context = _load_context("next_step_context_discovery.json")
 
     actions = [
         _action("send_proposal", "Send proposal", "Send a proposal to the buyer", priority=2),
@@ -293,7 +309,6 @@ def test_priority_ordering_boosts_overdue_and_stage_actions():
     ranked = score_recommendations(actions, context)
 
     assert len(ranked) <= 5
-    # "resolve_overdue_task": mentions "Discovery" (stage match) + "overdue" → 2 boosts → priority 1
     assert ranked[0].action_type == "resolve_overdue_task"
     assert [a.priority for a in ranked] == sorted(a.priority for a in ranked)
 
@@ -308,17 +323,19 @@ async def test_llm_failure_handled_gracefully(monkeypatch):
     context = _load_context("next_step_context_discovery.json")
     event = _make_event(FollowUpEventType.OPPORTUNITY_STAGE_CHANGED, context.opportunity.id)
 
-    async def fake_llm(prompt: str, schema, model=None):
+    async def fake_plan(messages, *, model=None):
         raise LLMCallError("provider timeout")
 
-    monkeypatch.setattr("followup.next_step.agents.next_step.next_step_agent.call_llm_json", fake_llm)
+    monkeypatch.setattr(
+        "followup.next_step.agents.next_step.next_step_agent._run_llm_plan", fake_plan
+    )
     result = await run_next_step_agent(context, event)
 
-    assert result.skipped is False      # retriable failure, not an intentional skip
+    assert result.skipped is False
     assert result.skip_reason is None
     assert result.recommended_actions == []
     assert result.confidence == 0.0
-    assert result.summary_reasoning     # non-empty fallback message
+    assert result.summary_reasoning
 
 
 # ---------------------------------------------------------------------------
@@ -348,10 +365,132 @@ async def test_meeting_completed_returns_at_most_five_recommendations(monkeypatc
     context = _load_context("next_step_context_proposal.json")
     event = _make_event(FollowUpEventType.MEETING_COMPLETED, context.opportunity.id)
 
-    async def fake_llm(prompt: str, schema, model=None):
+    async def fake_plan(messages, *, model=None):
         return _sample_llm_output(opportunity_id=context.opportunity.id)
 
-    monkeypatch.setattr("followup.next_step.agents.next_step.next_step_agent.call_llm_json", fake_llm)
+    monkeypatch.setattr(
+        "followup.next_step.agents.next_step.next_step_agent._run_llm_plan", fake_plan
+    )
     result = await run_next_step_agent(context, event)
 
     assert len(result.recommended_actions) <= 5
+
+
+# ---------------------------------------------------------------------------
+# 14. trigger_context bypasses the event-type gate
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_ineligible_event_bypassed_when_trigger_context_provided(monkeypatch):
+    """With trigger_context supplied, the event-type gate is skipped."""
+    context = _load_context("next_step_context_discovery.json")
+    event = _make_event(FollowUpEventType.TASK_COMPLETED, context.opportunity.id)
+
+    async def fake_plan(messages, *, model=None):
+        return _sample_llm_output(context.opportunity.id)
+
+    monkeypatch.setattr(
+        "followup.next_step.agents.next_step.next_step_agent._run_llm_plan", fake_plan
+    )
+    result = await run_next_step_agent(context, event, trigger_context="Inbound email from buyer")
+
+    assert result.skipped is False
+    assert len(result.recommended_actions) >= 1
+
+
+# ---------------------------------------------------------------------------
+# 15. Knowledge tools — file-reading (no LLM)
+# ---------------------------------------------------------------------------
+
+
+def test_read_stage_playbook_returns_content_for_known_stage():
+    result = read_stage_playbook.invoke({"stage": "Discovery"})
+    assert "Discovery" in result
+    assert len(result) > 100
+
+
+def test_read_stage_playbook_case_insensitive():
+    lower = read_stage_playbook.invoke({"stage": "proposal"})
+    upper = read_stage_playbook.invoke({"stage": "Proposal"})
+    assert lower == upper
+
+
+def test_read_stage_playbook_unknown_stage_returns_available_list():
+    result = read_stage_playbook.invoke({"stage": "NonExistentStage"})
+    assert "No playbook found" in result
+    assert "Available stages" in result
+
+
+def test_read_bant_framework_returns_content():
+    result = read_bant_framework.invoke({})
+    assert "Budget" in result
+    assert "Authority" in result
+
+
+def test_read_best_practices_returns_content():
+    result = read_best_practices.invoke({})
+    assert len(result) > 50
+
+
+# ---------------------------------------------------------------------------
+# 16. Signal functions — deterministic computation
+# ---------------------------------------------------------------------------
+
+
+def test_compute_bant_gaps_missing_all():
+    context = _load_context("next_step_context_discovery.json")
+    context = context.model_copy(update={"active_facts": [], "contacts": [], "timeline": []})
+    signals = compute_bant_gaps(context)
+
+    assert signals.qualification_score == 0
+    assert signals.is_fully_qualified is False
+    assert all(g.status == "missing" for g in signals.gaps)
+
+
+def test_compute_engagement_signals_cold():
+    context = _load_context("next_step_context_discovery.json")
+    signals = compute_engagement_signals(context)
+
+    assert signals.status in ("healthy", "stalled", "cold", "declining", "unknown")
+    assert signals.days_since_last is None or isinstance(signals.days_since_last, int)
+    assert isinstance(signals.risk_flags, list)
+
+
+def test_compute_bant_gaps_budget_partial_from_deal_amount():
+    """A deal amount (with no budget fact) is a partial Budget signal, not missing."""
+    context = _load_context("next_step_context_discovery.json")
+    context = context.model_copy(
+        update={
+            "active_facts": [],
+            "opportunity": context.opportunity.model_copy(update={"amount": 62000.0}),
+        }
+    )
+    signals = compute_bant_gaps(context)
+
+    budget = next(g for g in signals.gaps if g.dimension == "Budget")
+    assert budget.status == "partial"
+    assert "62,000" in budget.detail
+
+
+def test_compute_engagement_signals_unknown_when_no_activity():
+    """No activity on record → status 'unknown', days None, no fabricated sentinel."""
+    context = _load_context("next_step_context_discovery.json")
+    context = context.model_copy(
+        update={
+            "engagement": context.engagement.model_copy(
+                update={
+                    "days_since_last_activity": None,
+                    "activity_count_14d": 0,
+                    "activity_count_prior_14d": 0,
+                }
+            ),
+            "tasks": [],
+        }
+    )
+    signals = compute_engagement_signals(context)
+
+    assert signals.status == "unknown"
+    assert signals.days_since_last is None
+    assert not any("999" in flag for flag in signals.risk_flags)
+    assert not any("None days" in flag for flag in signals.risk_flags)

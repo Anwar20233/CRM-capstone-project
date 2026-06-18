@@ -14,7 +14,7 @@ is JSON-serializable. Every ``list[dict]`` field below is produced by
 from __future__ import annotations
 
 import uuid
-from dataclasses import asdict, dataclass, is_dataclass
+from dataclasses import asdict, dataclass, field, is_dataclass
 from datetime import datetime
 
 
@@ -25,6 +25,9 @@ class ContactSummary:
     role: str | None
     email: str | None
     facts: list[dict]  # active profile_facts rows for this contact (_row_to_dict)
+    # BANT Authority signal: inferred from the contact's title (the same
+    # seniority/buying-authority rule used to auto-promote shadow entities).
+    is_decision_maker: bool = False
 
 
 @dataclass
@@ -40,6 +43,16 @@ class DealContext:
     key_relationships: list[dict]
     open_concerns: list[dict]  # facts where fact_type=='concern', not superseded
     risk_score: float | None  # latest from risk_snapshots, else None
+    # The opportunity's company id, threaded through so the writer can link
+    # tasks/notes to the company (not just the opp) without doing a read itself.
+    company_id: str | None = None
+    # The opportunity's close date as the reader's raw ISO string (BANT Timeline
+    # signal). The anti-corruption mapper parses it for the next-step agent.
+    close_date: str | None = None
+    # Relevant open tasks as ``{id, title, status, due_at, is_overdue}`` — already
+    # filtered by ProfileService to the ones reflecting live deal state (abandoned
+    # long-overdue tasks are dropped). The mapper turns these into TaskSnapshots.
+    tasks: list[dict] = field(default_factory=list)
 
 
 @dataclass

@@ -18,6 +18,7 @@ in-memory fakes (no LLM, no DB).
 
 from __future__ import annotations
 
+import asyncio
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Optional
@@ -79,6 +80,36 @@ class FollowupExtractionOutcome:
     reason: str = ""
 
 
+@dataclass
+class EmailInput:
+    """One email to extract in a batch run — mirrors ``extract_from_email`` args."""
+
+    workspace_id: str
+    source_type: str
+    source_id: str
+    source_text: str
+    sender_email: str
+
+
+class _OpportunityWriteLocks:
+    """Per-opportunity async locks shared across a concurrent batch.
+
+    The slow part of extraction (reader resolution + the LLM) is read-only, so
+    every email's graph runs fully in parallel. Only ``_persist`` writes — and
+    facts/relationships/shadows all dedup by RE-READING current DB state inside
+    the lock, so serializing writes per-opportunity keeps them correct without
+    serializing the expensive LLM work. Different opportunities never contend.
+    """
+
+    def __init__(self) -> None:
+        self._locks: dict[str, asyncio.Lock] = {}
+        self._guard = asyncio.Lock()
+
+    async def acquire_for(self, opportunity_id: str) -> asyncio.Lock:
+        async with self._guard:
+            return self._locks.setdefault(opportunity_id, asyncio.Lock())
+
+
 @dataclass(frozen=True)
 class _EntityRef:
     entity_type: str  # 'contact' | 'company' | 'opportunity' | 'shadow'
@@ -100,8 +131,14 @@ async def extract_from_email(
     sender_email: str,
     *,
     deps: Optional[PipelineDeps] = None,
+    write_locks: Optional[_OpportunityWriteLocks] = None,
 ) -> FollowupExtractionOutcome:
-    """Resolve the deal from the sender, then extract — or halt with a reason."""
+    """Resolve the deal from the sender, then extract — or halt with a reason.
+
+    ``write_locks`` serializes the persist step per-opportunity when this email is
+    one of several concurrent runs sharing the same deal. Defaults to the locks on
+    ``deps`` (set by a batch runner), so the full pipeline gets it for free.
+    """
     return await _with_deps(
         deps,
         lambda d: _resolve_and_extract(
@@ -112,6 +149,7 @@ async def extract_from_email(
             source_text=source_text,
             sender_email=sender_email,
             opportunity_id=None,
+            write_locks=write_locks or getattr(d, "write_locks", None),
         ),
     )
 
@@ -146,6 +184,58 @@ async def extract_from_source(
     return outcome.extraction
 
 
+@traceable(name="extract_from_emails", run_type="chain")
+async def extract_from_emails(
+    emails: list[EmailInput],
+    *,
+    deps: Optional[PipelineDeps] = None,
+) -> list[FollowupExtractionOutcome]:
+    """Extract a batch of emails CONCURRENTLY.
+
+    Emails about different opportunities run fully in parallel; emails about the
+    same opportunity run their reader+LLM work in parallel too, but their writes
+    are serialized (one persists, the next sees its results). Results come back in
+    input order. A single shared dependency bundle (one asyncpg pool) is reused
+    across all tasks — every repo call acquires its own pooled connection, so this
+    is concurrency-safe.
+    """
+    if not emails:
+        return []
+
+    async def run(active_deps: PipelineDeps) -> list[FollowupExtractionOutcome]:
+        # Pre-warm the lazily-built chat model so concurrent tasks don't race to
+        # initialize it.
+        active_deps.get_chat_llm()
+        locks = _OpportunityWriteLocks()
+        return list(
+            await asyncio.gather(
+                *(
+                    _resolve_and_extract(
+                        active_deps,
+                        workspace_id=email.workspace_id,
+                        source_type=email.source_type,
+                        source_id=email.source_id,
+                        source_text=email.source_text,
+                        sender_email=email.sender_email,
+                        opportunity_id=None,
+                        write_locks=locks,
+                    )
+                    for email in emails
+                )
+            )
+        )
+
+    if deps is not None:
+        return await run(deps)
+    from followup.store.repositories import Database
+
+    database = await Database.connect()
+    try:
+        return await run(PipelineDeps.create(database))
+    finally:
+        await database.close()
+
+
 async def _with_deps(deps: Optional[PipelineDeps], run) -> FollowupExtractionOutcome:
     """Run ``run(deps)``, building+closing a default dependency bundle if needed."""
     if deps is not None:
@@ -174,6 +264,7 @@ async def _resolve_and_extract(
     source_text: str,
     sender_email: Optional[str],
     opportunity_id: Optional[str],
+    write_locks: Optional[_OpportunityWriteLocks] = None,
 ) -> FollowupExtractionOutcome:
     graph = build_extraction_graph(deps)
     state = await graph.ainvoke(
@@ -218,15 +309,29 @@ async def _resolve_and_extract(
             **base,
         )
 
-    result = await _persist(
-        deps,
-        state=state,
-        chosen_opportunity_id=chosen_id,
-        workspace_id=workspace_id,
-        source_type=source_type,
-        source_id=source_id,
-        source_text=source_text,
-    )
+    # Serialize writes per-opportunity so concurrent same-deal emails never write
+    # at once; different deals never contend. No-op (no lock) on single runs.
+    if write_locks is not None:
+        async with await write_locks.acquire_for(chosen_id):
+            result = await _persist(
+                deps,
+                state=state,
+                chosen_opportunity_id=chosen_id,
+                workspace_id=workspace_id,
+                source_type=source_type,
+                source_id=source_id,
+                source_text=source_text,
+            )
+    else:
+        result = await _persist(
+            deps,
+            state=state,
+            chosen_opportunity_id=chosen_id,
+            workspace_id=workspace_id,
+            source_type=source_type,
+            source_id=source_id,
+            source_text=source_text,
+        )
     return FollowupExtractionOutcome(
         status=STATUS_EXTRACTED,
         extraction=result,
@@ -552,8 +657,10 @@ def _utcnow():
 
 
 __all__ = [
+    "EmailInput",
     "ExtractionResult",
     "FollowupExtractionOutcome",
     "extract_from_email",
+    "extract_from_emails",
     "extract_from_source",
 ]
