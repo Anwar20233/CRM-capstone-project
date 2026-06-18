@@ -6,8 +6,8 @@ a parallel CRM schema: companies/contacts/opportunities/emails/calls/meetings/ta
 written to Twenty's actual workspace tables (person, company, opportunity, message + the
 messaging join tables, calendarEvent, note, task, ...).
 
-The Follow-Up Agent's own derived data (profile facts, relationships, shadow entities and
-risk snapshots) has nowhere to live in Twenty's standard schema, so it is stored in a
+The Follow-Up Agent's own derived data (profile facts, relationships, and shadow entities)
+has nowhere to live in Twenty's standard schema, so it is stored in a
 dedicated `followup_agent` Postgres schema inside the SAME database (no new database is
 created). Those tables are created on demand by `seed_database()`.
 
@@ -114,7 +114,6 @@ INSERT_ORDER: list[tuple[str, str]] = [
     (AGENT_SCHEMA, "shadow_entities"),
     (AGENT_SCHEMA, "profile_facts"),
     (AGENT_SCHEMA, "profile_relationships"),
-    (AGENT_SCHEMA, "risk_snapshots"),
 ]
 
 
@@ -594,17 +593,6 @@ def add_shadow(*, key: str, opportunity_id: uuid.UUID, name: str,
     return shadow_id
 
 
-def add_risk(*, opportunity_id: uuid.UUID, snapshots: list[tuple[int, datetime, dict[str, Any]]]) -> None:
-    for idx, (score, when, factors) in enumerate(snapshots):
-        add(AGENT_SCHEMA, "risk_snapshots", {
-            "id": uid(f"risk:{opportunity_id}:{idx}"),
-            "opportunity_id": opportunity_id,
-            "score": score,
-            "factors": factors,
-            "computed_at": when,
-        })
-
-
 # ===========================================================================
 # SCENARIO A — Airbnb — "The deal going cold" (owned by Sarah)
 # ===========================================================================
@@ -772,11 +760,6 @@ def scenario_a() -> None:
     add_relationship(key="a-r1", opportunity_id=opp, from_id=john, to_id=david,
                      relationship_type="reports_to", description="John defers to David (VP Eng) on technical approval",
                      confidence=0.7, source_type="note", first_seen_at=ago(weeks=3))
-    add_risk(opportunity_id=opp, snapshots=[
-        (50, ago(weeks=4), {"engagement": "healthy", "open_concerns": ["timeline"], "trend": "watch"}),
-        (65, ago(weeks=2), {"engagement_gap_days": 7, "unanswered_emails": 1, "incomplete_deliverable": "requirements doc"}),
-        (78, ago(days=2), {"engagement_gap_days": 14, "unanswered_emails": 2, "unresolved_concern": "integration timeline", "champion_going_dark": True}),
-    ])
 
 
 # ===========================================================================
@@ -945,11 +928,6 @@ def scenario_b() -> None:
     add_relationship(key="b-r2", opportunity_id=opp, from_id=nadia, to_id=raj,
                      relationship_type="collaborates_with", description="Nadia runs security review, reports findings to Raj",
                      confidence=0.7, source_type="email", first_seen_at=ago(days=2))
-    add_risk(opportunity_id=opp, snapshots=[
-        (45, ago(weeks=2, days=3), {"stage": "discovery", "open_questions": ["api_limits", "retention"]}),
-        (35, ago(days=9), {"cto_concern_resolved": True, "security_review": "in_progress"}),
-        (25, ago(days=1), {"budget_approved": True, "cto_pushing": True, "only_gate": "security_review"}),
-    ])
 
 
 # ===========================================================================
@@ -1097,11 +1075,6 @@ def scenario_c() -> None:
     add_relationship(key="c-r1", opportunity_id=opp, from_id=kevin, to_id=maria,
                      relationship_type="needs_approval_from", description="Kevin needs Maria's budget sign-off to proceed",
                      confidence=0.85, source_type="note", first_seen_at=ago(weeks=2))
-    add_risk(opportunity_id=opp, snapshots=[
-        (40, ago(weeks=3, days=2), {"stage": "evaluation", "competitor": "Asana", "fit": "strong"}),
-        (42, ago(weeks=1, days=4), {"competitor": "Asana", "price_gap": True, "champion": "engaged"}),
-        (58, ago(days=2), {"competitor_discount_offered": True, "budget_authority_unconvinced": True, "decision_delayed": True, "deadline": "Monday"}),
-    ])
 
 
 # ===========================================================================
@@ -1193,12 +1166,6 @@ def scenario_d() -> None:
         due_at=ago(days=2), status="TODO", when=ago(days=5),
         assignee=SARAH, opportunity_id=opp, person_id=emma,
     )
-    # Healthy-deal risk trend only (no profile facts/relationships/shadows for D).
-    add_risk(opportunity_id=opp, snapshots=[
-        (15, ago(weeks=2, days=2), {"stage": "proposal", "engagement": "active", "legal": "started"}),
-        (12, ago(days=8), {"legal": "near_complete", "stakeholders_aligned": True}),
-        (10, ago(days=2), {"legal": "near_complete", "champion": "executive_sponsor", "only_action": "schedule_call"}),
-    ])
 
 
 # ===========================================================================
@@ -1356,11 +1323,6 @@ def scenario_e() -> None:
     add_relationship(key="e-r2", opportunity_id=opp, from_id=ben, to_id=james,
                      relationship_type="collaborates_with", description="Ben (SRE) supports James on the technical evaluation",
                      confidence=0.7, source_type="note", first_seen_at=ago(days=7))
-    add_risk(opportunity_id=opp, snapshots=[
-        (55, ago(days=13), {"stage": "qualification", "competitor": "Grafana Cloud", "evaluators": "forming"}),
-        (40, ago(days=8), {"technical_fit": "validated", "competitor": "Grafana Cloud", "open_concern": "metric_pricing"}),
-        (35, ago(days=1), {"budget_authority_engaged": True, "deadline": "Q3_migration", "open_concern": "metric_pricing", "exec_re_engaging": True}),
-    ])
 
 
 # ===========================================================================

@@ -37,6 +37,7 @@ from followup.contracts import (
     NEXT_STEP_TYPES,
     PRIORITY_LEVELS,
     RISK_FACTOR_TYPES,
+    RISK_LEVELS,
     RISK_MODES,
     SIGNAL_TYPES,
     SEVERITY_LEVELS,
@@ -100,14 +101,6 @@ def _rich_context() -> DealContext:
 def _empty_context() -> DealContext:
     """No contacts, no activities, no concerns — valid but minimal."""
     return _make_context(contacts=[], activities=[], concerns=[], risk_score=None)
-
-
-def _facts() -> list[dict]:
-    return [
-        {"fact_type": "concern", "fact_value": "Budget freeze in August", "sentiment": "negative"},
-        {"fact_type": "competitor", "fact_value": "Evaluating Segment on price"},
-        {"fact_type": "role", "fact_value": "VP Eng is now decision maker"},  # not risk-bearing
-    ]
 
 
 def _signal() -> EmailSignalEvent:
@@ -212,63 +205,65 @@ async def test_mock_run_next_step_helper() -> None:
 
 
 # ===========================================================================
-# RiskAgent — re-scores from facts + narrative
+# RiskAgent — minimal identifiers only
 # ===========================================================================
 
 
 @pytest.mark.asyncio
 async def test_mock_risk_returns_correct_type() -> None:
-    req = RiskAssessmentRequest(opportunity_id="opp-001", facts=_facts(), narrative="story")
+    req = RiskAssessmentRequest(opportunity_id="opp-001")
     result = await MockRiskAgent().run(req)
     assert isinstance(result, RiskAssessment)
 
 
 @pytest.mark.asyncio
-async def test_mock_risk_factors_from_facts() -> None:
-    req = RiskAssessmentRequest(opportunity_id="opp-001", facts=_facts(), previous_score=0.3)
+async def test_mock_risk_accepts_minimal_identifiers() -> None:
+    req = RiskAssessmentRequest(
+        opportunity_id="opp-001",
+        workspace_id="workspace-001",
+        trigger_type="risk_sweep",
+    )
     result = await MockRiskAgent().run(req)
     assert req.mode in RISK_MODES
-    # Two of the three facts are risk-bearing (concern, competitor); 'role' is not.
-    assert len(result.factors) == 2
+    assert result.opportunity_id == "opp-001"
+    assert result.risk_level in RISK_LEVELS
     for factor in result.factors:
         assert factor.factor_type in RISK_FACTOR_TYPES
         assert factor.severity in SEVERITY_LEVELS
 
 
 @pytest.mark.asyncio
-async def test_mock_risk_score_rises_above_previous() -> None:
-    req = RiskAssessmentRequest(opportunity_id="opp-001", facts=_facts(), previous_score=0.3)
+async def test_mock_risk_does_not_require_previous_score() -> None:
+    req = RiskAssessmentRequest(opportunity_id="opp-001")
     result = await MockRiskAgent().run(req)
     assert 0.0 <= result.risk_score <= 1.0
-    assert result.risk_score > 0.3  # risk-bearing facts nudge it up
-    assert result.previous_score == 0.3
+    assert result.previous_score is None
 
 
 @pytest.mark.asyncio
-async def test_mock_risk_no_facts_still_has_a_factor() -> None:
-    req = RiskAssessmentRequest(opportunity_id="opp-001", facts=[], narrative=None)
+async def test_mock_risk_returns_notification_payload() -> None:
+    req = RiskAssessmentRequest(opportunity_id="opp-001")
     result = await MockRiskAgent().run(req)
-    assert len(result.factors) >= 1
-    for factor in result.factors:
-        assert factor.factor_type in RISK_FACTOR_TYPES
+    assert "should_notify" in result.recommended_notification
+    assert "recommended_action" in result.recommended_notification
 
 
 @pytest.mark.asyncio
 async def test_mock_risk_json_safe() -> None:
-    req = RiskAssessmentRequest(opportunity_id="opp-001", facts=_facts())
+    req = RiskAssessmentRequest(opportunity_id="opp-001")
     result = await MockRiskAgent().run(req)
     json.dumps(asdict(result))  # recurses into list[RiskFactor]
 
 
 @pytest.mark.asyncio
 async def test_run_risk_assessment_defaults_to_mock() -> None:
-    req = RiskAssessmentRequest(opportunity_id="opp-001", facts=_facts())
-    assert isinstance(await run_risk_assessment(req), RiskAssessment)
+    req = RiskAssessmentRequest(opportunity_id="opp-001")
+    assert isinstance(await run_risk_assessment(req, agent=MockRiskAgent()), RiskAssessment)
 
 
 @pytest.mark.asyncio
 async def test_mock_run_risk_assessment_helper() -> None:
-    req = RiskAssessmentRequest(opportunity_id="opp-001", facts=_facts())
+    req = RiskAssessmentRequest(opportunity_id="opp-001")
     assert isinstance(await mock_run_risk_assessment(req), RiskAssessment)
 
 
@@ -381,7 +376,7 @@ async def test_agent_bundle_mocks_run_end_to_end() -> None:
         NextStepRequest(deal_context=ctx, trigger_type="email_signal", classification=_classification())
     )
     assessment = await bundle.risk.run(
-        RiskAssessmentRequest(opportunity_id=ctx.opportunity_id, facts=_facts())
+        RiskAssessmentRequest(opportunity_id=ctx.opportunity_id)
     )
     draft = await bundle.drafting.run(
         DraftRequest(deal_context=ctx, intent=plan.steps[0].intent, classification=_classification())
