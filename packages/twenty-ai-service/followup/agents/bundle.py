@@ -1,8 +1,8 @@
 """Factory that assembles the orchestrator's ``AgentBundle`` with the real
 subagents wired in.
 
-Real-by-default: ``build_agent_bundle()`` returns the next-step and drafting
-adapters (risk stays the mock — no real risk agent exists yet). Set
+Real-by-default: ``build_agent_bundle()`` returns the next-step, risk, and drafting
+adapters. Set
 ``FOLLOWUP_USE_MOCK_AGENTS=1`` to get the all-mock bundle (tests that construct
 ``AgentBundle()`` directly already get mocks and are unaffected).
 
@@ -43,11 +43,13 @@ def build_agent_bundle() -> AgentBundle:
     # Imported lazily so the all-mock path never imports the heavier subagent deps.
     from followup.agents.drafting_adapter import OrchestratorDraftingAgent
     from followup.agents.next_step_adapter import OrchestratorNextStepAgent
+    from followup.contracts.risk import DatabaseRiskAgent
 
     model = subagent_model()
     logger.info("follow-up agents: using REAL bundle (subagent model=%s)", model)
     return AgentBundle(
         next_step=OrchestratorNextStepAgent(model=model),
+        risk=DatabaseRiskAgent(),
         drafting=OrchestratorDraftingAgent(model=model),
     )
 
