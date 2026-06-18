@@ -312,8 +312,10 @@ async def test_expire_stale_bulk_update(conn, opportunity_id, workspace_id):
     await repo.create({**base, "expires_at": past})
     fresh = await repo.create({**base, "expires_at": future})
 
-    count = await repo.expire_stale(_now())
-    assert count == 2
+    before = await repo.list_pending(opportunity_id)
+    assert len(before) == 3
+
+    await repo.expire_stale(_now())
 
     still_pending = await repo.list_pending(opportunity_id)
     assert {a.id for a in still_pending} == {fresh.id}

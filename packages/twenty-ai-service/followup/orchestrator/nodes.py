@@ -23,7 +23,6 @@ from tracing import traceable
 
 from followup.contracts.events import EmailSignalEvent
 from followup.contracts.next_step import NextStepPlan, NextStepRequest, PlannedStep
-from followup.contracts.risk import RiskAssessmentRequest
 from followup.orchestrator.deps import OrchestratorDeps
 from followup.orchestrator.routing import prep_tasks_for_plan
 from followup.orchestrator.state import FollowUpState
@@ -385,22 +384,19 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
         return {**_EMAIL_FALLBACK, **parsed}
 
     async def assess_risk(state: FollowUpState) -> dict[str, Any]:
-        # Runs on every path after the profile loads: hand the risk agent the
-        # freshly-extracted facts + narrative + the previously-stored score; it
-        # re-scores (its own model). The follow-up agent only reads the result —
-        # we stamp the updated score onto deal_context so planning sees it.
+        # The risk agent owns its own DB-backed context load. The orchestrator
+        # passes only identifiers and trigger metadata; it does not assemble
+        # DealContext, facts, narratives, or previous risk snapshots for scoring.
         try:
-            deal = state["deal_context"]
-            facts = await _load_recent_facts(deps, state["opportunity_id"])
-            request = RiskAssessmentRequest(
-                opportunity_id=str(deal.opportunity_id),
-                facts=facts,
-                narrative=state.get("profile_narrative"),
-                previous_score=deal.risk_score,
-                mode="single",
+            assessment = await deps.agents.risk.evaluate_deal_risk(
+                opportunity_id=str(state["opportunity_id"]),
+                workspace_id=state.get("workspace_id"),
+                trigger_type=(state.get("trigger") or {}).get("trigger_type")
+                or state["entry_point"],
             )
-            assessment = await deps.agents.risk.run(request)
-            deal.risk_score = assessment.risk_score
+            deal = state.get("deal_context")
+            if deal is not None:
+                deal.risk_score = assessment.risk_score
             return _advance(
                 state, "assess_risk", risk_assessment=assessment, deal_context=deal
             )
@@ -541,19 +537,6 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
 
 def _asdict_or_none(value: Any) -> dict[str, Any] | None:
     return asdict(value) if value is not None else None
-
-
-async def _load_recent_facts(
-    deps: OrchestratorDeps, opportunity_id: str, limit: int = 50
-) -> list[dict[str, Any]]:
-    """The opportunity's current facts as JSON-safe dicts, for the risk agent."""
-    try:
-        rows = await deps.pipeline.facts.get_facts(
-            _coerce_uuid(opportunity_id), limit=limit
-        )
-    except Exception:  # noqa: BLE001 — risk runs on best-effort facts
-        return []
-    return [_row_to_dict(row) for row in rows]
 
 
 __all__ = [

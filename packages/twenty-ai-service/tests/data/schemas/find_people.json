@@ -1,0 +1,257 @@
+{
+  "ok": true,
+  "data": {
+    "tools": [
+      {
+        "name": "find_people",
+        "description": "Find people records",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "required": ["filter"],
+          "properties": {
+            "filter": {
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "description": "Filter by firstName (text field)",
+                  "type": "object",
+                  "properties": {
+                    "eq": {
+                      "description": "Equals",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "neq": {
+                      "description": "Not equals",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "like": {
+                      "description": "Like",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "ilike": {
+                      "description": "Case-insensitive like",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "in": {
+                      "description": "In array",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": ".*"
+                      }
+                    },
+                    "is": {
+                      "description": "Use NULL or NOT_NULL",
+                      "type": "string",
+                      "enum": ["NULL", "NOT_NULL"]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "lastName": {
+                  "description": "Filter by lastName (text field)",
+                  "type": "object",
+                  "properties": {
+                    "eq": {
+                      "description": "Equals",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "neq": {
+                      "description": "Not equals",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "like": {
+                      "description": "Like",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "ilike": {
+                      "description": "Case-insensitive like",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "in": {
+                      "description": "In array",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": ".*"
+                      }
+                    },
+                    "is": {
+                      "description": "Use NULL or NOT_NULL",
+                      "type": "string",
+                      "enum": ["NULL", "NOT_NULL"]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "jobTitle": {
+                  "description": "Filter by jobTitle (text field)",
+                  "type": "object",
+                  "properties": {
+                    "eq": {
+                      "description": "Equals",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "neq": {
+                      "description": "Not equals",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "like": {
+                      "description": "Like",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "ilike": {
+                      "description": "Case-insensitive like",
+                      "type": "string",
+                      "pattern": ".*"
+                    },
+                    "in": {
+                      "description": "In array",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": ".*"
+                      }
+                    },
+                    "is": {
+                      "description": "Use NULL or NOT_NULL",
+                      "type": "string",
+                      "enum": ["NULL", "NOT_NULL"]
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "or": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "firstName": {
+                        "description": "Filter by firstName (text field)",
+                        "type": "object",
+                        "properties": {
+                          "eq": {
+                            "description": "Equals",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "neq": {
+                            "description": "Not equals",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "like": {
+                            "description": "Like",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "ilike": {
+                            "description": "Case-insensitive like",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "in": {
+                            "description": "In array",
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": ".*"
+                            }
+                          },
+                          "is": {
+                            "description": "Use NULL or NOT_NULL",
+                            "type": "string",
+                            "enum": ["NULL", "NOT_NULL"]
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "lastName": {
+                        "description": "Filter by lastName (text field)",
+                        "type": "object",
+                        "properties": {
+                          "eq": {
+                            "description": "Equals",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "neq": {
+                            "description": "Not equals",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "like": {
+                            "description": "Like",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "ilike": {
+                            "description": "Case-insensitive like",
+                            "type": "string",
+                            "pattern": ".*"
+                          },
+                          "in": {
+                            "description": "In array",
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": ".*"
+                            }
+                          },
+                          "is": {
+                            "description": "Use NULL or NOT_NULL",
+                            "type": "string",
+                            "enum": ["NULL", "NOT_NULL"]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "orderBy": {
+              "description": "Sort order",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": ["AscNullsFirst", "AscNullsLast", "DescNullsFirst", "DescNullsLast"]
+                }
+              }
+            },
+            "limit": {
+              "description": "Maximum number of records to return",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "offset": {
+              "description": "Number of records to skip",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    ]
+  }
+}
