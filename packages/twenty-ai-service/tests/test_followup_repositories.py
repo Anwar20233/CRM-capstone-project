@@ -17,6 +17,7 @@ from followup.store.repositories import (
     PendingActionRepository,
     ProfileFactRepository,
     ProfileRelationshipRepository,
+    RiskDailyScoreRepository,
     RunLogRepository,
     ShadowEntityRepository,
     _dsn,
@@ -344,3 +345,39 @@ async def test_run_log_roundtrip(conn, opportunity_id, workspace_id):
     saved = await repo.save(created)
     assert saved.status == "completed"
     assert saved.duration_ms == 1234
+
+
+async def test_risk_daily_score_roundtrip(conn, opportunity_id, workspace_id):
+    repo = RiskDailyScoreRepository(conn)
+    older = _now() - timedelta(minutes=5)
+    newer = _now()
+    await repo.create(
+        {
+            "opportunity_id": opportunity_id,
+            "workspace_id": workspace_id,
+            "risk_score": 0.24,
+            "risk_level": "low",
+            "top_factors": [{"factor_type": "engagement_gap"}],
+            "assessment": {"risk_score": 0.24, "risk_level": "low"},
+            "assessed_at": older,
+        }
+    )
+    latest = await repo.create(
+        {
+            "opportunity_id": opportunity_id,
+            "workspace_id": workspace_id,
+            "risk_score": 0.82,
+            "risk_level": "high",
+            "top_factors": [{"factor_type": "sentiment_decline"}],
+            "assessment": {"risk_score": 0.82, "risk_level": "high"},
+            "assessed_at": newer,
+        }
+    )
+
+    fetched = await repo.get_latest(opportunity_id)
+
+    assert fetched is not None
+    assert fetched.id == latest.id
+    assert fetched.risk_score == 0.82
+    assert fetched.risk_level == "high"
+    assert fetched.top_factors == [{"factor_type": "sentiment_decline"}]
