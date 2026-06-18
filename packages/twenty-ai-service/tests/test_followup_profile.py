@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import fields
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from typing import Any, Optional
 
@@ -112,11 +112,13 @@ class FakeCRMReader:
         company: Optional[dict] = None,
         contacts: Optional[list[dict]] = None,
         activities: Optional[list[dict]] = None,
+        tasks: Optional[list[dict]] = None,
     ) -> None:
         self._opportunity = opportunity
         self._company = company
         self._contacts = contacts or []
         self._activities = activities or []
+        self._tasks = tasks or []
 
     async def get_opportunity(self, opportunity_id: str):
         return self._opportunity
@@ -129,6 +131,9 @@ class FakeCRMReader:
 
     async def get_activities_for_opportunity(self, opportunity_id: str, limit: int = 10):
         return list(self._activities)[:limit]
+
+    async def get_open_tasks_for_opportunity(self, opportunity_id: str, limit: int = 25):
+        return list(self._tasks)[:limit]
 
 
 class FakeChatModel:
@@ -175,6 +180,7 @@ def _make_deps(reader, *, facts=None, rels=None, shadows=None, risk=None, chat="
 
 
 def _full_reader(ids):
+    now = datetime.now(timezone.utc)
     return FakeCRMReader(
         opportunity={
             "id": ids.opportunity,
@@ -182,6 +188,7 @@ def _full_reader(ids):
             "stage": "PROPOSAL",
             "value": 50000.0,
             "company_id": ids.company,
+            "close_date": "2026-09-30T00:00:00+00:00",
         },
         company={"id": ids.company, "name": "Acme"},
         contacts=[
@@ -189,6 +196,17 @@ def _full_reader(ids):
             {"id": ids.bob, "name": "Bob Brown", "role": "VP Sales", "email": "bob@acme.com"},
         ],
         activities=[{"type": "note", "date": "2026-06-01", "summary": "Sent proposal"}],
+        tasks=[
+            # recently overdue → kept and flagged
+            {"id": "t-1", "title": "Send revised pricing", "status": "TODO",
+             "due_at": (now - timedelta(days=3)).isoformat()},
+            # abandoned (8 months overdue) → dropped by the relevance window
+            {"id": "t-2", "title": "Stale kickoff note", "status": "TODO",
+             "due_at": (now - timedelta(days=240)).isoformat()},
+            # done → dropped (history, not a next step)
+            {"id": "t-3", "title": "Intro call", "status": "DONE",
+             "due_at": (now - timedelta(days=2)).isoformat()},
+        ],
     )
 
 
@@ -332,6 +350,48 @@ async def test_deal_context_populates_all_fields(ids):
     assert len(context.open_concerns) == 1
     assert context.open_concerns[0]["fact_value"] == "pricing too high"
     assert isinstance(context.open_concerns[0]["opportunity_id"], str)
+    # BANT Timeline signal carried through from the reader's closeDate.
+    assert context.close_date == "2026-09-30T00:00:00+00:00"
+    # BANT Authority inferred from title: Bob (VP Sales) yes, Alice (Engineer) no.
+    by_name = {c.name: c for c in context.contacts}
+    assert by_name["Bob Brown"].is_decision_maker is True
+    assert by_name["Alice Anders"].is_decision_maker is False
+    # Only the live task survives: abandoned (t-2) and done (t-3) are dropped.
+    assert [t["id"] for t in context.tasks] == ["t-1"]
+    assert context.tasks[0]["is_overdue"] is True
+
+
+# ===========================================================================
+# Task relevance filter
+# ===========================================================================
+
+
+def test_relevant_tasks_keeps_live_drops_done_and_abandoned():
+    from followup.profile.service import _relevant_tasks
+
+    now = datetime(2026, 6, 18, tzinfo=timezone.utc)
+    raw = [
+        {"id": "recent-overdue", "title": "a", "status": "TODO",
+         "due_at": (now - timedelta(days=5)).isoformat()},
+        {"id": "abandoned", "title": "b", "status": "TODO",
+         "due_at": (now - timedelta(days=240)).isoformat()},
+        {"id": "upcoming", "title": "c", "status": "IN_PROGRESS",
+         "due_at": (now + timedelta(days=10)).isoformat()},
+        {"id": "done", "title": "d", "status": "DONE",
+         "due_at": (now - timedelta(days=2)).isoformat()},
+        {"id": "undated-recent", "title": "e", "status": "TODO",
+         "due_at": None, "updated_at": (now - timedelta(days=3)).isoformat()},
+        {"id": "undated-stale", "title": "f", "status": "TODO",
+         "due_at": None, "updated_at": (now - timedelta(days=200)).isoformat()},
+    ]
+
+    out = _relevant_tasks(raw, now=now)
+
+    assert sorted(t["id"] for t in out) == ["recent-overdue", "undated-recent", "upcoming"]
+    overdue = {t["id"]: t["is_overdue"] for t in out}
+    assert overdue["recent-overdue"] is True
+    assert overdue["upcoming"] is False
+    assert overdue["undated-recent"] is False
 
 
 # ===========================================================================

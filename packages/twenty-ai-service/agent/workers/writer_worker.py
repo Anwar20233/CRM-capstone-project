@@ -78,6 +78,21 @@ Composite writes available:
 - `company`: `onboard_new_client`, `change_company_budget`, `schedule_account_review`, `bulk_update_deal_stage`, `reassign_account`
 - `opportunity`: `close_deal`, `send_proposal_followup`
 
+## Linking tasks & notes (critical)
+
+Tasks and notes are linked to a company/opportunity/person through a SEPARATE
+join record — never a field on the create call. `create_task` and `create_note`
+have NO `relatedOpportunityId`/`companyId` fields; do not invent them.
+
+To link, after creating the record:
+1. `create_task` → then `create_task_target` with `taskId` = the new task id.
+2. `create_note` → then `create_note_target` with `noteId` = the new note id.
+
+The target tool takes `targetOpportunity` and/or `targetCompany` (and
+`targetPerson`). When the instruction gives you both an opportunity id AND a
+company id, set BOTH on the single `*_target` call. The instruction names the
+exact target tool and ids — follow it literally; do not search composite catalogs.
+
 ## Deal Stage Advancement (critical)
 
 For instructions like "Advance the deal to <STAGE>" or "Move deal to stage <STAGE>":

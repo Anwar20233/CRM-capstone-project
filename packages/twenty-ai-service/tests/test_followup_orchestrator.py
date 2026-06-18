@@ -184,15 +184,17 @@ async def test_email_flow_trace():
     result = await run_graph(deps, deal, entry_point="email", trigger={"id": "e1", "sender_email": "dana@acme.com", "body": "hi"})
 
     assert result["status"] == "completed"
+    # The email path skips classify entirely: the next-step agent reads its own
+    # stage playbook and decides from the raw trigger — no LLM email triage.
     assert result["trace"] == [
         "extract",
         "load_profile",
         "assess_risk",
-        "classify",
         "plan",
         "run_tasks",
         "create_pending",
     ]
+    assert "classify" not in result["trace"]
     assert result["plan"] is not None
     assert result["draft"] is not None
     assert result["pending_action"] is not None

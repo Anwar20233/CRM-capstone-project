@@ -70,11 +70,12 @@ class CRMReader(Protocol):
     async def get_opportunity(
         self, opportunity_id: str
     ) -> Optional[dict[str, Any]]:
-        """Return one opportunity as ``{id, name, stage, value, company_id}``.
+        """Return one opportunity as ``{id, name, stage, value, company_id, close_date}``.
 
         ``value`` is the deal amount in dollars (the adapter converts Twenty's
-        ``amount.amountMicros`` / 1_000_000). The read path (Step 3) needs it for
-        ``DealContext``; the extraction path ignores it.
+        ``amount.amountMicros`` / 1_000_000). ``close_date`` is the raw ISO string
+        from Twenty's ``closeDate`` (the BANT Timeline signal), or ``None``. The
+        read path (Step 3) needs these for ``DealContext``; extraction ignores them.
         """
         ...
 
@@ -100,6 +101,19 @@ class CRMReader(Protocol):
 
         Backed by the reader's unified notes+tasks timeline, newest-first. Used
         by the read path (Step 3) to surface the last activity in the briefing.
+        """
+        ...
+
+    async def get_open_tasks_for_opportunity(
+        self, opportunity_id: str, limit: int = 25
+    ) -> list[dict[str, Any]]:
+        """Return the deal's open tasks as ``{id, title, status, due_at, updated_at}``.
+
+        Open = not ``DONE``, soonest-due first. Distinct from the activity
+        timeline: these carry the structured ``status``/``due_at`` the agent
+        needs to flag *overdue* work. ``ProfileService`` filters these down to the
+        ones still relevant (dropping abandoned, long-overdue tasks) before they
+        reach the agents.
         """
         ...
 
@@ -290,6 +304,8 @@ class ReaderAgentCRMReader:
             "stage": record.get("stage"),
             "value": _reader_amount_to_dollars(record.get("amount")),
             "company_id": company.get("id") or record.get("companyId"),
+            # Twenty's standard Opportunity.closeDate — the BANT Timeline signal.
+            "close_date": record.get("closeDate"),
         }
 
     async def get_company(self, company_id: str) -> Optional[dict[str, Any]]:
@@ -357,6 +373,25 @@ class ReaderAgentCRMReader:
         activities.sort(key=lambda a: a.get("date") or "", reverse=True)
         return activities[:limit]
 
+    async def get_open_tasks_for_opportunity(
+        self, opportunity_id: str, limit: int = 25
+    ) -> list[dict[str, Any]]:
+        # Open (not DONE) tasks targeting this opportunity, soonest-due first.
+        # We fetch the structured task fields (status, dueAt) the activity
+        # timeline discards — ProfileService needs them to flag overdue work and
+        # to drop abandoned tasks. orderBy is an array of single-key objects (the
+        # backend does `(orderBy ?? []).filter(...)`, so an object value throws).
+        records = await self._bridge_find(
+            "find_tasks",
+            {
+                "limit": limit,
+                "taskTargets": {"some": {"opportunityId": {"eq": opportunity_id}}},
+                "status": {"in": ["TODO", "IN_PROGRESS"]},
+                "orderBy": [{"dueAt": "AscNullsLast"}],
+            },
+        )
+        return [_task_from_record(r) for r in records]
+
 
 def _reader_amount_to_dollars(amount: Any) -> float:
     """Twenty's ``amount.amountMicros`` (or a bare number) → float dollars."""
@@ -385,6 +420,21 @@ def _activity_from_record(kind: str, record: dict[str, Any]) -> dict[str, Any]:
         or record.get("updatedAt")
         or record.get("dueAt"),
         "summary": record.get("title") or body,
+    }
+
+
+def _task_from_record(record: dict[str, Any]) -> dict[str, Any]:
+    """A task bridge record → the structured task shape the read path needs.
+
+    Keeps ``status`` and ``dueAt`` (which the activity-timeline shape drops) so
+    ProfileService can compute ``is_overdue`` and filter out abandoned tasks.
+    """
+    return {
+        "id": record.get("id"),
+        "title": record.get("title"),
+        "status": record.get("status"),
+        "due_at": record.get("dueAt"),
+        "updated_at": record.get("updatedAt") or record.get("createdAt"),
     }
 
 
@@ -586,6 +636,12 @@ class PipelineDeps:
     # rep review and the run log it records.
     pending_actions: PendingActionRepository = None  # type: ignore[assignment]
     runs: RunLogRepository = None  # type: ignore[assignment]
+
+    # Optional per-opportunity write locks, shared across concurrent runs so
+    # same-opportunity extractions serialize their persist. Set by a batch runner
+    # (``extract_from_emails`` / the pipeline batch); ``None`` on single runs.
+    # Typed ``Any`` to avoid importing ``_OpportunityWriteLocks`` (would cycle).
+    write_locks: Optional[Any] = None
 
     def __post_init__(self) -> None:
         if self.facts is None:

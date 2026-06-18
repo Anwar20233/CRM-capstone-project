@@ -19,9 +19,11 @@ from followup.profile.dependencies import (
     PipelineDeps,
 )
 from followup.profile.extraction import (
+    EmailInput,
     ExtractionResult,
     FollowupExtractionOutcome,
     extract_from_email,
+    extract_from_emails,
     extract_from_source,
 )
 from followup.profile.resolution import ResolutionResult, resolve_unknown_persons
@@ -38,7 +40,9 @@ from followup.profile.shadow import (
 )
 
 __all__ = [
+    "EmailInput",
     "extract_from_email",
+    "extract_from_emails",
     "extract_from_source",
     "ExtractionResult",
     "FollowupExtractionOutcome",

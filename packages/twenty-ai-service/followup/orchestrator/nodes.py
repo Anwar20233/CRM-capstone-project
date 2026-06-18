@@ -17,8 +17,6 @@ from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable
 
-from langchain_core.messages import HumanMessage
-
 from tracing import traceable
 
 from followup.contracts.events import EmailSignalEvent
@@ -28,8 +26,6 @@ from followup.orchestrator.deps import OrchestratorDeps
 from followup.orchestrator.routing import prep_tasks_for_plan
 from followup.orchestrator.state import FollowUpState
 from followup.orchestrator.tasks import FOLLOWUP_SCOPE, TaskContext
-from followup.profile.llm import parse_json_response
-from followup.profile.masking import ProfileMasker
 from followup.profile.schemas import _row_to_dict
 
 logger = logging.getLogger(__name__)
@@ -42,31 +38,6 @@ _PENDING_TRIGGER = {"email": "email_signal", "risk": "risk_alert", "orchestrator
 # entry_point → followup_runs.entry_point (DB naming).
 _RUNS_ENTRY = {"email": "email_signal", "risk": "risk_sweep", "orchestrator": "direct"}
 
-_CLASSIFY_PROMPT = """\
-You are triaging an inbound sales email to decide how the follow-up agent should
-respond. Given the email and what we already know about the deal, classify it.
-
-Email:
-{email}
-
-Deal context:
-{narrative}
-
-Return ONLY a JSON object with exactly these keys:
-{{"type": one of ["meeting_request","objection","buying_signal","question","info_sharing","re_engagement"],
-  "urgency": one of ["high","medium","low"],
-  "requires_next_step": boolean,
-  "requires_risk": boolean,
-  "requires_calendar": boolean}}
-"""
-
-_EMAIL_FALLBACK = {
-    "type": "info_sharing",
-    "urgency": "medium",
-    "requires_next_step": True,
-    "requires_risk": False,
-    "requires_calendar": False,
-}
 
 
 # ===========================================================================
@@ -179,6 +150,11 @@ def build_action_payload(state: FollowUpState) -> dict[str, Any]:
         payload["calendar"] = asdict(state["calendar"])
     if state.get("task_results"):
         payload["task_results"] = state["task_results"]
+    # Carry the company id so the executor can link tasks/notes to BOTH the
+    # opportunity and its company at accept time — the writer can't read it.
+    deal = state.get("deal_context")
+    if deal is not None and getattr(deal, "company_id", None):
+        payload["company_id"] = deal.company_id
     return payload
 
 
@@ -203,6 +179,22 @@ def get_invoked_agents(state: FollowUpState) -> list[str]:
     if state.get("draft") is not None:
         invoked.append("drafting")
     return invoked
+
+
+def resolve_urgency(state: FollowUpState) -> str:
+    """The pending action's urgency, from the classification or the plan.
+
+    Risk/orchestrator paths carry a classification with an explicit urgency. The
+    email path has no classifier — its urgency is the next-step agent's own
+    judgement, read off the highest-priority step in the plan it returned.
+    """
+    classification = state.get("classification")
+    if classification and classification.get("urgency"):
+        return classification["urgency"]
+    plan = state.get("plan")
+    if plan is not None and plan.steps:
+        return plan.steps[0].priority
+    return "medium"
 
 
 def compute_expiry(urgency: str) -> datetime:
@@ -326,17 +318,13 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
             return _fail(state, "load_profile", f"load_profile: {error}")
 
     async def classify(state: FollowUpState) -> dict[str, Any]:
+        # Deterministic labelling for the risk and orchestrator entry points only.
+        # The email path skips this node entirely (the graph routes it straight to
+        # plan): the next-step agent reads its own stage playbook + BANT framework
+        # and decides from the raw trigger, so no LLM email triage runs here.
         try:
             entry = state["entry_point"]
-            if entry == "risk":
-                classification = {
-                    "type": "risk_alert",
-                    "urgency": "high",
-                    "requires_next_step": False,
-                    "requires_risk": True,
-                    "requires_calendar": False,
-                }
-            elif entry == "orchestrator":
+            if entry == "orchestrator":
                 trigger = state.get("trigger") or {}
                 instructions = (trigger.get("instructions") or "").lower()
                 classification = {
@@ -348,41 +336,17 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
                         trigger.get("wants_meeting") or "meeting" in instructions
                     ),
                 }
-            else:  # email — ask the LLM
-                classification = await _classify_email(state)
+            else:  # risk
+                classification = {
+                    "type": "risk_alert",
+                    "urgency": "high",
+                    "requires_next_step": False,
+                    "requires_risk": True,
+                    "requires_calendar": False,
+                }
             return _advance(state, "classify", classification=classification)
         except Exception as error:  # noqa: BLE001
             return _fail(state, "classify", f"classify: {error}")
-
-    async def _classify_email(state: FollowUpState) -> dict[str, Any]:
-        trigger = state.get("trigger") or {}
-        # Mask PII (names, emails) before sending the raw email to the triage LLM.
-        # The output is structured JSON labels (type, urgency), not prose, so no
-        # unmasking is needed on the result.
-        deal = state.get("deal_context")
-        contacts = (
-            [{"id": c.crm_id, "name": c.name, "email": c.email}
-             for c in deal.contacts]
-            if deal else []
-        )
-        masker = ProfileMasker().register(contacts=contacts)
-        raw_email = (
-            f"Subject: {trigger.get('subject', '')}\n"
-            f"From: {trigger.get('sender_email', '')}\n\n"
-            f"{trigger.get('body', '')}"
-        )
-        prompt = _CLASSIFY_PROMPT.format(
-            email=masker.mask(raw_email),
-            narrative=masker.mask(state.get("profile_narrative") or "(no prior context)"),
-        )
-        response = await deps.pipeline.get_chat_llm().ainvoke(
-            [HumanMessage(content=prompt)]
-        )
-        parsed = parse_json_response(getattr(response, "content", "") or "")
-        if not isinstance(parsed, dict) or "type" not in parsed:
-            return dict(_EMAIL_FALLBACK)
-        # Fill any missing keys from the fallback so downstream reads are safe.
-        return {**_EMAIL_FALLBACK, **parsed}
 
     async def assess_risk(state: FollowUpState) -> dict[str, Any]:
         # Runs on every path after the profile loads: hand the risk agent the
@@ -474,7 +438,7 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
             opportunity_uuid = _coerce_uuid(state["opportunity_id"])
             workspace_uuid = _coerce_uuid(state["workspace_id"])
             trigger = state.get("trigger") or {}
-            urgency = (state.get("classification") or {}).get("urgency", "medium")
+            urgency = resolve_urgency(state)
 
             action_data = {
                 "id": uuid.uuid4(),
@@ -563,5 +527,6 @@ __all__ = [
     "build_action_payload",
     "build_reasoning",
     "get_invoked_agents",
+    "resolve_urgency",
     "compute_expiry",
 ]

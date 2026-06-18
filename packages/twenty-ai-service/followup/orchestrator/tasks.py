@@ -268,6 +268,35 @@ def infer_tone(deal_context: "DealContext") -> str:
     return "professional"
 
 
+# The next-step plan's headline action → the drafter's email-"type" token. On the
+# email path there is no LLM classifier; the planner's intent is what should shape
+# the drafter's manner, so we translate the plan into the same {type, urgency}
+# signal the drafter already derives tone + draft-type from. This keeps the
+# planner — not a pre-classifier — in charge of how the communication reads.
+_HEADLINE_TO_DRAFT_SIGNAL: dict[str, str] = {
+    "escalate": "objection",          # urgent framing
+    "send_proposal": "buying_signal",  # consultative + proposal-delivery framing
+    "close_deal": "buying_signal",
+    "schedule_meeting": "meeting_request",  # consultative
+    "check_in": "info_sharing",        # casual
+}
+
+
+def plan_to_draft_signal(plan: "NextStepPlan") -> dict[str, Any]:
+    """Derive the drafter's {type, urgency} tone signal from the next-step plan.
+
+    Used on the email path, where no classifier runs: the planner's headline
+    action sets the email framing/tone and its top step's priority sets urgency.
+    """
+    signal: dict[str, Any] = {}
+    email_type = _HEADLINE_TO_DRAFT_SIGNAL.get(plan.headline_action)
+    if email_type:
+        signal["type"] = email_type
+    if plan.steps:
+        signal["urgency"] = plan.steps[0].priority
+    return signal
+
+
 assert "professional" in DRAFT_TONE_TYPES and "urgent" in DRAFT_TONE_TYPES
 
 
@@ -330,10 +359,14 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
             if is_meeting
             else deps.content_author.email_directive(ctx)
         )
+        # The drafter derives tone + framing from this signal. On the email path
+        # there is no classifier, so the next-step agent's plan supplies it — the
+        # planner, not a pre-classifier, decides how the communication reads.
+        draft_signal = ctx.classification or plan_to_draft_signal(ctx.plan)
         request = DraftRequest(
             deal_context=ctx.deal_context,
             intent=directive,
-            classification=ctx.classification,
+            classification=draft_signal,
             mode="single",
             recipient_email=_recipient(ctx.deal_context),
             available_slots=available_slots,
@@ -450,4 +483,5 @@ __all__ = [
     "build_task_tools",
     "build_default_task_registry",
     "infer_tone",
+    "plan_to_draft_signal",
 ]

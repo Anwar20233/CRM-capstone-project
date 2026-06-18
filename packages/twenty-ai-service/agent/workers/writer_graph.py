@@ -225,4 +225,6 @@ def build_writer_graph(
     )
     builder.add_edge("tools", "llm")
 
-    return builder.compile(checkpointer=checkpointer)
+    # Name the graph so traces read "writer-agent" instead of a generic
+    # "LangGraph" — otherwise reader/writer/followup graphs are indistinguishable.
+    return builder.compile(checkpointer=checkpointer, name="writer-agent")

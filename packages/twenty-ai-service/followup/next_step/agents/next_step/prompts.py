@@ -1,200 +1,133 @@
-"""Prompt construction for the Next Step Intelligence Agent.
+"""System prompt and deal context builder for the Next Step Intelligence Agent.
 
-Runs three internal analysis tools (stage playbook, BANT assessment,
-engagement health) and assembles their outputs into a single structured
-prompt for call_llm_json.
+SYSTEM_PROMPT defines the agent's identity, available tools, required workflow,
+and output contract. It contains only instructions — no pre-computed analysis.
 
-No RAG retrieval — all context is either deal data or deterministic
-tool output generated from that deal data.
+build_deal_context_message assembles the compact deal facts (opportunity,
+contacts, timeline, tasks, engagement, BANT signals) that the agent reasons
+from. The business rules (what to do given these facts) come from the tools.
 """
 
 from __future__ import annotations
 
-from followup.next_step.agents.next_step.tools import (
-    BANTAssessment,
-    EngagementHealth,
-    StageGuidance,
-    assess_engagement_health,
-    evaluate_bant_gaps,
-    lookup_stage_playbook,
-)
+from followup.next_step.agents.next_step.tools import BANTSignals, EngagementSignals
 from followup.next_step.context.schemas import DealContext
 
-MAX_TIMELINE_ITEMS = 10
+_MAX_TIMELINE_ITEMS = 10
 
-SYSTEM_INSTRUCTIONS = """You are an expert B2B sales coach embedded in a CRM.
-Given the deal context and analysis below, recommend 1-5 specific,
-high-leverage next actions for the sales rep on THIS deal.
+SYSTEM_PROMPT = """\
+You are an expert B2B sales coach embedded in a CRM.
 
-Rules:
-- Output JSON ONLY, matching the provided schema. No prose, no markdown fences.
-- Recommend between 1 and 5 actions (never 0, never more than 5).
-- Every action must include `reasoning` that explains why it matters now.
-- Every action must include `evidence`: short strings citing specific facts
-  from the deal context (timeline items, engagement metrics, contacts,
-  profile facts).
-- `orchestrator_tool` must be one of: create_task, schedule_meeting,
-  send_email, update_opportunity, log_activity, create_reminder.
-- `orchestrator_instruction` must reference the opportunity id and describe
-  exactly what the Orchestrator should execute if the rep accepts this action.
-- `priority` is 1 (highest) to 5 (lowest). Do not assign the same priority
-  to two actions unless they are genuinely equal in urgency.
-- Ground every action in the deal context provided — do not invent facts."""
+You have three knowledge tools:
+  read_stage_playbook(stage)  — reads the full playbook for a pipeline stage
+  read_bant_framework()       — reads the BANT qualification framework
+  read_best_practices()       — reads general B2B sales best practices
 
+## Required workflow
+1. Call read_stage_playbook with the deal's current stage.
+2. Call read_bant_framework.
+3. Optionally call read_best_practices when the engagement or task situation warrants it.
+4. Using the retrieved knowledge and the deal context below, produce 1–5 next actions.
 
-def _format_opportunity(context: DealContext) -> str:
-    opp = context.opportunity
-    lines = [f"id: {opp.id}", f"name: {opp.name}", f"stage: {opp.stage}"]
-    if opp.amount is not None:
-        lines.append(f"amount: {opp.amount}")
-    if opp.close_date is not None:
-        lines.append(f"close_date: {opp.close_date.isoformat()}")
-    company = context.company
-    lines.append(
-        f"company: {company.name} (industry: {company.industry or 'unknown'})"
-        if company else "company: none linked"
-    )
-    return "\n".join(lines)
+## Output contract
+- Return JSON ONLY matching the provided schema. No prose, no markdown fences.
+- 1–5 actions (never 0, never more than 5).
+- Every action: reasoning explains why this action matters NOW.
+- Every action: evidence cites specific facts from the deal context (timeline
+  items, engagement metrics, contacts, BANT signals, profile facts).
+- orchestrator_tool must be one of: create_task, schedule_meeting, send_email,
+  update_opportunity, log_activity, create_reminder.
+- orchestrator_instruction must reference the opportunity id and describe
+  exactly what to execute if the rep accepts this action.
+- priority 1 (highest) to 5 (lowest). Avoid ties unless genuinely equal urgency.
+- Ground every action in the provided deal context. Do not invent facts.\
+"""
 
 
-def _format_contacts(context: DealContext) -> str:
-    if not context.contacts:
-        return "No contacts linked."
-    lines = []
-    for c in context.contacts:
-        dm = " (decision maker)" if c.is_decision_maker else ""
-        lines.append(f"- {c.name} — {c.role or 'unknown role'}{dm}")
-    return "\n".join(lines)
-
-
-def _format_timeline(context: DealContext) -> str:
-    if not context.timeline:
-        return "No recent timeline activity."
-    items = sorted(context.timeline, key=lambda i: i.occurred_at, reverse=True)[:MAX_TIMELINE_ITEMS]
-    return "\n".join(
-        f"- [{i.occurred_at.isoformat()}] ({i.type}) {i.title}: {i.summary}"
-        for i in items
-    )
-
-
-def _format_tasks(context: DealContext) -> str:
-    if not context.tasks:
-        return "No open tasks."
-    lines = []
-    for t in context.tasks:
-        overdue = " [OVERDUE]" if t.is_overdue else ""
-        due = f", due {t.due_at.isoformat()}" if t.due_at else ""
-        lines.append(f"- {t.title} ({t.status}{due}){overdue}")
-    return "\n".join(lines)
-
-
-def _format_meetings(context: DealContext) -> str:
-    if not context.meetings:
-        return "No meetings scheduled."
-    return "\n".join(
-        f"- {m.title} at {m.starts_at.isoformat()} ({m.status})"
-        for m in context.meetings
-    )
-
-
-def _format_profile_facts(context: DealContext) -> str:
-    if not context.active_facts:
-        return "No active profile facts."
-    return "\n".join(
-        f"- [{f.fact_id}] ({f.category.value}) {f.fact_key} = {f.value}"
-        for f in context.active_facts
-    )
-
-
-def _format_playbook(playbook: StageGuidance) -> str:
-    lines = [
-        f"Stage objective: {playbook.objective}",
-        "Key activities:",
-        *[f"  - {a}" for a in playbook.key_activities],
-        "Exit criteria:",
-        *[f"  - {c}" for c in playbook.exit_criteria],
-        "Common pitfalls:",
-        *[f"  - {p}" for p in playbook.common_pitfalls],
-    ]
-    return "\n".join(lines)
-
-
-def _format_bant(bant: BANTAssessment) -> str:
-    lines = [f"Qualification score: {bant.qualification_score}/4"]
-    for gap in bant.gaps:
-        lines.append(f"- {gap.dimension}: {gap.status} — {gap.detail}")
-    if bant.is_fully_qualified:
-        lines.append("All BANT dimensions confirmed.")
-    else:
-        missing = [g.dimension for g in bant.gaps if g.status != "confirmed"]
-        lines.append(f"Unconfirmed BANT dimensions: {', '.join(missing)}")
-    return "\n".join(lines)
-
-
-def _format_engagement(health: EngagementHealth) -> str:
-    lines = [
-        f"Status: {health.status}",
-        f"Days since last activity: {health.days_since_last}",
-        f"Activity trend (14d vs prior 14d): {health.trend}",
-        f"Future meeting booked: {health.has_future_meeting}",
-    ]
-    if health.risk_flags:
-        lines.append("Risk flags:")
-        lines.extend(f"  - {flag}" for flag in health.risk_flags)
-    return "\n".join(lines)
-
-
-def build_next_step_prompt(
-    context: DealContext, trigger_context: str | None = None
+def build_deal_context_message(
+    context: DealContext,
+    trigger: str | None,
+    bant: BANTSignals,
+    engagement: EngagementSignals,
 ) -> str:
-    """Build the full structured prompt for the Next Step Intelligence Agent.
+    """Compact, structured deal context for the planner's initial message.
 
-    Runs internal analysis tools and assembles all deal context into a
-    single prompt string ready for call_llm_json.
-
-    Args:
-        context: The full deal context provided by the Orchestrator.
-        trigger_context: Optional description of what triggered this run (the
-            inbound message / query / signal). Rendered as its own section so
-            the recommendations respond to the cause, not just the deal state.
-
-    Returns:
-        A single prompt string requesting 1-5 structured recommendations.
+    Contains only facts (observations about the deal). The rules (what to do
+    given these facts) come from the tool calls the agent makes.
     """
-    playbook = lookup_stage_playbook(context.opportunity.stage)
-    bant = evaluate_bant_gaps(context)
-    engagement = assess_engagement_health(context)
+    sections: list[str] = []
 
-    trigger_section: list[str] = []
-    if trigger_context and trigger_context.strip():
-        trigger_section = ["## What triggered this", trigger_context.strip()]
+    if trigger and trigger.strip():
+        sections.append(f"## Trigger\n{trigger.strip()}")
 
-    sections = [
-        SYSTEM_INSTRUCTIONS,
-        *trigger_section,
-        "## Opportunity",
-        _format_opportunity(context),
-        "## Contacts",
-        _format_contacts(context),
-        "## Recent timeline",
-        _format_timeline(context),
-        "## Open tasks",
-        _format_tasks(context),
-        "## Meetings",
-        _format_meetings(context),
-        "## Active client profile facts",
-        _format_profile_facts(context),
-        "## Stage playbook",
-        _format_playbook(playbook),
-        "## BANT assessment",
-        _format_bant(bant),
-        "## Engagement health",
-        _format_engagement(engagement),
-        (
-            "## Task\n"
-            "Recommend 1-5 next actions for this deal. Return JSON matching "
-            "the NextStepLLMOutput schema: {\"actions\": [...], "
-            "\"summary_reasoning\": str, \"confidence\": float (0.0-1.0)}."
-        ),
+    opp = context.opportunity
+    opp_lines = [f"id: {opp.id}", f"name: {opp.name}", f"stage: {opp.stage}"]
+    if opp.amount is not None:
+        opp_lines.append(f"amount: {opp.amount}")
+    if opp.close_date:
+        opp_lines.append(f"close_date: {opp.close_date.date()}")
+    if context.company:
+        industry = f" (industry: {context.company.industry})" if context.company.industry else ""
+        opp_lines.append(f"company: {context.company.name}{industry}")
+    sections.append("## Opportunity\n" + "\n".join(opp_lines))
+
+    if context.contacts:
+        contact_lines = [
+            "- " + c.name
+            + (f" — {c.role}" if c.role else "")
+            + (" [decision maker]" if c.is_decision_maker else "")
+            for c in context.contacts
+        ]
+        sections.append("## Contacts\n" + "\n".join(contact_lines))
+    else:
+        sections.append("## Contacts\nNone linked.")
+
+    items = sorted(context.timeline, key=lambda i: i.occurred_at, reverse=True)[:_MAX_TIMELINE_ITEMS]
+    if items:
+        tl = "\n".join(f"- [{i.occurred_at.date()}] ({i.type}) {i.summary}" for i in items)
+        sections.append(f"## Recent timeline\n{tl}")
+    else:
+        sections.append("## Recent timeline\nNo recent activity.")
+
+    if context.tasks:
+        task_lines = [
+            "- " + t.title
+            + (f" [due {t.due_at.date()}]" if t.due_at else "")
+            + (" [OVERDUE]" if t.is_overdue else "")
+            for t in context.tasks
+        ]
+        sections.append("## Open tasks\n" + "\n".join(task_lines))
+
+    if context.meetings:
+        mtg_lines = [f"- {m.title} on {m.starts_at.date()} [{m.status}]" for m in context.meetings]
+        sections.append("## Meetings\n" + "\n".join(mtg_lines))
+
+    if context.active_facts:
+        fact_lines = [f"- {f.fact_key} = {f.value}" for f in context.active_facts]
+        sections.append("## Profile facts\n" + "\n".join(fact_lines))
+
+    bant_lines = [f"Qualification score: {bant.qualification_score}/4"]
+    for gap in bant.gaps:
+        bant_lines.append(f"- {gap.dimension}: {gap.status} — {gap.detail}")
+    sections.append("## BANT signals\n" + "\n".join(bant_lines))
+
+    days = engagement.days_since_last
+    days_str = str(days) if days is not None else "unknown (no activity on record)"
+    eng_lines = [
+        f"Status: {engagement.status}",
+        f"Days since last activity: {days_str}",
+        f"Activity trend (14d vs prior 14d): {engagement.trend}",
+        f"Future meeting booked: {engagement.has_future_meeting}",
     ]
+    if engagement.risk_flags:
+        eng_lines.append("Risk flags: " + "; ".join(engagement.risk_flags))
+    sections.append("## Engagement\n" + "\n".join(eng_lines))
+
+    sections.append(
+        "## Task\n"
+        "Call read_stage_playbook and read_bant_framework first, then recommend 1–5 next actions.\n"
+        'Return JSON matching the NextStepLLMOutput schema: '
+        '{"actions": [...], "summary_reasoning": str, "confidence": float (0.0–1.0)}.'
+    )
+
     return "\n\n".join(sections)
