@@ -203,6 +203,20 @@ class FollowupRun:
     status: str = "running"
 
 
+@dataclass
+class RiskDailyScore:
+    id: uuid.UUID
+    opportunity_id: uuid.UUID
+    workspace_id: uuid.UUID
+    risk_score: float
+    risk_level: str
+    top_factors: list[dict[str, Any]]
+    assessment: dict[str, Any]
+    trigger_type: str = "daily_sweep"
+    assessed_at: Optional[datetime] = None
+    created_pending_action_id: Optional[uuid.UUID] = None
+
+
 TModel = TypeVar("TModel")
 
 
@@ -584,6 +598,28 @@ class RiskSnapshotRepository:
                 opportunity_id,
             )
         return float(row["score"]) if row is not None else None
+
+
+class RiskDailyScoreRepository:
+    """Persists daily sweep score history for threshold-crossing detection."""
+
+    def __init__(self, executor: Any) -> None:
+        self._executor = executor
+
+    async def create(self, score_data: dict[str, Any]) -> RiskDailyScore:
+        async with _acquire(self._executor) as conn:
+            return _from_row(  # type: ignore[return-value]
+                RiskDailyScore, await _insert(conn, "risk_daily_scores", score_data)
+            )
+
+    async def get_latest(self, opportunity_id: uuid.UUID) -> Optional[RiskDailyScore]:
+        async with _acquire(self._executor) as conn:
+            row = await conn.fetchrow(
+                f"SELECT * FROM {SCHEMA}.risk_daily_scores "
+                f"WHERE opportunity_id = $1 ORDER BY assessed_at DESC, id DESC LIMIT 1",
+                opportunity_id,
+            )
+        return _from_row(RiskDailyScore, row)
 
 
 class RunLogRepository:

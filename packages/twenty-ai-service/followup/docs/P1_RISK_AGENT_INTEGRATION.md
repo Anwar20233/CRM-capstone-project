@@ -330,6 +330,197 @@ risk = await deps.agents.risk.evaluate_deal_risk(
 
 The orchestrator stores the returned `RiskAssessment` in state and uses it when building reasoning and risk-sweep plans. The orchestrator may update the in-memory deal context risk score when a deal context exists, but that is not an input to the Risk Agent.
 
+## Daily Risk Sweep
+
+Status: implemented in `followup.risk.daily_sweep`.
+
+The daily sweep is a standalone backend job that runs without P1 needing to trigger risk scoring manually. It wraps the existing `DatabaseRiskAgent` and uses persisted daily score history to decide when an opportunity newly needs sales-rep attention.
+
+### Goal
+
+The daily sweep should run early in the morning before the sales team's day starts and identify all active opportunities that need rep attention.
+
+Implemented behavior:
+
+```text
+daily scheduler starts
+  -> discover active workspaces / workspace schemas
+  -> discover active opportunities in each workspace
+  -> run DatabaseRiskAgent.evaluate_deal_risk(...) for each opportunity
+  -> compare the new score/level with the last stored daily score
+  -> detect threshold crossings into medium/high risk
+  -> create a risk_alert pending action when needed
+  -> persist the latest risk score for the next sweep
+```
+
+This job should not depend on P1, inbound email events, or manual orchestrator calls.
+
+### Proposed Schedule
+
+Recommended local/business schedule:
+
+```text
+06:00 Asia/Riyadh every day
+```
+
+Example cron expression:
+
+```text
+0 6 * * *
+```
+
+The exact scheduler can be cron, Docker cron, a deployment-provider scheduled job, or a backend worker scheduler. The important part is that the job calls the daily sweep runner directly, not the P1 UI flow.
+
+### Command
+
+Run the standalone sweep from `packages/twenty-ai-service`:
+
+```bash
+PYTHONPATH=. .venv/bin/python -m followup.risk.daily_sweep
+```
+
+Recommended local env:
+
+```bash
+export PG_DATABASE_URL="postgres://postgres:postgres@localhost:5432/default"
+export HF_HOME="$PWD/.cache/huggingface"
+mkdir -p "$HF_HOME"
+```
+
+For local/dev databases where the workspace schema exists but is not registered in `core."dataSource"`, use:
+
+```bash
+export FOLLOWUP_RISK_WORKSPACE_SCHEMA_OVERRIDE="workspace_c4en9trdpordobem3offy83aa"
+export FOLLOWUP_RISK_WORKSPACE_ID_OVERRIDE="00000000-0000-0000-0000-000000000000"
+```
+
+`FOLLOWUP_RISK_WORKSPACE_ID_OVERRIDE` is optional locally. When omitted, the sweep uses the nil UUID as a dev-only placeholder because `followup_pending_actions.workspace_id` is required. Production should prefer `core."dataSource"` workspace discovery instead of either override.
+
+### Active Deal Discovery
+
+The daily sweep considers active opportunities only.
+
+Recommended filters:
+
+```text
+opportunity."deletedAt" IS NULL
+stage is not a closed/won/customer terminal stage
+workspace schema comes from core."dataSource" or the local schema override
+```
+
+Current terminal stages skipped by the sweep:
+
+```text
+CUSTOMER
+CLOSED
+CLOSED_WON
+CLOSED_LOST
+WON
+LOST
+```
+
+### Threshold Crossing Logic
+
+The sweep persists score history in `followup_agent.risk_daily_scores`. This table is used only for threshold-crossing detection. It is not used as evidence when calculating the current risk score.
+
+Implemented threshold policy:
+
+```text
+low -> medium:
+  create medium urgency risk_alert
+
+low -> high:
+  create high urgency risk_alert
+
+medium -> high:
+  create high urgency risk_alert
+
+medium -> medium:
+  do not create duplicate alert
+
+high -> high:
+  do not create duplicate alert
+
+high/medium -> low:
+  persist the lower score, no alert
+
+existing pending risk_alert:
+  do not create duplicate alert
+```
+
+The score-level boundaries come from `evaluate_risk_context(...)`, so P1 and the sweep use the same `low`, `medium`, and `high` semantics.
+
+### Persistence Needed
+
+The daily sweep persists two things:
+
+```text
+latest risk score snapshot:
+  opportunity_id
+  workspace_id
+  risk_score
+  risk_level
+  top_factors
+  assessment
+  assessed_at
+  trigger_type = daily_sweep
+  created_pending_action_id
+
+risk alert / pending action when needed:
+  opportunity_id
+  workspace_id
+  trigger_type = risk_alert
+  action_type = follow_up_call | escalate
+  action_payload = recommended_notification + risk factors
+  risk_assessment = full RiskAssessment
+  reasoning = risk_assessment.reasoning_summary
+  urgency = recommended_notification.urgency
+  expires_at = based on urgency
+```
+
+Important: persisted previous scores are for threshold comparison only. They should not be used as evidence when calculating the current risk score.
+
+### Notification Creation
+
+For each opportunity, the sweep creates a pending action only when:
+
+```text
+risk_result.recommended_notification.should_notify is true
+AND no pending risk_alert already exists
+AND there is no previous score and the current level is medium/high
+OR the opportunity crossed upward into medium/high risk
+```
+
+The pending action payload should include:
+
+```text
+risk_score
+risk_level
+top risk factors
+reasoning_summary
+recommended_notification
+evidence counts from metadata
+```
+
+P1 can then render or deliver the alert without recomputing risk.
+
+### Test Coverage
+
+Covered by `tests/test_daily_risk_sweep.py` and `tests/test_followup_repositories.py`:
+
+```text
+discovers active opportunities
+skips deleted or terminal opportunities
+calls DatabaseRiskAgent with minimal identifiers
+persists latest daily score
+creates alert on low -> medium
+creates alert on medium -> high
+does not duplicate alert on unchanged medium/high
+does not duplicate when a pending risk_alert already exists
+works without a P1 trigger
+supports local schema override for dev testing
+```
+
 ## Error Behavior
 
 Expected hard failures:
@@ -366,6 +557,9 @@ Use this checklist when wiring the P1 UI/backend to the Risk Agent:
 [ ] Keep delivery, dedupe, dismissal, and analytics in P1.
 [ ] Preserve factors/evidence in UI or audit logs so reps can understand why the deal was flagged.
 [ ] Treat errors as unavailable fresh risk, not as low risk.
+[ ] Configure a production scheduler for `python -m followup.risk.daily_sweep`.
+[ ] Monitor `followup_agent.risk_daily_scores` for sweep history.
+[ ] Confirm P1 renders `risk_alert` pending actions created by the sweep.
 ```
 
 ## Backend Testing Guide
@@ -658,7 +852,7 @@ Latest verification after Risk Agent and terminal fixes:
 
 ```text
 python compile:
-  py_compile passed for 181 Python files under packages/twenty-ai-service
+  py_compile passed for 184 Python files under packages/twenty-ai-service
 
 focused previously failing tests:
   44 passed, 43 warnings
@@ -666,8 +860,11 @@ focused previously failing tests:
 risk focused tests:
   36 passed in 1.46s
 
+daily sweep focused tests:
+  54 passed in 1.45s
+
 full service test suite:
-  337 passed, 93 warnings in 6.57s
+  346 passed, 93 warnings in 10.54s
 
 command:
   /Users/ranaalshehri/temp-repos/CRM-capstone-project/packages/twenty-ai-service/.venv/bin/python -m pytest tests -v
