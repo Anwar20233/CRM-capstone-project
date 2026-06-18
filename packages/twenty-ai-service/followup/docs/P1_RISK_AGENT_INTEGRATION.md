@@ -848,6 +848,90 @@ Notion — Workflow Automation
 
 These are the best local cases for validating P1 notification behavior because they produce `recommended_notification.should_notify = true` and include strong factor evidence from profile facts, relationship data, stale opportunity updates, or overdue tasks.
 
+## Real Database Verification
+
+These checks were run against the local Postgres database:
+
+```text
+database: postgres://postgres:postgres@localhost:5432/default
+schema override: workspace_c4en9trdpordobem3offy83aa
+workspace override: 00000000-0000-0000-0000-000000000000
+```
+
+### Single Risk Agent Run
+
+Opportunity tested:
+
+```text
+name: Airbnb — Platform Integration
+opportunity_id: a45a119e-376d-5eb2-8b96-33c2631660ea
+```
+
+Result:
+
+```text
+risk_score: 1.0
+risk_level: high
+should_notify: true
+urgency: high
+facts_considered: 14
+relationships_considered: 16
+messages_considered: 20
+notes_considered: 7
+tasks_considered: 5
+```
+
+Top signals:
+
+```text
+engagement_gap:
+  Opportunity has not been updated for 47 days.
+
+sentiment_decline:
+  Q3 integration timeline is tight due to engineering freeze in August.
+
+deal_velocity_drop:
+  Deal appears stuck in PROPOSAL.
+```
+
+### Daily Sweep Run
+
+First daily sweep result:
+
+```text
+scanned: 19
+scored: 19
+alerts_created: 8
+skipped: 11
+failed: 0
+```
+
+Database writes after the first sweep:
+
+```text
+risk_daily_scores total: 19
+risk_alert pending_actions total: 8
+```
+
+Second daily sweep result:
+
+```text
+scanned: 19
+scored: 19
+alerts_created: 0
+skipped: 19
+failed: 0
+```
+
+The second run confirms deduping works: existing pending `risk_alert` actions prevented duplicate alerts.
+
+Final database state after two sweeps:
+
+```text
+risk_daily_scores total: 38
+risk_alert pending_actions total: 8
+```
+
 ## Verification
 
 Latest verification after Risk Agent and daily sweep implementation:
