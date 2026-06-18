@@ -68,6 +68,16 @@ def _deal_for(scenario) -> DealContext:
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scenario", default="airbnb_new_stakeholder", choices=sorted(SCENARIOS))
+    parser.add_argument(
+        "--real-drafter",
+        action="store_true",
+        help="use OrchestratorDraftingAgent (default; kept for explicit live runs)",
+    )
+    parser.add_argument(
+        "--classification",
+        default=None,
+        help="override triage JSON, e.g. meeting_request",
+    )
     args = parser.parse_args()
     scenario = get(args.scenario)
     deal = _deal_for(scenario)
@@ -80,7 +90,20 @@ async def main() -> None:
     print(f"  deal   : {deal.opportunity_name} (stage {deal.deal_stage}, ${deal.deal_value:,.0f})")
     print(f"  email  : {scenario.subject}")
 
-    classification = {"type": "objection", "urgency": "high", "requires_calendar": False}
+    if args.classification == "meeting_request" or scenario.name.endswith("meeting_request"):
+        classification = {
+            "type": "meeting_request",
+            "urgency": "medium",
+            "requires_calendar": True,
+        }
+    elif args.classification:
+        classification = {
+            "type": args.classification,
+            "urgency": "high",
+            "requires_calendar": args.classification == "meeting_request",
+        }
+    else:
+        classification = {"type": "objection", "urgency": "high", "requires_calendar": False}
     trigger = EmailSignalEvent(
         sender_email=scenario.sender, subject=scenario.subject, body=scenario.body,
         received_at="2026-06-17T09:00:00+00:00", opportunity_id=deal.opportunity_id,
@@ -110,10 +133,25 @@ async def main() -> None:
     print("\n[2] drafting adapter → DraftResult (per email step)")
     drafter = OrchestratorDraftingAgent(model=model)
     for step in email_steps:
+        available_slots = None
+        if step.kind == "book_meeting" or classification.get("requires_calendar"):
+            available_slots = [
+                {
+                    "start": "2026-06-18T21:00:00+00:00",
+                    "end": "2026-06-18T21:30:00+00:00",
+                    "available": True,
+                },
+                {
+                    "start": "2026-06-19T16:00:00+00:00",
+                    "end": "2026-06-19T16:30:00+00:00",
+                    "available": True,
+                },
+            ]
         draft = await drafter.run(
             DraftRequest(
                 deal_context=deal, intent=step.intent, classification=classification,
                 recipient_email=deal.contacts[0].email,
+                available_slots=available_slots,
                 reply_context={"sender_email": scenario.sender, "subject": scenario.subject, "body": scenario.body},
             )
         )

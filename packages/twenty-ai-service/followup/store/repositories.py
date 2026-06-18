@@ -579,6 +579,22 @@ class PendingActionRepository:
                 PendingAction, await _upsert(conn, "followup_pending_actions", _to_dict(action))
             )
 
+    async def list_accepted_for_outbox(
+        self, workspace_id: uuid.UUID, batch_size: int = 20
+    ) -> list[PendingAction]:
+        async with _acquire(self._executor) as conn:
+            rows = await conn.fetch(
+                f"SELECT * FROM {SCHEMA}.followup_pending_actions "
+                f"WHERE workspace_id = $1 AND status = 'accepted' "
+                f"AND execution_status IS DISTINCT FROM 'completed' "
+                f"AND (action_payload->>'email_sent_at') IS NULL "
+                f"AND (action_payload->'draft'->>'recipient_email') IS NOT NULL "
+                f"ORDER BY acted_on_at ASC NULLS LAST LIMIT $2",
+                workspace_id,
+                batch_size,
+            )
+        return [_from_row(PendingAction, row) for row in rows]  # type: ignore[misc]
+
 
 class RiskSnapshotRepository:
     """Reads the ``risk_snapshots`` table the P3 risk agent writes.
@@ -640,3 +656,112 @@ class RunLogRepository:
     async def save(self, run: Any) -> FollowupRun:
         async with _acquire(self._executor) as conn:
             return _from_row(FollowupRun, await _upsert(conn, "followup_runs", _to_dict(run)))  # type: ignore[return-value]
+
+
+@dataclass
+class InboundEmail:
+    id: uuid.UUID
+    workspace_id: uuid.UUID
+    message_id: str
+    sender_email: str
+    subject: str
+    body: str
+    received_at: datetime
+    status: str = "pending"
+    opportunity_id: Optional[uuid.UUID] = None
+    pipeline_run_id: Optional[uuid.UUID] = None
+    error: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+class InboundEmailRepository:
+    def __init__(self, executor: Any) -> None:
+        self._executor = executor
+
+    async def enqueue(self, email_data: dict[str, Any]) -> Optional[InboundEmail]:
+        """Insert a row; returns None when message_id already exists (dedupe)."""
+        async with _acquire(self._executor) as conn:
+            try:
+                row = await conn.fetchrow(
+                    f"INSERT INTO {SCHEMA}.inbound_email_queue "
+                    f"(workspace_id, message_id, sender_email, subject, body, received_at, "
+                    f"opportunity_id, status) "
+                    f"VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending') "
+                    f"ON CONFLICT (message_id) DO NOTHING RETURNING *",
+                    email_data["workspace_id"],
+                    email_data["message_id"],
+                    email_data["sender_email"],
+                    email_data.get("subject", ""),
+                    email_data.get("body", ""),
+                    email_data["received_at"],
+                    email_data.get("opportunity_id"),
+                )
+            except asyncpg.UniqueViolationError:
+                return None
+            return _from_row(InboundEmail, row)
+
+    async def claim_batch(
+        self, workspace_id: uuid.UUID, batch_size: int = 10
+    ) -> list[InboundEmail]:
+        async with _acquire(self._executor) as conn:
+            rows = await conn.fetch(
+                f"UPDATE {SCHEMA}.inbound_email_queue AS queue "
+                f"SET status = 'processing', updated_at = now() "
+                f"WHERE queue.id IN ("
+                f"  SELECT id FROM {SCHEMA}.inbound_email_queue "
+                f"  WHERE workspace_id = $1 AND status = 'pending' "
+                f"  ORDER BY created_at ASC LIMIT $2 "
+                f"  FOR UPDATE SKIP LOCKED"
+                f") RETURNING queue.*",
+                workspace_id,
+                batch_size,
+            )
+        return [_from_row(InboundEmail, row) for row in rows]  # type: ignore[misc]
+
+    async def mark_processed(
+        self,
+        email_id: uuid.UUID,
+        *,
+        pipeline_run_id: Optional[uuid.UUID] = None,
+    ) -> None:
+        async with _acquire(self._executor) as conn:
+            await conn.execute(
+                f"UPDATE {SCHEMA}.inbound_email_queue "
+                f"SET status = 'processed', pipeline_run_id = $2, "
+                f"updated_at = now(), error = NULL "
+                f"WHERE id = $1",
+                email_id,
+                pipeline_run_id,
+            )
+
+    async def mark_skipped(self, email_id: uuid.UUID, *, reason: str) -> None:
+        async with _acquire(self._executor) as conn:
+            await conn.execute(
+                f"UPDATE {SCHEMA}.inbound_email_queue "
+                f"SET status = 'skipped', error = $2, updated_at = now() "
+                f"WHERE id = $1",
+                email_id,
+                reason,
+            )
+
+    async def mark_failed(self, email_id: uuid.UUID, *, error: str) -> None:
+        async with _acquire(self._executor) as conn:
+            await conn.execute(
+                f"UPDATE {SCHEMA}.inbound_email_queue "
+                f"SET status = 'failed', error = $2, updated_at = now() "
+                f"WHERE id = $1",
+                email_id,
+                error,
+            )
+
+    async def get_latest_received_at(
+        self, workspace_id: uuid.UUID
+    ) -> Optional[datetime]:
+        async with _acquire(self._executor) as conn:
+            row = await conn.fetchrow(
+                f"SELECT received_at FROM {SCHEMA}.inbound_email_queue "
+                f"WHERE workspace_id = $1 ORDER BY received_at DESC LIMIT 1",
+                workspace_id,
+            )
+        return row["received_at"] if row else None
