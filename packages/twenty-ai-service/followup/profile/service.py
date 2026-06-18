@@ -31,6 +31,7 @@ from followup.profile.schemas import (
     _row_to_dict,
 )
 from followup.profile.synthesis import synthesize_profile
+from followup.profile.taxonomy import role_signals_authority
 from tracing import get_traceable
 
 traceable = get_traceable()
@@ -38,6 +39,63 @@ traceable = get_traceable()
 
 class ProfileNotFound(Exception):
     """Raised when the opportunity id resolves to no CRM record."""
+
+
+# A task overdue — or, when undated, untouched — for longer than this is treated
+# as abandoned and withheld from the agents, so stale work does not misdirect the
+# plan (a task months past its due date is noise, not a next step).
+_TASK_RELEVANCE_WINDOW_DAYS = 60
+
+
+def _parse_dt(value: Any) -> Optional[datetime]:
+    """Best-effort ISO-8601 → aware datetime (the reader returns ISO strings)."""
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return None
+
+
+def _relevant_tasks(
+    raw_tasks: list[dict[str, Any]], *, now: datetime
+) -> list[dict[str, Any]]:
+    """Filter open tasks to those still reflecting live deal state.
+
+    Drops anything DONE (history, not a next step) and anything abandoned: a task
+    overdue beyond the relevance window — or, when it has no due date, untouched
+    beyond it — is withheld. ``is_overdue`` is computed here so the agent never
+    has to guess. Output shape: ``{id, title, status, due_at, is_overdue}``.
+    """
+    relevant: list[dict[str, Any]] = []
+    for task in raw_tasks:
+        if (task.get("status") or "").upper() == "DONE":
+            continue
+        due = _parse_dt(task.get("due_at"))
+        if due is not None:
+            # Upcoming is always relevant; overdue only while still recent.
+            if (now - due).days > _TASK_RELEVANCE_WINDOW_DAYS:
+                continue
+            is_overdue = due < now
+        else:
+            # No due date: keep only if the task was touched recently.
+            touched = _parse_dt(task.get("updated_at"))
+            if touched is not None and (now - touched).days > _TASK_RELEVANCE_WINDOW_DAYS:
+                continue
+            is_overdue = False
+        relevant.append(
+            {
+                "id": task.get("id"),
+                "title": task.get("title"),
+                "status": task.get("status"),
+                "due_at": task.get("due_at"),
+                "is_overdue": is_overdue,
+            }
+        )
+    return relevant
 
 
 @dataclass
@@ -52,6 +110,7 @@ class _LoadedProfile:
     shadows: list[Any]  # ShadowEntity
     risk_score: Optional[float]
     activities: list[dict[str, Any]]
+    tasks: list[dict[str, Any]]  # relevant open tasks (abandoned ones dropped)
     narrative: str
 
 
@@ -90,6 +149,9 @@ class ProfileService:
             deal_stage=loaded.deal.get("stage") or "",
             deal_value=loaded.deal.get("value", 0.0),
             company_name=loaded.company["name"] if loaded.company else "",
+            company_id=loaded.deal.get("company_id"),
+            close_date=loaded.deal.get("close_date"),
+            tasks=loaded.tasks,
             profile_narrative=loaded.narrative,
             contacts=loaded.contacts,
             recent_activities=loaded.activities,
@@ -134,6 +196,11 @@ class ProfileService:
         activities = await deps.crm_reader.get_activities_for_opportunity(
             opportunity_id, limit=10
         )
+        # Open tasks carry the structured status/due that the activity timeline
+        # drops; filter them to the ones still reflecting live deal state so the
+        # agent's overdue/engagement signals are real, not stale noise.
+        raw_tasks = await deps.crm_reader.get_open_tasks_for_opportunity(opportunity_id)
+        tasks = _relevant_tasks(raw_tasks, now=datetime.now(timezone.utc))
 
         narrative = await synthesize_profile(
             deal=deal,
@@ -155,6 +222,7 @@ class ProfileService:
             shadows=shadows,
             risk_score=risk_score,
             activities=activities,
+            tasks=tasks,
             narrative=narrative,
         )
 
@@ -169,6 +237,7 @@ class ProfileService:
             role=contact.get("role"),
             email=contact.get("email"),
             facts=[_row_to_dict(f) for f in active],
+            is_decision_maker=role_signals_authority(contact.get("role")),
         )
 
 

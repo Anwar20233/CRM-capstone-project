@@ -8,6 +8,7 @@ lifecycle — without Postgres or a live LLM.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import uuid
 from dataclasses import fields
@@ -731,3 +732,116 @@ async def test_resolve_rejects_shadow_hint_when_names_differ(ids, direct_reader)
     assert deps.shadows.store[david.id].mention_count == 4  # untouched
     created = next(s for s in deps.shadows.store.values() if s.name == "Rachel Torres")
     assert created.id != david.id
+
+
+# ===========================================================================
+# Batch concurrency (extract_from_emails)
+# ===========================================================================
+
+
+class _ConcurrentChatModel:
+    """Sleeps during each LLM call and records peak concurrency across calls."""
+
+    def __init__(self, delay: float = 0.05) -> None:
+        self._delay = delay
+        self.active = 0
+        self.max_active = 0
+
+    async def ainvoke(self, messages):
+        self.active += 1
+        self.max_active = max(self.max_active, self.active)
+        await asyncio.sleep(self._delay)
+        self.active -= 1
+        return SimpleNamespace(
+            content=json.dumps(
+                {"opportunity_id": None, "facts": [], "relationships": [], "unknown_persons": []}
+            )
+        )
+
+
+class _TrackingLogRepo(FakeExtractionLogRepo):
+    """Records, per opportunity, how many persists overlap inside the write."""
+
+    def __init__(self, delay: float = 0.05) -> None:
+        super().__init__()
+        self._delay = delay
+        self._active: dict[str, int] = {}
+        self.max_concurrent: dict[str, int] = {}
+
+    async def create(self, data: dict[str, Any]) -> ProfileExtraction:
+        oid = str(data["opportunity_id"])
+        self._active[oid] = self._active.get(oid, 0) + 1
+        self.max_concurrent[oid] = max(self.max_concurrent.get(oid, 0), self._active[oid])
+        await asyncio.sleep(self._delay)  # widen the write window
+        self._active[oid] -= 1
+        return await super().create(data)
+
+
+class _BatchReader:
+    """Sender → company → single candidate opp, keyed by email for the batch test."""
+
+    def __init__(self, mapping: dict[str, tuple[str, str]]) -> None:
+        self._mapping = mapping  # sender_email -> (company_id, opportunity_id)
+
+    async def get_person_by_email(self, email: str):
+        company_id, _ = self._mapping[email]
+        return {"id": f"person-{email}", "company_id": company_id, "company_name": "Co"}
+
+    async def get_company(self, company_id: str):
+        return {"id": company_id, "name": "Co"}
+
+    async def get_open_opportunities_for_company(self, company_id: str):
+        for cid, oid in self._mapping.values():
+            if cid == company_id:
+                return [{"id": oid, "name": "Deal", "stage": "PROPOSAL", "company_id": company_id}]
+        return []
+
+    async def get_contacts_for_company(self, company_id: str):
+        return []
+
+
+@pytest.mark.asyncio
+async def test_extract_from_emails_parallel_across_opps_serialized_within_opp():
+    from followup.profile.extraction import EmailInput, extract_from_emails
+
+    workspace = str(uuid.uuid4())
+    company_a, opp_a = str(uuid.uuid4()), str(uuid.uuid4())
+    company_b, opp_b = str(uuid.uuid4()), str(uuid.uuid4())
+
+    # Two emails about deal A (same opp), one about deal B (different opp).
+    mapping = {
+        "a1@co.com": (company_a, opp_a),
+        "a2@co.com": (company_a, opp_a),
+        "b1@co.com": (company_b, opp_b),
+    }
+    chat = _ConcurrentChatModel()
+    log_repo = _TrackingLogRepo()
+    deps = PipelineDeps(
+        executor=None,
+        crm_reader=_BatchReader(mapping),
+        crm_orchestrator=FakeCRMOrchestrator(),
+        notifier=FakeNotifier(),
+        chat_llm=chat,
+        facts=FakeFactRepo(),
+        relationships=FakeRelRepo(),
+        shadows=FakeShadowRepo(),
+        extractions=log_repo,
+    )
+
+    emails = [
+        EmailInput(workspace, "email", str(uuid.uuid4()), "Body about the deal.", sender)
+        for sender in ("a1@co.com", "a2@co.com", "b1@co.com")
+    ]
+
+    outcomes = await extract_from_emails(emails, deps=deps)
+
+    # All three extracted, in input order, mapped to the right opportunities.
+    assert [o.status for o in outcomes] == ["extracted"] * 3
+    assert [o.opportunity_id for o in outcomes] == [opp_a, opp_a, opp_b]
+
+    # The LLM (read-only) ran concurrently across emails — proves parallelism.
+    assert chat.max_active >= 2
+
+    # Same-opp writes never overlapped; different opps were free to.
+    assert log_repo.max_concurrent[opp_a] == 1
+    assert log_repo.max_concurrent[opp_b] == 1

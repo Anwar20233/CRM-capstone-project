@@ -2,11 +2,16 @@
 
     START → route_entry ──email──→ extract ─┐
                         └─else──────────────┴→ load_profile → assess_risk
-            → classify → plan → run_tasks → create_pending → END
+            ──email──────────────────→ plan → run_tasks → create_pending → END
+            └─risk/orchestrator─→ classify ─┘
 
-    assess_risk re-scores from the just-extracted facts (every run); plan calls
-    the next-step agent (email) or synthesizes a plan (risk/orchestrator); run_tasks
-    follows the plan's steps; create_pending persists one bundled pending action.
+    assess_risk re-scores from the just-extracted facts (every run). The email
+    path then goes straight to plan — the next-step agent reads its own playbook
+    and decides from the raw trigger, so there is no LLM email triage. The
+    risk/orchestrator paths pass through classify first (deterministic labelling).
+    plan calls the next-step agent (email) or synthesizes a plan
+    (risk/orchestrator); run_tasks follows the plan's steps; create_pending
+    persists one bundled pending action.
 
 Accept graph (Step 7):
 
@@ -71,17 +76,21 @@ def build_followup_graph(deps: OrchestratorDeps):
     )
     builder.add_edge("extract", "load_profile")
 
-    # Linear from here: risk re-scores from the just-extracted facts (every run),
-    # classify triages, the next-step agent plans, run_tasks follows the plan,
-    # create_pending persists one bundled pending action.
+    # After risk scoring: email path skips classify (the next-step agent reads its
+    # own stage playbook and decides from the raw trigger — no LLM triage needed);
+    # risk/orchestrator paths still go through classify (deterministic labelling).
     builder.add_edge("load_profile", "assess_risk")
-    builder.add_edge("assess_risk", "classify")
+    builder.add_conditional_edges(
+        "assess_risk",
+        lambda state: "plan" if state.get("entry_point") == "email" else "classify",
+        {"plan": "plan", "classify": "classify"},
+    )
     builder.add_edge("classify", "plan")
     builder.add_edge("plan", "run_tasks")
     builder.add_edge("run_tasks", "create_pending")
     builder.add_edge("create_pending", END)
 
-    return builder.compile()
+    return builder.compile(name="followup-pipeline")
 
 
 # ===========================================================================
@@ -180,7 +189,7 @@ def build_accept_graph(deps: OrchestratorDeps):
     builder.add_edge("execute", "update_profile")
     builder.add_edge("update_profile", END)
 
-    return builder.compile()
+    return builder.compile(name="followup-accept")
 
 
 __all__ = ["build_followup_graph", "build_accept_graph", "AcceptState"]

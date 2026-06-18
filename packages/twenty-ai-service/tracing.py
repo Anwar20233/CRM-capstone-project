@@ -103,6 +103,45 @@ def wrap_client(client: Any) -> Any:
         return client
 
 
+def annotate_run(
+    *,
+    name: str | None = None,
+    metadata: dict[str, Any] | None = None,
+    tags: list[str] | None = None,
+) -> None:
+    """Enrich the *currently active* LangSmith span in place.
+
+    Lets a ``@traceable`` function rename itself and attach metadata/tags that
+    are only known at call time — so the dashboard shows ``agent:writer`` with
+    the actual instruction instead of a generic ``BaseWorker.run``.
+
+    Safe no-op when tracing is disabled, langsmith is missing, or no span is
+    active, so call sites never need to guard.
+    """
+    if os.environ.get("LANGCHAIN_TRACING_V2", "").lower() != "true":
+        return
+    try:
+        from langsmith import get_current_run_tree
+
+        run = get_current_run_tree()
+        if run is None:
+            return
+        if name:
+            run.name = name
+        if metadata:
+            # ``metadata`` is a property backed by ``extra["metadata"]``; direct
+            # assignment doesn't persist, so use the SDK's merge helper.
+            run.add_metadata(metadata)
+        if tags:
+            # add_tags appends without de-duping; drop dupes and ones already set.
+            existing = run.tags or []
+            new_tags = list(dict.fromkeys(t for t in tags if t not in existing))
+            if new_tags:
+                run.add_tags(new_tags)
+    except Exception:  # noqa: BLE001
+        logger.debug("annotate_run: no active langsmith run tree", exc_info=True)
+
+
 def get_traceable():
     """Return the ``@traceable`` decorator, or a no-op passthrough.
 

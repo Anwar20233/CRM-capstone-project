@@ -86,6 +86,18 @@ PROMOTION_TITLE_KEYWORDS: tuple[str, ...] = (
 )
 
 
+def role_signals_authority(role: str | None) -> bool:
+    """True if a job title contains a seniority/buying-authority keyword.
+
+    The shared rule for "is this person a decision maker" — used both to
+    auto-promote shadow entities and to flag BANT Authority on a deal's contacts.
+    """
+    if not role:
+        return False
+    lowered = role.casefold()
+    return any(keyword in lowered for keyword in PROMOTION_TITLE_KEYWORDS)
+
+
 def normalize_source_type(source_type: str) -> str:
     """Map an entry-point source label onto its stored column value."""
     return _SOURCE_TYPE_ALIASES.get(source_type, source_type)

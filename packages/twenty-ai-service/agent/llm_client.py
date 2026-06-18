@@ -196,3 +196,17 @@ async def call_llm_json(
         return schema.model_validate(result)
     except Exception as exc:  # noqa: BLE001
         raise LLMCallError(f"Failed to parse LLM response as {schema.__name__}: {exc}") from exc
+
+
+def get_chat_model(model: str | None = None):
+    """Return a configured LangChain chat model.
+
+    ``model`` (alias or raw slug) overrides the env default (``LLM_MODEL``).
+    Raises ``LLMCallError`` if the provider configuration is invalid.
+    """
+    try:
+        return _resolve_chat_model(model)
+    except LLMCallError:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise LLMCallError(f"Failed to build chat model: {exc}") from exc

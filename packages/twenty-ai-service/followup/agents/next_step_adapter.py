@@ -127,21 +127,36 @@ def _fallback_plan(opportunity_id: str, summary: str) -> NextStepPlan:
     )
 
 
+def _inbound_signal(request: NextStepRequest) -> dict[str, str] | None:
+    """The triggering email as a timeline activity, so engagement reflects it.
+
+    A deal whose buyer just emailed is actively engaged — folding the inbound
+    email into the activity timeline is what makes that true downstream (the
+    engagement clock resets to the email's arrival, not a stale CRM gap).
+    """
+    trigger = request.trigger
+    if trigger is None:
+        return None
+    summary = getattr(trigger, "subject", None) or getattr(trigger, "body", "") or "Inbound email"
+    received_at = getattr(trigger, "received_at", None) or datetime.now(timezone.utc).isoformat()
+    return {"type": "email", "date": received_at, "summary": summary}
+
+
 def _trigger_description(request: NextStepRequest) -> str:
-    """A distilled 'what made this run' — the orchestrator owns the raw trigger."""
+    """Raw trigger signal passed to the agent.
+
+    Passes the original email subject and body without any pre-classification.
+    The agent reads its own stage playbook and BANT framework and decides what
+    actions to take from the raw trigger — it is not told what 'type' of email
+    arrived or what 'urgency' a classifier assigned.
+    """
     lines: list[str] = []
     trigger = request.trigger
     if trigger is not None:
         if getattr(trigger, "subject", None):
             lines.append(f"Inbound email subject: {trigger.subject}")
         if getattr(trigger, "body", None):
-            lines.append(f"Message: {trigger.body}")
-    classification = request.classification or {}
-    if classification.get("type"):
-        lines.append(
-            f"Triage: type={classification.get('type')}, "
-            f"urgency={classification.get('urgency')}"
-        )
+            lines.append(f"Message body:\n{trigger.body}")
     if not lines and request.narrative:
         lines.append(request.narrative)
     return "\n".join(lines)
@@ -158,7 +173,7 @@ class OrchestratorNextStepAgent:
         deal = request.deal_context
         opportunity_id = str(deal.opportunity_id)
         try:
-            context = to_next_step_context(deal)
+            context = to_next_step_context(deal, inbound_signal=_inbound_signal(request))
             event = FollowUpEvent(
                 event_id=str(uuid.uuid4()),
                 idempotency_key=str(uuid.uuid4()),

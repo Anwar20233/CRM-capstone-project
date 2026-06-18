@@ -105,6 +105,37 @@ async def test_empty_proposed_times_finds_free_slots_when_opted_in():
         assert slot.available is True
 
 
+async def test_meeting_path_proposes_single_aligned_slot():
+    # The meeting path must offer ONE concrete time, anchored to the hour/half
+    # hour and a couple of business days out — never a cluster of near-now options.
+    reader = FakeCalendarReader()
+    result = await check_availability(
+        calendar_reader=reader,
+        owner_user_id="rep-1",
+        workspace_id="ws-1",
+        proposed_times=[],
+        find_slots_when_empty=True,
+    )
+    assert len(result.available_slots) == 1
+    start = datetime.fromisoformat(result.available_slots[0].start)
+    assert start.minute in (0, 30)
+    assert 9 <= start.hour < 17 and start.weekday() < 5
+
+
+def test_scheduling_window_skips_to_business_day_at_midnight():
+    # Lead is counted in BUSINESS days (weekends don't count) and the window
+    # starts at midnight so the first emitted candidate lands on 09:00, aligned.
+    from followup.calendar.availability import _scheduling_window
+
+    # Thursday 14:37 → +2 business days lands on the following Monday at 00:00.
+    thursday = _dt(2026, 6, 18, 14, 37)
+    start, end = _scheduling_window(thursday)
+    assert (start.hour, start.minute, start.second) == (0, 0, 0)
+    assert start.weekday() < 5
+    assert start.date() == _dt(2026, 6, 22).date()  # Monday
+    assert end > start
+
+
 async def test_some_time_free_yields_no_alternatives():
     # 10:00 is busy, 14:00 is free → not all_busy, no alternatives offered.
     reader = FakeCalendarReader(
