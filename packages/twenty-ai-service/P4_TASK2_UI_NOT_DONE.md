@@ -1,84 +1,85 @@
-# P4 Task 2 — UI (Not Started)
+# P4 Task 2 — UI (Drafting Agent UI branch)
 
-> **Status:** Not done — explicitly deferred from [P4 Task 2 Backend plan](.cursor/plans/p4_task_2_backend_82f506d6.plan.md).  
-> **Scope:** All `twenty-front` Follow-Up Intelligence UI work.
+> **Branch:** `drafting-agent-ui`  
+> **Reference:** Backend APIs in `twenty-ai-service` (see `P4_TASK2_BACKEND_SUMMARY.md`)
 
 ---
 
 ## Summary
 
-Backend Task 2 is implemented in `twenty-ai-service` (email workflows, accept/send API, e2e scripts). **No React UI exists yet** — `packages/twenty-front/src/modules/followup-intelligence/` has **0 files**.
+v1 Follow-Up Intelligence UI is scaffolded in `packages/twenty-front/src/modules/followup-intelligence/`. Opportunity records get a **Follow-Up** tab that polls pending drafts from `twenty-ai-service` (`:8001`).
 
 ---
 
-## Not done checklist
+## Done (v1)
 
 ### Module scaffold
 
-- [ ] Create `packages/twenty-front/src/modules/followup-intelligence/`
-- [ ] Barrel exports in `index.ts`
-- [ ] Wire module into opportunity record page / settings entry point
+- [x] Create `packages/twenty-front/src/modules/followup-intelligence/`
+- [x] Barrel exports in `index.ts`
+- [x] Wire module into opportunity record page (Follow-Up tab via `WidgetType.VIEW`)
 
-### Data layer (GraphQL / REST hooks)
+### Data layer (REST hooks)
 
-- [ ] `useFollowupActions(opportunityId)` — poll `GET /followup/actions?opportunity_id=…`
-- [ ] `useFollowupProfile(opportunityId)` — `GET /followup/profile/{id}` (optional narrative panel)
-- [ ] `acceptFollowupAction(actionId, userId)` — `POST /followup/actions/{id}/accept`
-- [ ] `rejectFollowupAction` / `reviseFollowupAction` hooks
-- [ ] Error + loading states; refetch after accept/reject
+- [x] `useFollowupActions(opportunityId)` — poll `GET /followup/actions?opportunity_id=…`
+- [x] `useFollowupProfile(opportunityId)` — `GET /followup/profile/{id}`
+- [x] `acceptFollowupAction` / `rejectFollowupAction` / `reviseFollowupAction`
+- [x] Error + loading states; refetch after accept/reject; 30s polling
 
 ### Components
 
-- [ ] **OpportunityHealthPanel** — risk score, open concerns, pending action count
-- [ ] **DraftPreview** — human-readable subject/body (not raw JSON)
-- [ ] Copy-to-clipboard for subject + body
-- [ ] **Accept** button → calls accept API, shows execution status
-- [ ] **Reject** / **Revise** buttons (chat loop)
-- [ ] Urgency badge + expiry countdown on pending actions
+- [x] **OpportunityHealthPanel** — risk score, pending action count, narrative
+- [x] **DraftPreview** — subject/body
+- [x] Copy-to-clipboard for subject / body / all
+- [x] **Accept** / **Reject** / **Revise** buttons
+- [x] Urgency badge + expiry countdown
 
-### UX flows (v1 spec)
+### UX flows (v1)
 
-- [ ] Rep opens opportunity → sees pending follow-up draft
-- [ ] Rep copies draft → Twenty email composer (manual send path)
-- [ ] Rep clicks Accept → CRM note / writer execution (backend already supports this)
-- [ ] In-app notification when new pending action arrives (polling or subscription)
+- [x] Rep opens opportunity → **Follow-Up** tab → sees pending draft
+- [x] Rep copies draft → manual send in Twenty email composer
+- [x] Rep clicks Accept → backend executes send via bridge
+- [x] Polling for new pending actions (30s interval)
 
-### Explicitly out of scope (v2+)
+### Infrastructure
+
+- [x] CORS on `twenty-ai-service` for browser → `:8001` calls
+- [x] `REACT_APP_AI_SERVICE_URL` (defaults to `http://<host>:8001`)
+
+---
+
+## Still out of scope (v2+)
 
 - [ ] One-click Send (`sendEmail` GraphQL) from DraftPreview
 - [ ] Proposal PDF attachment UI
-- [ ] `GET /followup/health/{id}` (branch uses `GET /followup/actions` instead)
+- [ ] `GET /followup/health/{id}` dedicated endpoint
+- [ ] Dedicated `WidgetType.FOLLOWUP_INTELLIGENCE` in GraphQL metadata (uses `VIEW` interim)
+- [ ] In-app toast when new pending action arrives (beyond polling refresh)
+- [ ] Unit tests for followup-intelligence components/hooks
 
 ---
 
-## Backend APIs ready for UI (already implemented)
+## How to run
+
+1. Start Twenty backend (`:3000`) and `twenty-ai-service` (`:8001`)
+2. Start frontend: `npx nx start twenty-front`
+3. Open any opportunity with pending actions
+4. Go to **Follow-Up** tab
+
+Optional env:
+
+```bash
+REACT_APP_AI_SERVICE_URL=http://127.0.0.1:8001
+```
+
+---
+
+## Backend APIs used
 
 | Endpoint | Purpose |
 |----------|---------|
-| `GET /followup/actions` | List pending actions for opportunity tab |
-| `POST /followup/actions/{id}/accept` | Accept → execute via writer |
-| `POST /followup/actions/{id}/reject` | Reject pending action |
-| `POST /followup/actions/{id}/revise` | Revise → re-run pipeline |
-| `GET /followup/profile/{opportunity_id}` | Profile narrative |
-
-Python service must be running (`AI_SERVICE_URL`, default `http://127.0.0.1:8001`).
-
----
-
-## Suggested order when UI work starts
-
-1. REST client + `useFollowupActions` hook
-2. `DraftPreview` + copy button (no accept yet)
-3. Accept button e2e against live backend
-4. OpportunityHealthPanel + polish
-5. Notifications (polling interval)
-
----
-
-## Test plan (UI, when built)
-
-- [ ] Opportunity with pending action renders DraftPreview fields
-- [ ] Copy puts subject/body on clipboard
-- [ ] Accept transitions action status; panel refetches
-- [ ] Reject removes action from pending list
-- [ ] No changes required in `twenty-ai-service` for basic v1 UI
+| `GET /followup/actions` | List pending actions |
+| `POST /followup/actions/{id}/accept` | Accept → execute |
+| `POST /followup/actions/{id}/reject` | Reject |
+| `POST /followup/actions/{id}/revise` | Revise → new draft |
+| `GET /followup/profile/{opportunity_id}` | Health narrative + risk |

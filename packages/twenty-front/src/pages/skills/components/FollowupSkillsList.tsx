@@ -10,8 +10,8 @@ import {
   type EditableSkill,
   type FollowupSkillKind,
   type FollowupSkillTab,
-  skillBelongsToTab,
-} from '~/pages/skills/constants/FollowupSkillCategories';
+} from '~/pages/skills/types/FollowupSkill';
+import { skillBelongsToTab } from '~/pages/skills/utils/skillBelongsToTab';
 
 type FollowupSkillsListProps = {
   tab: FollowupSkillTab;

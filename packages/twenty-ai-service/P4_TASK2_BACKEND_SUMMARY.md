@@ -156,7 +156,8 @@ Uses `AI_SERVICE_URL` from `packages/twenty-server/.env` (default `http://127.0.
 | **Ask AI `followup_stub`** | `agent/agent_registry.py` — chat delegation only; does not call REST pipeline |
 | **twenty-front UI** | Zero files; see `P4_TASK2_UI_NOT_DONE.md` |
 | **One-click send in UI** | Backend seam exists (`send_drafted_email`); no React button |
-| **Vector RAG** | Still file-based `FileRetriever` (Task 1 / Phase 1) |
+
+File-based RAG (`FileRetriever` + `followup/emailer/knowledge/`) is the intended approach — vector/pgvector RAG is not planned.
 
 ---
 
@@ -246,7 +247,7 @@ yarn nx run twenty-server:command cron:register:all
 
 - [`P4_TASK2_UI_NOT_DONE.md`](P4_TASK2_UI_NOT_DONE.md) — frontend checklist (not started)
 - [`followup/docs/P1_RISK_AGENT_INTEGRATION.md`](followup/docs/P1_RISK_AGENT_INTEGRATION.md) — P3 risk agent (PostgreSQL-backed)
-- Plan reference: `.cursor/plans/p4_task_2_backend_82f506d6.plan.md` (do not edit; historical spec)
+
 
 ---
 

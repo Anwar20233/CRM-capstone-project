@@ -58,12 +58,35 @@ def _action_summary(action: str, args: dict[str, Any]) -> str:
     return f"{action}{id_str}"
 
 
+def build_write_gate_node(auto_approve: bool = False):
+    """Return a write-gate node.
+
+    When ``auto_approve`` is set, the caller has already obtained the user's
+    approval (e.g. a follow-up action the rep explicitly accepted), so the gate
+    never interrupts — it always passes through. This is required when the writer
+    runs nested inside another graph (the follow-up accept pipeline), where a
+    LangGraph ``interrupt()`` would propagate up as an exception instead of a
+    resumable pause.
+    """
+
+    def write_gate_node(state: dict) -> dict:
+        if auto_approve:
+            return {}  # pre-approved — let ToolNode execute every call.
+        return _gate(state)
+
+    return write_gate_node
+
+
 def write_gate_node(state: dict) -> dict:
     """LangGraph node: gate tier-3 write calls behind a human interrupt.
 
     Returns an empty dict (no state change) to let ToolNode execute, OR
     injects rejection ToolMessages and returns them so the loop stays valid.
     """
+    return _gate(state)
+
+
+def _gate(state: dict) -> dict:
     messages = state.get("messages", [])
     if not messages:
         return {}

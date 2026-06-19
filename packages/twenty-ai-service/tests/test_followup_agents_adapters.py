@@ -269,6 +269,111 @@ def test_drafting_adapter_injects_calendar_slots_into_prompt_context():
     asyncio.run(_run())
 
 
+def test_drafting_adapter_masks_pii_into_prompt_and_unmasks_output():
+    """The drafter never sees the real contact: name/email are masked into the
+    prompt context, and the masked draft is unmasked back to the real name."""
+
+    async def _run():
+        from followup.emailer.agents.drafting.schemas import (
+            DraftingAgentResult,
+            DraftType,
+            EmailDraft,
+        )
+
+        captured: dict = {}
+
+        async def fake_run(*, context, **kwargs):
+            # What the cloud LLM would see — must NOT carry the real contact.
+            captured["contact_name"] = context.contact.name
+            captured["contact_email"] = context.contact.email
+            # The LLM addresses the masked handle; we echo it back in the body.
+            return DraftingAgentResult(
+                email_drafts=[
+                    EmailDraft(
+                        subject=f"Re: timeline for {context.contact.name}",
+                        body=f"Hi {context.contact.name}, reaching out.",
+                        draft_type=DraftType.FOLLOW_UP_EMAIL,
+                    )
+                ],
+                proposal_drafts=[],
+                reasoning="ok",
+                skipped=False,
+            )
+
+        import followup.agents.drafting_adapter as mod
+
+        original = mod.run_drafting_agent
+        mod.run_drafting_agent = fake_run
+        try:
+            request = DraftRequest(
+                deal_context=make_deal(),
+                intent="Reassure on timeline",
+                recipient_email="dana@acme.com",
+            )
+            result = await OrchestratorDraftingAgent().run(request)
+        finally:
+            mod.run_drafting_agent = original
+
+        # Inbound: the LLM saw a handle, never the real name or email.
+        assert captured["contact_name"] != "Dana Buyer"
+        assert "person" in captured["contact_name"].lower()
+        assert captured["contact_email"] != "dana@acme.com"
+        # Outbound: the rep-facing draft has the real name restored.
+        assert "Dana Buyer" in result.body
+        assert "Dana Buyer" in result.subject
+        assert "person001" not in result.body.lower()
+
+    asyncio.run(_run())
+
+
+def test_next_step_adapter_masks_pii_and_unmasks_recommendations():
+    """The planner sees masked names; the plan the rep reviews has them restored."""
+
+    async def _run():
+        from followup.contracts.next_step import NextStepRequest
+        from followup.next_step.agents.next_step.schemas import NextStepAgentResult
+
+        captured: dict = {}
+
+        async def fake_run(context, event, *, trigger_context, **kwargs):
+            captured["contact_name"] = context.contacts[0].name
+            captured["trigger_context"] = trigger_context
+            # The planner references the masked handle in its recommendation.
+            rec = _recommendation("send_email")
+            rec = rec.model_copy(
+                update={"description": f"Email {context.contacts[0].name} on timeline."}
+            )
+            return NextStepAgentResult(
+                recommended_actions=[rec],
+                summary_reasoning="Plan ready.",
+            )
+
+        import followup.agents.next_step_adapter as mod
+
+        original = mod.run_next_step_agent
+        mod.run_next_step_agent = fake_run
+        try:
+            trigger = SimpleNamespace(
+                subject="Re: proposal",
+                body="Hi, this is Dana Buyer following up.",
+                received_at="2026-06-18T10:00:00+00:00",
+            )
+            request = NextStepRequest(
+                deal_context=make_deal(), trigger_type="email_signal", trigger=trigger
+            )
+            plan = await OrchestratorNextStepAgent().run(request)
+        finally:
+            mod.run_next_step_agent = original
+
+        # Inbound: planner saw masked name in both the context and the raw email.
+        assert captured["contact_name"] != "Dana Buyer"
+        assert "Dana Buyer" not in captured["trigger_context"]
+        # Outbound: the plan step the rep reviews has the real name restored.
+        assert any("Dana Buyer" in step.intent for step in plan.steps)
+
+    asyncio.run(_run())
+
+
 def test_run_tasks_meeting_request_includes_calendar_in_state():
     async def _run():
         from followup.contracts.next_step import NextStepPlan, PlannedStep

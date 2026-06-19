@@ -30,7 +30,7 @@ from langgraph.prebuilt import ToolNode
 from agent.crm_tools import build_crm_tools
 from agent.stubs.safety_tools import _ACTION_TIER_MAP, build_utility_tools
 from agent.tool_scope import WRITER_SCOPE
-from agent.workers.write_gate import write_gate_node
+from agent.workers.write_gate import build_write_gate_node
 
 
 # ---------------------------------------------------------------------------
@@ -103,10 +103,12 @@ def _has_tier3_write(message: AIMessage) -> bool:
 
 def _route_after_llm(
     state: dict,
-) -> Literal["write_gate", "tools", "__end__"]:
+) -> Literal["write_gate", "tools", "auto_link"]:
     last = state["messages"][-1]
     if not isinstance(last, AIMessage) or not last.tool_calls:
-        return END
+        # Terminal — run the deterministic link guard before ending, so a note/
+        # task the writer created but forgot to link still gets its target rows.
+        return "auto_link"
     if _has_tier3_write(last):
         return "write_gate"
     return "tools"
@@ -130,6 +132,7 @@ def build_writer_graph(
     *,
     checkpointer=None,
     pii_map=None,
+    auto_approve: bool = False,
 ):
     """Compile and return the writer StateGraph.
 
@@ -203,20 +206,37 @@ def build_writer_graph(
 
         return {"messages": [ai_msg]}
 
+    # -- auto-link node ----------------------------------------------------
+    # Deterministic guard: after the writer is done, ensure every note/task it
+    # created links to the entities the instruction named (one join row each),
+    # regardless of whether the LLM remembered to issue the create_*_target calls.
+
+    async def auto_link_node(state: dict) -> dict:
+        from agent.workers.auto_link import reconcile_targets
+
+        try:
+            await reconcile_targets(state["messages"], pii_map)
+        except Exception:  # noqa: BLE001 — never let linking break a completed write
+            from agent.progress import emit_progress
+
+            emit_progress({"type": "log", "message": "auto_link guard failed"})
+        return {}
+
     # -- Assemble graph ----------------------------------------------------
 
     tool_node = ToolNode(all_tools)
 
     builder = StateGraph(MessagesState)
     builder.add_node("llm", llm_node)
-    builder.add_node("write_gate", write_gate_node)
+    builder.add_node("write_gate", build_write_gate_node(auto_approve))
     builder.add_node("tools", tool_node)
+    builder.add_node("auto_link", auto_link_node)
 
     builder.set_entry_point("llm")
     builder.add_conditional_edges(
         "llm",
         _route_after_llm,
-        {"write_gate": "write_gate", "tools": "tools", END: END},
+        {"write_gate": "write_gate", "tools": "tools", "auto_link": "auto_link"},
     )
     builder.add_conditional_edges(
         "write_gate",
@@ -224,6 +244,7 @@ def build_writer_graph(
         {"tools": "tools", "llm": "llm"},
     )
     builder.add_edge("tools", "llm")
+    builder.add_edge("auto_link", END)
 
     # Name the graph so traces read "writer-agent" instead of a generic
     # "LangGraph" — otherwise reader/writer/followup graphs are indistinguishable.
