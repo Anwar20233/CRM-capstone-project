@@ -18,8 +18,6 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, AsyncIterator
 
-import asyncpg
-
 from followup.contracts.risk import (
     DatabaseRiskAgent,
     RiskAgent,
@@ -166,7 +164,9 @@ class DailyRiskSweep:
         self._pending_actions = pending_action_repository or PendingActionRepository(executor)
         self._limit = limit
 
-    async def discover_active_opportunities(self) -> list[OpportunityCandidate]:
+    async def discover_active_opportunities(
+        self, *, unprocessed_only: bool = False
+    ) -> list[OpportunityCandidate]:
         schema_override = os.getenv("FOLLOWUP_RISK_WORKSPACE_SCHEMA_OVERRIDE")
         if schema_override:
             workspace_id = _as_uuid(
@@ -177,6 +177,7 @@ class DailyRiskSweep:
                 workspace_schema=schema_override,
                 workspace_id=workspace_id,
                 limit=self._limit,
+                unprocessed_only=unprocessed_only,
             )
 
         async with _acquire(self._executor) as conn:
@@ -189,22 +190,62 @@ class DailyRiskSweep:
                 '''
             )
 
+        # core."dataSource" is the production source of (workspaceId → schema),
+        # but a dev/seeded database can have it empty while the workspace schemas
+        # exist. Fall back to information_schema so the sweep still finds deals.
+        schema_pairs: list[tuple[str, uuid.UUID]] = [
+            (ds["schema"], _as_uuid(ds["workspaceId"])) for ds in data_sources
+        ]
+        if not schema_pairs:
+            schema_pairs = await self._discover_schema_pairs_fallback()
+
         candidates: list[OpportunityCandidate] = []
-        for data_source in data_sources:
+        for schema, workspace_id in schema_pairs:
             remaining = max(self._limit - len(candidates), 0)
             if remaining == 0:
                 break
-            schema = data_source["schema"]
             if not _TRUSTED_WORKSPACE_SCHEMA.fullmatch(schema):
                 continue
             candidates.extend(
                 await self._discover_schema_opportunities(
                     workspace_schema=schema,
-                    workspace_id=_as_uuid(data_source["workspaceId"]),
+                    workspace_id=workspace_id,
                     limit=remaining,
+                    unprocessed_only=unprocessed_only,
                 )
             )
         return candidates
+
+    async def _discover_schema_pairs_fallback(self) -> list[tuple[str, uuid.UUID]]:
+        """Resolve (schema → workspace_id) without core."dataSource".
+
+        Scans information_schema for ``workspace_*`` schemas that own an
+        ``opportunity`` table. When exactly one workspace exists (the common
+        dev/seed case) every schema is attributed to it so stored scores and
+        alerts carry the real workspace_id; otherwise we cannot map a schema to
+        a workspace and fall back to the zero UUID.
+        """
+        async with _acquire(self._executor) as conn:
+            schema_rows = await conn.fetch(
+                """
+                SELECT table_schema
+                FROM information_schema.tables
+                WHERE table_schema LIKE 'workspace\\_%'
+                  AND table_name = 'opportunity'
+                GROUP BY table_schema
+                ORDER BY table_schema
+                """
+            )
+            workspaces = await conn.fetch("SELECT id FROM core.workspace")
+
+        sole_workspace_id = (
+            _as_uuid(workspaces[0]["id"]) if len(workspaces) == 1 else DEFAULT_WORKSPACE_ID
+        )
+        return [
+            (row["table_schema"], sole_workspace_id)
+            for row in schema_rows
+            if _TRUSTED_WORKSPACE_SCHEMA.fullmatch(row["table_schema"])
+        ]
 
     async def _discover_schema_opportunities(
         self,
@@ -212,11 +253,35 @@ class DailyRiskSweep:
         workspace_schema: str,
         workspace_id: uuid.UUID,
         limit: int,
+        unprocessed_only: bool = False,
     ) -> list[OpportunityCandidate]:
         schema = _quote_schema(workspace_schema)
-        async with _acquire(self._executor) as conn:
-            rows = await conn.fetch(
-                f'''
+        if unprocessed_only:
+            # Only fetch opportunities that have never been scored OR whose
+            # CRM record was updated after their last risk score — stale scores
+            # are a miss, so we re-evaluate rather than silently skipping them.
+            query = f'''
+                SELECT o.id, o.name, o.stage::text AS stage
+                FROM {schema}."opportunity" o
+                LEFT JOIN (
+                    SELECT opportunity_id, MAX(assessed_at) AS last_assessed_at
+                    FROM followup_agent.risk_daily_scores
+                    GROUP BY opportunity_id
+                ) rds ON rds.opportunity_id = o.id
+                WHERE o."deletedAt" IS NULL
+                  AND (
+                    o.stage IS NULL
+                    OR upper(o.stage::text) <> ALL($1::text[])
+                  )
+                  AND (
+                    rds.last_assessed_at IS NULL
+                    OR o."updatedAt" > rds.last_assessed_at
+                  )
+                ORDER BY o."updatedAt" ASC NULLS FIRST
+                LIMIT $2
+            '''
+        else:
+            query = f'''
                 SELECT id, name, stage::text AS stage
                 FROM {schema}."opportunity"
                 WHERE "deletedAt" IS NULL
@@ -226,10 +291,9 @@ class DailyRiskSweep:
                   )
                 ORDER BY "updatedAt" ASC NULLS FIRST
                 LIMIT $2
-                ''',
-                list(_TERMINAL_STAGES),
-                limit,
-            )
+            '''
+        async with _acquire(self._executor) as conn:
+            rows = await conn.fetch(query, list(_TERMINAL_STAGES), limit)
 
         candidates: list[OpportunityCandidate] = []
         for row in rows:
@@ -250,8 +314,14 @@ class DailyRiskSweep:
     async def run(
         self,
         opportunities: list[OpportunityCandidate] | None = None,
+        *,
+        unprocessed_only: bool = False,
     ) -> SweepSummary:
-        candidates = opportunities if opportunities is not None else await self.discover_active_opportunities()
+        candidates = (
+            opportunities
+            if opportunities is not None
+            else await self.discover_active_opportunities(unprocessed_only=unprocessed_only)
+        )
         results = [await self._score_one(candidate) for candidate in candidates]
         return SweepSummary(
             scanned=len(candidates),
@@ -355,6 +425,23 @@ async def run_daily_sweep() -> SweepSummary:
             await apply_migrations(conn)
         sweep = DailyRiskSweep(database)
         return await sweep.run()
+    finally:
+        await database.close()
+
+
+async def run_smart_sweep() -> SweepSummary:
+    """Score only opportunities that are new or updated since their last score.
+
+    Use this instead of ``run_daily_sweep`` for incremental runs — it skips
+    deals whose CRM record hasn't changed since they were last evaluated, so
+    the sweep is fast even with many opportunities in the database.
+    """
+    database = await Database.connect(_database_url())
+    try:
+        async with database.pool.acquire() as conn:
+            await apply_migrations(conn)
+        sweep = DailyRiskSweep(database)
+        return await sweep.run(unprocessed_only=True)
     finally:
         await database.close()
 
