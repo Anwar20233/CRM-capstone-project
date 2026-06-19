@@ -27,6 +27,12 @@ from followup.api.models import (
     AcceptRequest,
     AcceptResult,
     DirectFollowUpRequest,
+    EmailFetchRequest,
+    EmailFetchResult,
+    EmailReviewRequest,
+    EmailReviewResult,
+    EmailSendOutboxRequest,
+    EmailSendOutboxResult,
     FollowUpEventRequest,
     FollowUpRunResult,
     PendingActionResponse,
@@ -357,6 +363,83 @@ async def reject_action(
     await deps.pipeline.pending_actions.save(action)
 
     return {"action_id": action_id, "status": "rejected"}
+
+
+# ===========================================================================
+# Email monitoring workflows (Phase 1 fetch, Phase 2 review, outbox send)
+# ===========================================================================
+
+
+@router.post("/workflows/email/fetch", response_model=EmailFetchResult)
+async def workflow_email_fetch(
+    request: EmailFetchRequest,
+    deps: OrchestratorDeps = Depends(get_deps),
+) -> EmailFetchResult:
+    """Phase 1 — fetch inbound CRM messages into the queue (no LLM)."""
+    from datetime import datetime
+
+    from followup.store.repositories import InboundEmailRepository
+    from followup.workflows.email.fetch import fetch_inbound_emails
+
+    since = None
+    if request.since:
+        since = datetime.fromisoformat(request.since.replace("Z", "+00:00"))
+
+    result = await fetch_inbound_emails(
+        InboundEmailRepository(deps.pipeline.executor),
+        workspace_id=request.workspace_id,
+        since=since,
+    )
+    return EmailFetchResult(
+        fetched=result.fetched,
+        enqueued=result.enqueued,
+        skipped_duplicate=result.skipped_duplicate,
+    )
+
+
+@router.post("/workflows/email/review", response_model=EmailReviewResult)
+async def workflow_email_review(
+    request: EmailReviewRequest,
+    deps: OrchestratorDeps = Depends(get_deps),
+    graph: Any = Depends(get_followup_graph),
+) -> EmailReviewResult:
+    """Phase 2 — process queued inbound emails through the follow-up pipeline."""
+    from followup.store.repositories import InboundEmailRepository
+    from followup.workflows.email.review import review_pending_emails
+
+    result = await review_pending_emails(
+        InboundEmailRepository(deps.pipeline.executor),
+        graph,
+        workspace_id=request.workspace_id,
+        batch_size=request.batch_size,
+    )
+    return EmailReviewResult(
+        claimed=result.claimed,
+        processed=result.processed,
+        skipped=result.skipped,
+        failed=result.failed,
+    )
+
+
+@router.post("/workflows/email/send-outbox", response_model=EmailSendOutboxResult)
+async def workflow_email_send_outbox(
+    request: EmailSendOutboxRequest,
+    deps: OrchestratorDeps = Depends(get_deps),
+) -> EmailSendOutboxResult:
+    """Send accepted draft emails from the outbox (idempotent)."""
+    from followup.workflows.email.send_outbox import send_outbox_batch
+
+    result = await send_outbox_batch(
+        deps.pipeline.pending_actions,
+        workspace_id=request.workspace_id,
+        batch_size=request.batch_size,
+    )
+    return EmailSendOutboxResult(
+        claimed=result.claimed,
+        sent=result.sent,
+        skipped=result.skipped,
+        failed=result.failed,
+    )
 
 
 # ===========================================================================

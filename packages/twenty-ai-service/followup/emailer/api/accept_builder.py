@@ -1,5 +1,8 @@
 from followup.emailer.agents.drafting.schemas import EmailDraft, ProposalDraft, ProposalSection
 
+# Deprecated: v1 accept now routes through FollowupActionExecutor in
+# followup/api/execution.py (build_send_email_args / send_drafted_email).
+
 
 def format_proposal_sections(draft: ProposalDraft) -> str:
     return "\n\n".join(

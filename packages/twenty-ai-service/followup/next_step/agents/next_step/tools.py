@@ -16,6 +16,7 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 
+from followup.knowledge import skill_store
 from followup.next_step.context.schemas import DealContext
 
 _KNOWLEDGE_DIR = Path(__file__).resolve().parents[2] / "knowledge"
@@ -23,57 +24,127 @@ _PLAYBOOKS_DIR = _KNOWLEDGE_DIR / "playbooks"
 
 
 # ---------------------------------------------------------------------------
-# LangChain tools — the LLM calls these to read knowledge files
+# Planning-skill discovery — the agent lists what guidance exists at run time
+# and loads the skills it deems relevant, instead of being told to read a fixed
+# playbook for the deal's exact stage. DB skills (edited in the Skills tab) take
+# precedence; the bundled markdown below is the fallback default catalog.
 # ---------------------------------------------------------------------------
 
 
+@dataclass(frozen=True)
+class _DefaultPlannerSkill:
+    name: str
+    label: str
+    description: str
+    path: Path
+
+
+_DEFAULT_PLANNER_SKILLS: list[_DefaultPlannerSkill] = [
+    _DefaultPlannerSkill(
+        f"{skill_store.PLAYBOOK_PREFIX}discovery",
+        "Discovery stage playbook",
+        "Goals, exit criteria and next actions for early discovery deals.",
+        _PLAYBOOKS_DIR / "Discovery.md",
+    ),
+    _DefaultPlannerSkill(
+        f"{skill_store.PLAYBOOK_PREFIX}qualification",
+        "Qualification stage playbook",
+        "Confirming fit, BANT, and advancing qualified deals.",
+        _PLAYBOOKS_DIR / "Qualification.md",
+    ),
+    _DefaultPlannerSkill(
+        f"{skill_store.PLAYBOOK_PREFIX}proposal",
+        "Proposal stage playbook",
+        "Driving a sent proposal to a decision.",
+        _PLAYBOOKS_DIR / "Proposal.md",
+    ),
+    _DefaultPlannerSkill(
+        f"{skill_store.PLAYBOOK_PREFIX}negotiation",
+        "Negotiation stage playbook",
+        "Resolving objections (price, terms, legal) and getting to signature.",
+        _PLAYBOOKS_DIR / "Negotiation.md",
+    ),
+    _DefaultPlannerSkill(
+        f"{skill_store.PLAYBOOK_PREFIX}closed",
+        "Closed stage playbook",
+        "Handling won/lost deals and post-close follow-through.",
+        _PLAYBOOKS_DIR / "Closed.md",
+    ),
+    _DefaultPlannerSkill(
+        skill_store.BANT_SKILL_NAME,
+        "BANT qualification framework",
+        "How to read Budget/Authority/Need/Timeline gaps and act on each.",
+        _KNOWLEDGE_DIR / "bant.md",
+    ),
+    _DefaultPlannerSkill(
+        skill_store.BEST_PRACTICES_SKILL_NAME,
+        "Sales best practices",
+        "Engagement cadence, multi-threading, task hygiene, action specificity.",
+        _KNOWLEDGE_DIR / "best_practices.md",
+    ),
+]
+
+_DEFAULT_PLANNER_BY_NAME = {skill.name: skill for skill in _DEFAULT_PLANNER_SKILLS}
+
+
+def _planner_catalog() -> list[tuple[str, str, str]]:
+    """Available planning skills as (name, label, description).
+
+    Union of the company's DB skills (which win) and the bundled defaults, so
+    new skills are discovered the moment they are added in the Skills tab.
+    """
+    catalog: dict[str, tuple[str, str, str]] = {
+        skill.name: (skill.name, skill.label, skill.description)
+        for skill in _DEFAULT_PLANNER_SKILLS
+    }
+    for prefix in skill_store.PLANNER_DB_PREFIXES:
+        for row in skill_store._run_sync(skill_store.fetch_skills_by_prefix(prefix)):
+            description = row.description or _DEFAULT_PLANNER_BY_NAME.get(
+                row.name,
+                _DefaultPlannerSkill(row.name, row.label, "", Path()),
+            ).description
+            catalog[row.name] = (row.name, row.label, description)
+    return sorted(catalog.values(), key=lambda item: item[1].lower())
+
+
+def planner_catalog_text() -> str:
+    """Human-readable catalog injected into the agent's context at run time."""
+    entries = _planner_catalog()
+    if not entries:
+        return "No planning skills are currently available."
+    return "\n".join(f"- {name} — {label}: {description}" for name, label, description in entries)
+
+
 @tool
-def read_stage_playbook(stage: str) -> str:
-    """Read the full sales playbook for a pipeline stage.
+def list_planning_skills() -> str:
+    """List the planning skills available to you (name, label, description).
+
+    Call this first to discover what guidance exists for this workspace, then
+    read the skills relevant to the current deal with read_planning_skill.
+    """
+    return planner_catalog_text()
+
+
+@tool
+def read_planning_skill(name: str) -> str:
+    """Read the full content of a planning skill by its exact name.
 
     Args:
-        stage: Pipeline stage name, e.g. Discovery, Qualification, Proposal,
-               Negotiation. Case-insensitive fallback is applied.
-
-    Returns:
-        Markdown playbook: stage goal, exit criteria, recommended next actions
-        by signal, and common mistakes to avoid.
+        name: A skill name from list_planning_skills, e.g.
+              'followup-playbook-negotiation' or 'followup-bant'.
     """
-    path = _PLAYBOOKS_DIR / f"{stage}.md"
-    if path.exists():
-        return path.read_text(encoding="utf-8")
-    for p in sorted(_PLAYBOOKS_DIR.glob("*.md")):
-        if p.stem.lower() == stage.lower():
-            return p.read_text(encoding="utf-8")
-    available = ", ".join(p.stem for p in sorted(_PLAYBOOKS_DIR.glob("*.md")))
-    return f"No playbook found for stage '{stage}'. Available stages: {available}."
+    content = skill_store.get_skill_content(name)
+    if content:
+        return content
+    default = _DEFAULT_PLANNER_BY_NAME.get(name)
+    if default and default.path.exists():
+        return default.path.read_text(encoding="utf-8")
+    return f"No planning skill named '{name}'. Available:\n{planner_catalog_text()}"
 
 
-@tool
-def read_bant_framework() -> str:
-    """Read the BANT qualification framework.
-
-    Returns the full BANT framework: what each dimension (Budget, Authority,
-    Need, Timeline) means, the gap signals to look for in deal context, and
-    the recommended action for each missing or partial dimension.
-    """
-    path = _KNOWLEDGE_DIR / "bant.md"
-    return path.read_text(encoding="utf-8") if path.exists() else "BANT framework not available."
-
-
-@tool
-def read_best_practices() -> str:
-    """Read general B2B sales best practices.
-
-    Returns guidance on engagement cadence, multi-threading, task hygiene,
-    evidence-based recommendations, and action specificity.
-    """
-    path = _KNOWLEDGE_DIR / "best_practices.md"
-    return path.read_text(encoding="utf-8") if path.exists() else "Best practices not available."
-
-
-# Ordered list of tools available to the planning agent.
-PLANNER_TOOLS = [read_stage_playbook, read_bant_framework, read_best_practices]
+# Ordered list of tools available to the planning agent. Discovery-first: the
+# agent lists the available skills and loads the relevant ones itself.
+PLANNER_TOOLS = [list_planning_skills, read_planning_skill]
 
 
 # ---------------------------------------------------------------------------
@@ -203,9 +274,9 @@ def compute_engagement_signals(context: DealContext) -> EngagementSignals:
 
 
 __all__ = [
-    "read_stage_playbook",
-    "read_bant_framework",
-    "read_best_practices",
+    "list_planning_skills",
+    "read_planning_skill",
+    "planner_catalog_text",
     "PLANNER_TOOLS",
     "BANTGap",
     "BANTSignals",

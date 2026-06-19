@@ -17,6 +17,7 @@ from followup.store.repositories import (
     PendingActionRepository,
     ProfileFactRepository,
     ProfileRelationshipRepository,
+    RiskDailyScoreRepository,
     RunLogRepository,
     ShadowEntityRepository,
     _dsn,
@@ -312,8 +313,10 @@ async def test_expire_stale_bulk_update(conn, opportunity_id, workspace_id):
     await repo.create({**base, "expires_at": past})
     fresh = await repo.create({**base, "expires_at": future})
 
-    count = await repo.expire_stale(_now())
-    assert count == 2
+    before = await repo.list_pending(opportunity_id)
+    assert len(before) == 3
+
+    await repo.expire_stale(_now())
 
     still_pending = await repo.list_pending(opportunity_id)
     assert {a.id for a in still_pending} == {fresh.id}
@@ -342,3 +345,39 @@ async def test_run_log_roundtrip(conn, opportunity_id, workspace_id):
     saved = await repo.save(created)
     assert saved.status == "completed"
     assert saved.duration_ms == 1234
+
+
+async def test_risk_daily_score_roundtrip(conn, opportunity_id, workspace_id):
+    repo = RiskDailyScoreRepository(conn)
+    older = _now() - timedelta(minutes=5)
+    newer = _now()
+    await repo.create(
+        {
+            "opportunity_id": opportunity_id,
+            "workspace_id": workspace_id,
+            "risk_score": 0.24,
+            "risk_level": "low",
+            "top_factors": [{"factor_type": "engagement_gap"}],
+            "assessment": {"risk_score": 0.24, "risk_level": "low"},
+            "assessed_at": older,
+        }
+    )
+    latest = await repo.create(
+        {
+            "opportunity_id": opportunity_id,
+            "workspace_id": workspace_id,
+            "risk_score": 0.82,
+            "risk_level": "high",
+            "top_factors": [{"factor_type": "sentiment_decline"}],
+            "assessment": {"risk_score": 0.82, "risk_level": "high"},
+            "assessed_at": newer,
+        }
+    )
+
+    fetched = await repo.get_latest(opportunity_id)
+
+    assert fetched is not None
+    assert fetched.id == latest.id
+    assert fetched.risk_score == 0.82
+    assert fetched.risk_level == "high"
+    assert fetched.top_factors == [{"factor_type": "sentiment_decline"}]

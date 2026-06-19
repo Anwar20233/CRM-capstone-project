@@ -60,7 +60,7 @@ _ACTION_TIER_MAP: dict[str, dict[str, Any]] = {
 
     # ── Tier 2 — medium risk, show diff. ────────────────────────────────
     "create_person": {
-        "tier": 2,
+        "tier": 1,
         "required_fields": ["firstName", "lastName","companyId"],
         "escalated": False,
     },
@@ -361,7 +361,7 @@ def _parse_iso_date(value: Any) -> date | None:
         return None
 
 
-async def _resolve_date(raw: str, timezone: str = "Asia/Riyadh") -> dict:
+async def _resolve_date(text: str, timezone: str = "Asia/Riyadh") -> dict:
     """Resolve a relative date expression to an absolute ISO date.
 
     Pure deterministic logic (no LLM); uses a hardcoded map and returns an error
@@ -371,15 +371,16 @@ async def _resolve_date(raw: str, timezone: str = "Asia/Riyadh") -> dict:
     *timezone* (default ``Asia/Riyadh``) is accepted for parity with the real
     resolver; the stub map is timezone-agnostic.
     """
-    normalised = raw.strip().lower()
+    normalised = text.strip().lower()
     result = _DATE_MAP.get(normalised)
 
     if result is not None:
         return {
             "ok": True,
             "data": {
+                "iso": result,
                 "resolved": result[:10],
-                "original_phrase": raw,
+                "original_phrase": text,
                 "resolution_anchor": _RESOLUTION_ANCHOR,
             },
         }
@@ -388,7 +389,7 @@ async def _resolve_date(raw: str, timezone: str = "Asia/Riyadh") -> dict:
         "ok": False,
         "error": {
             "code": "UNKNOWN_DATE_PHRASE",
-            "message": f"Cannot resolve '{raw}' to an absolute date",
+            "message": f"Cannot resolve '{text}' to an absolute date",
         },
     }
 

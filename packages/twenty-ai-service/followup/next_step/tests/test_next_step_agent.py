@@ -5,8 +5,9 @@ and require no API keys. The tool-calling gather phase (Phase 1) and structured
 output phase (Phase 2) are replaced by a single function that returns a
 NextStepLLMOutput directly.
 
-Knowledge tools (read_stage_playbook, read_bant_framework, read_best_practices)
-are pure file reads and are exercised independently in the tool tests below.
+Planning-skill discovery tools (list_planning_skills, read_planning_skill) are
+exercised independently in the tool tests below, with the DB mocked so they fall
+back to the bundled defaults.
 """
 
 from __future__ import annotations
@@ -30,9 +31,9 @@ from followup.next_step.agents.next_step.scoring import score_recommendations
 from followup.next_step.agents.next_step.tools import (
     compute_bant_gaps,
     compute_engagement_signals,
-    read_bant_framework,
-    read_best_practices,
-    read_stage_playbook,
+    list_planning_skills,
+    planner_catalog_text,
+    read_planning_skill,
 )
 from followup.next_step.context.schemas import DealContext
 from followup.next_step.events.schemas import FollowUpEvent, FollowUpEventType
@@ -404,33 +405,41 @@ async def test_ineligible_event_bypassed_when_trigger_context_provided(monkeypat
 # ---------------------------------------------------------------------------
 
 
-def test_read_stage_playbook_returns_content_for_known_stage():
-    result = read_stage_playbook.invoke({"stage": "Discovery"})
-    assert "Discovery" in result
-    assert len(result) > 100
+@pytest.fixture
+def _no_db_skills(monkeypatch):
+    """Force the bundled-file fallback so planner tests don't depend on the DB."""
+    from followup.knowledge import skill_store
+
+    async def _empty(*_args, **_kwargs):
+        return []
+
+    monkeypatch.setattr(skill_store, "fetch_skills_by_prefix", _empty)
+    monkeypatch.setattr(skill_store, "get_skill_content", lambda *_a, **_k: None)
 
 
-def test_read_stage_playbook_case_insensitive():
-    lower = read_stage_playbook.invoke({"stage": "proposal"})
-    upper = read_stage_playbook.invoke({"stage": "Proposal"})
-    assert lower == upper
+def test_planner_catalog_lists_default_skills(_no_db_skills):
+    catalog = planner_catalog_text()
+    # Defaults include the stage playbooks plus BANT and best practices.
+    assert "followup-playbook-negotiation" in catalog
+    assert "followup-bant" in catalog
+    assert "followup-best-practices" in catalog
 
 
-def test_read_stage_playbook_unknown_stage_returns_available_list():
-    result = read_stage_playbook.invoke({"stage": "NonExistentStage"})
-    assert "No playbook found" in result
-    assert "Available stages" in result
+def test_list_planning_skills_tool_returns_catalog(_no_db_skills):
+    result = list_planning_skills.invoke({})
+    assert "followup-playbook-discovery" in result
 
 
-def test_read_bant_framework_returns_content():
-    result = read_bant_framework.invoke({})
+def test_read_planning_skill_returns_bundled_content(_no_db_skills):
+    result = read_planning_skill.invoke({"name": "followup-bant"})
     assert "Budget" in result
     assert "Authority" in result
 
 
-def test_read_best_practices_returns_content():
-    result = read_best_practices.invoke({})
-    assert len(result) > 50
+def test_read_planning_skill_unknown_lists_available(_no_db_skills):
+    result = read_planning_skill.invoke({"name": "followup-planner-nope"})
+    assert "No planning skill named" in result
+    assert "followup-playbook-discovery" in result
 
 
 # ---------------------------------------------------------------------------
