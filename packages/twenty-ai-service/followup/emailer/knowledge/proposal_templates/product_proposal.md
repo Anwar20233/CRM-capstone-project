@@ -14,6 +14,15 @@ Confident, structured, and customer-centric.
 - **Implementation Overview:** High-level rollout phases and timeline
 - **Investment:** Reference deal amount or pricing range when available
 - **Next Steps:** Decision timeline and recommended actions
+- **Sign-off:** Professional closing with rep placeholder and BeamData branding
+
+## Sign-off
+End every draft with this exact closing block (keep the rep name placeholder unless a sender name is in context):
+```
+Best regards,
+[Your Name]
+BeamData
+```
 
 ## Placeholders
 Use deal context to replace:
@@ -25,4 +34,5 @@ Use deal context to replace:
 
 ## Do not
 - Promise features not supported by catalog snippets
-- Leave [INSERT] style placeholders in output
+- Leave bracket placeholders except `[Your Name]` or `[INSERT NAME]` in the sign-off
+- Omit the BeamData sign-off line

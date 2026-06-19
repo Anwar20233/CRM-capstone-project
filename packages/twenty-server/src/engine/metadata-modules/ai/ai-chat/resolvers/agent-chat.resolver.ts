@@ -113,6 +113,8 @@ export class AgentChatResolver {
     @Args('messageId', { type: () => UUIDScalarType }) messageId: string,
     @Args('browsingContext', { type: () => GraphQLJSON, nullable: true })
     browsingContext: BrowsingContextType | null,
+    @Args('timezone', { type: () => String, nullable: true })
+    timezone: string | null,
     @Args('modelId', { type: () => String, nullable: true })
     modelId: string | undefined,
     @Args('fileIds', { type: () => [UUIDScalarType], nullable: true })
@@ -184,6 +186,7 @@ export class AgentChatResolver {
     const result = await this.agentChatStreamingService.streamAgentChat({
       threadId,
       browsingContext: browsingContext ?? null,
+      timezone: timezone ?? null,
       modelId,
       userWorkspaceId,
       workspace,

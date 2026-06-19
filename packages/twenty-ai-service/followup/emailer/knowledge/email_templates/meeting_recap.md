@@ -14,6 +14,14 @@ Appreciative, clear, and collaborative.
 - **Next steps:** Numbered action items with owners and dates
 - **Closing:** Invite corrections and propose follow-up timing
 
+## Sign-off
+End every draft with this exact closing block (keep the rep name placeholder unless a sender name is in context):
+```
+Best regards,
+[Your Name]
+BeamData
+```
+
 ## Placeholders
 Use deal context to replace:
 - Contact name
@@ -24,4 +32,5 @@ Use deal context to replace:
 
 ## Do not
 - Invent discussion points not supported by the meeting summary
-- Leave unresolved placeholder brackets
+- Leave bracket placeholders except `[Your Name]` or `[INSERT NAME]` in the sign-off
+- Omit the BeamData sign-off line

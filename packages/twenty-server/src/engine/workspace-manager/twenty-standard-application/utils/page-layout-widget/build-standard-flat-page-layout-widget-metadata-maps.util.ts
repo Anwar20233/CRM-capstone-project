@@ -60,6 +60,7 @@ const WIDGET_TYPE_TO_CONFIGURATION_TYPE: Partial<
   [WidgetType.WORKFLOW_RUN]: WidgetConfigurationType.WORKFLOW_RUN,
   [WidgetType.RECORD_TABLE]: WidgetConfigurationType.RECORD_TABLE,
   [WidgetType.EMAIL_THREAD]: WidgetConfigurationType.EMAIL_THREAD,
+  [WidgetType.VIEW]: WidgetConfigurationType.VIEW,
 };
 
 const RECORD_PAGE_FIELDS_VIEW_NAME_BY_OBJECT: Partial<

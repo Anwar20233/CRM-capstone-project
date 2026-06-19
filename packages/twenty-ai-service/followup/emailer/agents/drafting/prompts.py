@@ -61,8 +61,9 @@ Catalog snippets (use when relevant for proposals):
 
 Rules:
 - Return valid JSON only, no markdown fences.
-- Personalize with real names and deal details from context.
-- Do not leave bracket placeholders like [INSERT NAME].
+- Personalize contact, company, and deal details from context.
+- End the body with this sign-off block on separate lines: "Best regards,", then "[Your Name]" (or "[INSERT NAME]" if no sender name is in context), then "BeamData".
+- Do not leave other bracket placeholders in the body.
 - Body or section content should be substantive (roughly 100-800 words total).
 - Set draft_type to "{draft_type.value}".
 """

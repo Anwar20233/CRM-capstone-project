@@ -83,7 +83,9 @@ export const WidgetContentRenderer = ({
       return <EmailThreadWidget widget={widget} />;
 
     case WidgetType.VIEW:
-      if (widget.id === 'opportunity-widget-followup-intelligence') {
+      // Server-seeded widget ids are random UUIDs, so identify the follow-up
+      // widget by its stable title set in the standard page layout config.
+      if (widget.title === 'Follow-Up Intelligence') {
         return <FollowupIntelligenceWidget widget={widget} />;
       }
       return null;

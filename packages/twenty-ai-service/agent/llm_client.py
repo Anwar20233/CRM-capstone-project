@@ -31,6 +31,26 @@ _ENV_VARS = (
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
+# A new OpenAI() opens its own httpx connection pool (multiple sockets). The
+# client is model-agnostic — the model is chosen per ``create()`` call — so one
+# client per (base_url, api_key) serves every model. Caching them prevents a file
+# descriptor leak: the writer builds a fresh LLMClient per delegated step, and
+# without this each leaked an unclosed pool until the process hit "Too many open
+# files" and writes started failing mid-plan.
+_CLIENT_CACHE: dict[tuple[str, str], OpenAI] = {}
+
+
+def _shared_openai_client(base_url: str, api_key: str) -> OpenAI:
+    key = (base_url, api_key)
+    client = _CLIENT_CACHE.get(key)
+    if client is None:
+        from tracing import wrap_client
+
+        client = wrap_client(OpenAI(base_url=base_url, api_key=api_key))
+        _CLIENT_CACHE[key] = client
+    return client
+
+
 class LLMClient:
     """OpenAI-compatible client configured for OpenRouter.
 
@@ -54,10 +74,10 @@ class LLMClient:
         if self._provider == "openai" and model_id.startswith("openai/"):
             model_id = model_id.split("/", 1)[1]
         self._model_id = model_id
-        raw_client = OpenAI(base_url=self._base_url, api_key=self._api_key)
-        # Wrap with LangSmith auto-tracing (no-op when tracing is disabled).
-        from tracing import wrap_client
-        self._client = wrap_client(raw_client)
+        # Reuse a cached client per (base_url, api_key) instead of opening a new
+        # connection pool every instantiation — see _shared_openai_client. The
+        # LangSmith wrapping happens once, inside the cache.
+        self._client = _shared_openai_client(self._base_url, self._api_key)
 
     @property
     def provider(self) -> str:

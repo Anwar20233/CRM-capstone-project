@@ -18,7 +18,10 @@ type UseFollowupActionsResult = {
   error: string | null;
   isMutating: boolean;
   refetch: () => Promise<void>;
-  acceptAction: (actionId: string) => Promise<void>;
+  acceptAction: (
+    actionId: string,
+    disabledStepIndices?: number[],
+  ) => Promise<void>;
   rejectAction: (actionId: string) => Promise<void>;
   reviseAction: (actionId: string, instructions: string) => Promise<void>;
 };
@@ -76,10 +79,17 @@ export const useFollowupActions = (
     return currentUser.id;
   };
 
-  const acceptAction = async (actionId: string) => {
+  const acceptAction = async (
+    actionId: string,
+    disabledStepIndices: number[] = [],
+  ) => {
     setIsMutating(true);
     try {
-      const result = await acceptFollowupAction(actionId, requireUserId());
+      const result = await acceptFollowupAction(
+        actionId,
+        requireUserId(),
+        disabledStepIndices,
+      );
       if (result.execution_status === 'completed') {
         enqueueSuccessSnackBar({ message: 'Follow-up action accepted.' });
       } else {

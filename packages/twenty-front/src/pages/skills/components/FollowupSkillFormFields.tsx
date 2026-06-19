@@ -13,7 +13,7 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { IconPicker } from '@/ui/input/components/IconPicker';
 import { SettingsTextInput } from '@/ui/input/components/SettingsTextInput';
 import { TextArea } from '@/ui/input/components/TextArea';
-import { type EditableSkill } from '~/pages/skills/constants/FollowupSkillCategories';
+import { type EditableSkill } from '~/pages/skills/types/FollowupSkill';
 
 type FollowupSkillFormFieldsProps = {
   label: string;
@@ -98,7 +98,9 @@ export const FollowupSkillFormFields = ({
             </StyledNameContainer>
           </StyledIconNameRow>
 
-          <StyledApiName>{t`Reference:`} {apiName}</StyledApiName>
+          <StyledApiName>
+            {t`Reference:`} {apiName}
+          </StyledApiName>
 
           <TextArea
             textAreaId="followup-skill-description"

@@ -32,7 +32,9 @@ from followup.next_step.agents.next_step.schemas import (
     NextStepAgentResult,
     RecommendedAction,
 )
+from followup.next_step.context.schemas import DealContext as NextStepDealContext
 from followup.next_step.events.schemas import FollowUpEvent, FollowUpEventType
+from followup.profile.masking import ProfileMasker
 from tracing import traceable
 
 logger = logging.getLogger(__name__)
@@ -188,17 +190,88 @@ class OrchestratorNextStepAgent:
                 user_id="orchestrator",
                 occurred_at=datetime.now(timezone.utc),
             )
+            # PII discipline (mirrors the drafting/note/task authors): mask names,
+            # emails and phone numbers — in the deal picture AND the raw inbound
+            # email — before the cloud planner sees them, then restore real values
+            # in the recommendations so the rep reviews a plan with real names.
+            masker = self._masker(deal)
             result = await run_next_step_agent(
-                context,
+                self._mask_context(context, masker),
                 event,
-                trigger_context=_trigger_description(request),
+                trigger_context=masker.mask(_trigger_description(request)),
                 model=self._model,
             )
+            result = self._unmask_result(result, masker)
         except Exception as error:  # noqa: BLE001 — never crash the orchestrator
             logger.exception("next-step adapter failed for %s", opportunity_id)
             return _fallback_plan(opportunity_id, f"Next-step unavailable ({error}).")
 
         return self._to_plan(result, opportunity_id, deal)
+
+    def _masker(self, deal) -> ProfileMasker:
+        """A masking session seeded with the deal's known people (see drafting adapter)."""
+        contacts = [
+            {"id": c.crm_id, "name": c.name, "email": c.email} for c in deal.contacts
+        ]
+        return ProfileMasker().register(contacts=contacts)
+
+    def _mask_context(
+        self, context: NextStepDealContext, masker: ProfileMasker
+    ) -> NextStepDealContext:
+        """Mask the free-text fields the planner prompt renders.
+
+        Opportunity/company names, deal stage and BANT/engagement signals stay
+        visible (business context, not PII). Contact names, timeline prose, task
+        titles and fact values carry people/emails/phones, so they are masked.
+        """
+        contacts = [
+            contact.model_copy(
+                update={"name": masker.mask(contact.name) if contact.name else contact.name}
+            )
+            for contact in context.contacts
+        ]
+        timeline = [
+            item.model_copy(
+                update={
+                    "title": masker.mask(item.title) if item.title else item.title,
+                    "summary": masker.mask(item.summary) if item.summary else item.summary,
+                }
+            )
+            for item in context.timeline
+        ]
+        tasks = [
+            task.model_copy(
+                update={"title": masker.mask(task.title) if task.title else task.title}
+            )
+            for task in context.tasks
+        ]
+        facts = [
+            fact.model_copy(
+                update={"value": masker.mask(fact.value) if fact.value else fact.value}
+            )
+            for fact in context.active_facts
+        ]
+        return context.model_copy(
+            update={
+                "contacts": contacts,
+                "timeline": timeline,
+                "tasks": tasks,
+                "active_facts": facts,
+            }
+        )
+
+    @staticmethod
+    def _unmask_result(
+        result: NextStepAgentResult, masker: ProfileMasker
+    ) -> NextStepAgentResult:
+        """Restore real names in the recommendations the LLM wrote.
+
+        Handles are per-session, so leaving them in the plan would break the
+        fresh maskers the downstream note/task/email authors run; we unmask the
+        whole result here (ids/enums have no handles, so they pass through).
+        """
+        unmasked = masker.unmask(result.model_dump())
+        return NextStepAgentResult.model_validate(unmasked)
 
     def _to_plan(
         self, result: NextStepAgentResult, opportunity_id: str, deal
