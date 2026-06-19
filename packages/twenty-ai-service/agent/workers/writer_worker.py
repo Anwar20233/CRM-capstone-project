@@ -88,10 +88,18 @@ To link, after creating the record:
 1. `create_task` → then `create_task_target` with `taskId` = the new task id.
 2. `create_note` → then `create_note_target` with `noteId` = the new note id.
 
-The target tool takes `targetOpportunity` and/or `targetCompany` (and
-`targetPerson`). When the instruction gives you both an opportunity id AND a
-company id, set BOTH on the single `*_target` call. The instruction names the
-exact target tool and ids — follow it literally; do not search composite catalogs.
+The target tool takes `targetPersonId`, `targetCompanyId`, and/or
+`targetOpportunityId`. Each `*_target` call creates ONE join row pointing at ONE
+entity — so to link a note/task to a person AND a company AND an opportunity, make
+THREE separate `*_target` calls (one per entity), never one combined call.
+
+ALWAYS link to every entity the instruction names — this is not optional and not
+deal-only. "Add a note to <person>" links the note to that PERSON
+(`targetPersonId`); a person with no deal still gets a `targetPerson` row. When the
+instruction names a person, company and/or opportunity, link to ALL of them. A
+note/task with no target row floats invisibly and is a failure. The instruction
+names the exact target tool and ids — follow it literally; do not search composite
+catalogs.
 
 ## Deal Stage Advancement (critical)
 
@@ -198,6 +206,7 @@ class WriterWorker:
         model: str | None = None,
         *,
         pii_map: EntityHandleMap | None = None,
+        auto_approve: bool = False,
     ) -> None:
         self.session_id = session_id
         self.model = model
@@ -211,6 +220,9 @@ class WriterWorker:
             # When a handle map is supplied, the graph unmasks tool args at the
             # execute step (real values reach the bridge, never the LLM).
             pii_map=pii_map,
+            # Pre-approved writes (e.g. a follow-up action the rep accepted) skip
+            # the tier-3 confirmation interrupt entirely.
+            auto_approve=auto_approve,
         )
         self._config = {"configurable": {"thread_id": session_id}}
 

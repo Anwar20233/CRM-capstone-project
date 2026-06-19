@@ -12,6 +12,9 @@ export type StreamAgentChatJobData = {
   workspaceId: string;
   messages: ExtendedUIMessage[];
   browsingContext: BrowsingContextType | null;
+  // The user's IANA timezone from the browser, so the follow-up agent resolves
+  // clock times ("1pm") as local and converts to UTC before booking.
+  timezone?: string | null;
   modelId?: string;
   lastUserMessageText: string;
   lastUserMessageParts: ExtendedUIMessagePart[];

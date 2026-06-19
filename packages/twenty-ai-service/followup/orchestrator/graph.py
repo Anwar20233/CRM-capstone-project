@@ -49,6 +49,7 @@ class AcceptState(TypedDict, total=False):
     user_id: str
     workspace_id: str
     opportunity_id: str
+    disabled_step_indices: list[int]  # steps the rep toggled off before accepting
     pending_action: Optional[PendingAction]
     status: str  # running | completed | failed
     error: Optional[str]
@@ -135,7 +136,9 @@ def build_accept_graph(deps: OrchestratorDeps):
             from followup.api.execution import FollowupActionExecutor
 
             executor = FollowupActionExecutor()
-            result = await executor.execute(action)
+            result = await executor.execute(
+                action, disabled_step_indices=state.get("disabled_step_indices") or []
+            )
 
             action.execution_status = result["status"]
             action.execution_error = result.get("error")

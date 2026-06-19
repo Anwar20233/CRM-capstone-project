@@ -54,4 +54,22 @@ describe('canObjectBeManagedByWorkflow', () => {
       }),
     ).toBe(false);
   });
+
+  it('should return true for noteTarget even though it is a system object', () => {
+    expect(
+      canObjectBeManagedByWorkflow({
+        nameSingular: 'noteTarget',
+        isSystem: true,
+      }),
+    ).toBe(true);
+  });
+
+  it('should return true for taskTarget even though it is a system object', () => {
+    expect(
+      canObjectBeManagedByWorkflow({
+        nameSingular: 'taskTarget',
+        isSystem: true,
+      }),
+    ).toBe(true);
+  });
 });

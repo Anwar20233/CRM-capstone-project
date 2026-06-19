@@ -40,6 +40,13 @@ logger = logging.getLogger(__name__)
 # the responsible tool, no LLM re-composition.
 _DIRECT_KINDS = frozenset({"draft_email", "book_meeting"})
 
+# Record-write kinds whose new record must be linked to its targets after creation.
+# kind → (target join tool, parent foreign-key field, the create tool to read the id from).
+_LINKABLE_KINDS: dict[str, tuple[str, str, str]] = {
+    "write_note": ("create_note_target", "noteId", "create_note"),
+    "create_task": ("create_task_target", "taskId", "create_task"),
+}
+
 # Legacy single-action_type → step kind, so pending actions persisted before the
 # plan model still execute.
 _ACTION_TYPE_TO_KIND: dict[str, str] = {
@@ -65,8 +72,13 @@ class FollowupActionExecutor:
         self._session_id = session_id or f"followup-write-{uuid.uuid4()}"
         self._model = model
 
-    async def execute(self, action: Any) -> dict[str, Any]:
-        """Execute every step of the action's plan in order. Returns ``{status, error?}``."""
+    async def execute(
+        self, action: Any, disabled_step_indices: Optional[list[int]] = None
+    ) -> dict[str, Any]:
+        """Execute the action's plan in order, skipping any steps the rep toggled off.
+
+        Returns ``{status, error?}``.
+        """
         steps = self._steps_for(action)
         if not steps:
             return {
@@ -74,9 +86,19 @@ class FollowupActionExecutor:
                 "error": f"No executable steps for action '{action.action_type}'",
             }
 
+        disabled = set(disabled_step_indices or [])
+        active_steps = [
+            (index, step) for index, step in enumerate(steps) if index not in disabled
+        ]
+        if not active_steps:
+            return {
+                "status": "failed",
+                "error": "All steps were deactivated — nothing to execute.",
+            }
+
         errors: list[str] = []
         completed = 0
-        for index, step in enumerate(steps):
+        for index, step in active_steps:
             kind = step.get("kind")
             if kind in _DIRECT_KINDS:
                 status, error = await self._execute_direct(kind, step, action)
@@ -87,13 +109,14 @@ class FollowupActionExecutor:
             else:
                 errors.append(f"step {index} ({kind}): {error or 'failed'}")
 
-        if completed == len(steps):
+        if completed == len(active_steps):
             return {"status": "completed"}
         if completed == 0:
             return {"status": "failed", "error": "; ".join(errors)}
         return {
             "status": "failed",
-            "error": f"{completed}/{len(steps)} steps completed; " + "; ".join(errors),
+            "error": f"{completed}/{len(active_steps)} steps completed; "
+            + "; ".join(errors),
         }
 
     # ------------------------------------------------------------------
@@ -193,16 +216,76 @@ class FollowupActionExecutor:
                 pii_map=pii_map,
                 session_id=f"{self._session_id}-{index}",
                 model=self._model,
+                # The rep already accepted this action — auto-confirm the
+                # writer's tier-3 gate instead of surfacing the interrupt.
+                auto_approve=True,
             )
         except Exception as exc:  # noqa: BLE001
             logger.exception("FollowupActionExecutor writer step %s (%s) failed", index, kind)
             return "failed", str(exc)
 
         if result.get("type") == "interrupt":
-            return "failed", "write requires manual approval (tier-3 gated)"
+            return "failed", "write gate did not resolve after approval"
 
-        outcome = self._status_from_writes(result.get("tool_calls") or [], kind)
+        tool_calls = result.get("tool_calls") or []
+        outcome = self._status_from_writes(tool_calls, kind)
+        # Deterministically link the new note/task to its targets. The writer LLM
+        # is told to do this, but is unreliable (and the follow-up path's handle
+        # map has no resolved entities for the auto-link guard to use), so we do it
+        # ourselves from the targets the executor already resolved — never trusting
+        # the model to have issued the create_*_target calls.
+        if outcome["status"] == "completed" and kind in _LINKABLE_KINDS:
+            await self._ensure_targets_linked(kind, action, tool_calls)
         return outcome["status"], outcome.get("error")
+
+    async def _ensure_targets_linked(
+        self, kind: str, action: Any, tool_calls: list[dict[str, Any]]
+    ) -> None:
+        """Create any missing note/task → target join rows directly via the bridge.
+
+        Reads the new record id from the writer's executed create call, resolves
+        the intended targets (opportunity + company + people), skips links the
+        writer already made, and creates the rest. Best-effort: a failed link is
+        logged, never raised — the note/task itself already succeeded.
+        """
+        from agent.workers.auto_link import _record_id_from_data
+
+        target_tool, parent_field, create_tool = _LINKABLE_KINDS[kind]
+
+        record_id: Optional[str] = None
+        existing_target_ids: set[str] = set()
+        for call in tool_calls:
+            if call.get("name") != "execute_tool":
+                continue
+            args = call.get("args") or {}
+            tool = args.get("tool")
+            if tool == create_tool:
+                result = call.get("result")
+                if isinstance(result, dict) and result.get("ok"):
+                    record_id = record_id or _record_id_from_data(result.get("data"))
+            elif tool == target_tool:
+                tool_args = args.get("tool_args") or {}
+                for field in self._TARGET_FIELD.values():
+                    if tool_args.get(field):
+                        existing_target_ids.add(str(tool_args[field]))
+
+        if not record_id:
+            return
+
+        payload = action.action_payload or {}
+        record_payload = (payload.get("task_results") or {}).get(kind) or {}
+        rows = self._resolved_targets(action, record_payload.get("targets"))
+
+        for row in rows:
+            if row["id"] in existing_target_ids:
+                continue
+            link_args = {parent_field: record_id, row["field"]: row["id"]}
+            try:
+                await _direct_bridge_write(target_tool, link_args)
+            except Exception as error:  # noqa: BLE001
+                logger.warning(
+                    "follow-up link %s for %s failed: %s", target_tool, record_id, error
+                )
 
     @staticmethod
     def _status_from_writes(tool_calls: list[dict[str, Any]], kind: str) -> dict[str, Any]:
@@ -248,26 +331,46 @@ class FollowupActionExecutor:
         company_id = (action.action_payload or {}).get("company_id")
         return str(company_id) if company_id else None
 
-    @classmethod
-    def _link_clause(cls, action: Any, target_tool: str) -> str:
-        """Tell the writer exactly how to link the new record to its targets.
+    # Target ``type`` (as produced by ``_write_targets``) → the field name the
+    # ``*_target`` join tool expects.
+    _TARGET_FIELD: dict[str, str] = {
+        "opportunity": "targetOpportunityId",
+        "company": "targetCompanyId",
+        "person": "targetPersonId",
+    }
 
-        Twenty links tasks/notes through a join record (``create_task_target`` /
-        ``create_note_target``) that takes the new record's id plus
-        ``targetOpportunity`` (and ``targetCompany`` when known) — NOT a field on
-        the create call. Spelling it out stops the writer guessing fields like
-        ``relatedOpportunityId`` (which don't exist) and flailing through
-        composite catalogs.
+    @classmethod
+    def _resolved_targets(cls, action: Any, payload_targets: Any) -> list[dict[str, str]]:
+        """The full set of join targets for this write, as ``{field, id}`` rows.
+
+        Prefers the ``targets`` list the follow-up agent resolved at plan time
+        (opportunity + company + every contact person — see ``_write_targets``).
+        Falls back to deriving opp + company from the action when a legacy pending
+        action carries no targets list, so old persisted actions still link.
         """
-        opp = cls._opportunity_id(action)
-        company = cls._company_id(action)
-        targets = f"targetOpportunity={opp}"
-        if company:
-            targets += f", targetCompany={company}"
-        return (
-            f" After creating it, link it by calling `{target_tool}` with the new "
-            f"record's id plus {targets}. Do not invent fields on the create call."
-        )
+        rows: list[dict[str, str]] = []
+        seen: set[tuple[str, str]] = set()
+
+        def _add(target_type: str, target_id: Any) -> None:
+            field = cls._TARGET_FIELD.get(target_type)
+            if not field or not target_id:
+                return
+            key = (field, str(target_id))
+            if key in seen:
+                return
+            seen.add(key)
+            rows.append({"field": field, "id": str(target_id)})
+
+        if isinstance(payload_targets, list) and payload_targets:
+            for target in payload_targets:
+                if isinstance(target, dict):
+                    _add(target.get("type"), target.get("id"))
+
+        # Always ensure the opportunity (and company, when known) are linked even
+        # if the targets list was partial.
+        _add("opportunity", cls._opportunity_id(action))
+        _add("company", cls._company_id(action))
+        return rows
 
     @staticmethod
     def _hide(pii_map: Any, value: str, *, entity_type: str = "content") -> str:
@@ -282,6 +385,13 @@ class FollowupActionExecutor:
         handle = pii_map.register_privacy(entity_type, value)
         return handle.name if handle is not None else value
 
+    # NOTE: linking the new note/task to its targets is NOT asked of the writer.
+    # The executor does it deterministically post-write (``_ensure_targets_linked``).
+    # Keeping the writer's job to a single create call avoids the discovery/link
+    # loop that ballooned the writer's context (a create_task once sent ~230k input
+    # tokens, blowing the model's limit) and guarantees the links regardless of
+    # whether the model would have remembered the create_*_target calls.
+
     def _instruction_write_note(self, step: dict[str, Any], action: Any, pii_map: Any) -> Optional[str]:
         payload = action.action_payload or {}
         note = (payload.get("task_results") or {}).get("write_note") or {}
@@ -289,8 +399,8 @@ class FollowupActionExecutor:
         body_ref = self._hide(pii_map, body, entity_type="note")
         return (
             f"Create a note. "
-            f"Use this text verbatim and unaltered as the note body: {body_ref}."
-            + self._link_clause(action, "create_note_target")
+            f"Use this text verbatim and unaltered as the note body: {body_ref}. "
+            f"Do not link it to anything — that is handled separately."
         )
 
     def _instruction_create_task(self, step: dict[str, Any], action: Any, pii_map: Any) -> Optional[str]:
@@ -300,18 +410,25 @@ class FollowupActionExecutor:
         title_ref = self._hide(pii_map, title, entity_type="task")
         return (
             f"Create a task. "
-            f"Use this text verbatim and unaltered as the task title: {title_ref}."
-            + self._link_clause(action, "create_task_target")
+            f"Use this text verbatim and unaltered as the task title: {title_ref}. "
+            f"Do not link it to anything — that is handled separately."
         )
 
     def _instruction_update_stage(self, step: dict[str, Any], action: Any, pii_map: Any) -> Optional[str]:
-        # The stage value is an enum (not PII) and the writer must read it to pick
-        # the target — so it stays visible; only any free-text detail is hidden.
-        intent = step.get("intent") or ""
-        detail_ref = self._hide(pii_map, intent, entity_type="note")
+        # The stage direction is an enum target, NOT verbatim content — the writer
+        # must READ it to pick the matching stage value. Hiding it behind a PII
+        # handle (as note/task bodies are) left the writer with an opaque token and
+        # nothing to act on, so it executed no write. Keep it visible and spell out
+        # the field + targeting so the writer updates (never creates) the record.
+        intent = (step.get("intent") or "").strip() or "Advance the deal to the next stage."
+        opp = self._opportunity_id(action)
         return (
-            f"Advance the deal stage on opportunity {self._opportunity_id(action)}. "
-            f"Context (verbatim): {detail_ref}"
+            f"Update the existing opportunity record with id {opp}. "
+            f"Set its `stage` field to the single allowed stage value that best "
+            f"matches this desired change: \"{intent}\". "
+            f"First read the opportunity's valid `stage` options and choose the "
+            f"closest match (do not invent a value); then update that one record. "
+            f"Do not create a new record and do not change any other field."
         )
 
     _BUILDERS: dict[str, Any] = {

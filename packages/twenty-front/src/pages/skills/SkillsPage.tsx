@@ -22,12 +22,12 @@ import {
 } from '~/generated-metadata/graphql';
 import { FollowupSkillFormFields } from '~/pages/skills/components/FollowupSkillFormFields';
 import { FollowupSkillsList } from '~/pages/skills/components/FollowupSkillsList';
+import { FOLLOWUP_SKILL_TABS } from '~/pages/skills/constants/FollowupSkillTabs';
 import {
   type EditableSkill,
-  FOLLOWUP_SKILL_TABS,
   type FollowupSkillKind,
-  slugifySkillKey,
-} from '~/pages/skills/constants/FollowupSkillCategories';
+} from '~/pages/skills/types/FollowupSkill';
+import { slugifySkillKey } from '~/pages/skills/utils/slugifySkillKey';
 
 // Top-level Skills tab: lets a company tune how its follow-up agents plan and
 // draft. Only the agents' own skills are shown, grouped into Planner and Email
@@ -121,13 +121,18 @@ export const SkillsPage = () => {
       if (view.mode === 'create') {
         await createSkill({
           variables: {
-            input: { name: `${view.kind.prefix}${slugifySkillKey(label)}`, ...shared },
+            input: {
+              name: `${view.kind.prefix}${slugifySkillKey(label)}`,
+              ...shared,
+            },
           },
         });
         enqueueSuccessSnackBar({ message: t`Skill created` });
       } else if (view.mode === 'edit') {
         await updateSkill({
-          variables: { input: { id: view.skill.id, name: view.skill.name, ...shared } },
+          variables: {
+            input: { id: view.skill.id, name: view.skill.name, ...shared },
+          },
         });
         enqueueSuccessSnackBar({ message: t`Skill saved` });
       }

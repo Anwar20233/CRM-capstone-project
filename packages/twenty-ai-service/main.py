@@ -8,6 +8,7 @@ once during startup via the lifespan handler, never per request.
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from pipelines import load_models, models_loaded
 from routers import agent, bridge, ner
@@ -48,6 +49,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="twenty-ai-service", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(ner.router)
 app.include_router(bridge.router)

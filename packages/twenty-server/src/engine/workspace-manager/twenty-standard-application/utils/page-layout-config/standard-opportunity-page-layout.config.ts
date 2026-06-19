@@ -14,6 +14,16 @@ import {
 } from 'src/engine/workspace-manager/twenty-standard-application/utils/page-layout-config/standard-page-layout-config.type';
 
 const OPPORTUNITY_PAGE_TABS = {
+  followup: {
+    universalIdentifier: '20202020-ab03-4003-8003-0aa0b1ca1300',
+    ...TAB_PROPS.followup,
+    widgets: {
+      followupIntelligence: {
+        universalIdentifier: '20202020-ac03-4003-8003-0aa0b1ca1310',
+        ...WIDGET_PROPS.followupIntelligence,
+      },
+    },
+  },
   home: {
     universalIdentifier: '20202020-ab03-4003-8003-0aa0b1ca1301',
     ...TAB_PROPS.home,
@@ -119,6 +129,6 @@ export const STANDARD_OPPORTUNITY_PAGE_LAYOUT_CONFIG = {
   type: PageLayoutType.RECORD_PAGE,
   objectUniversalIdentifier: STANDARD_OBJECTS.opportunity.universalIdentifier,
   universalIdentifier: '20202020-a103-4003-8003-0aa0b1ca1003',
-  defaultTabUniversalIdentifier: null,
+  defaultTabUniversalIdentifier: '20202020-ab03-4003-8003-0aa0b1ca1300',
   tabs: OPPORTUNITY_PAGE_TABS,
 } as const satisfies StandardPageLayoutConfig;

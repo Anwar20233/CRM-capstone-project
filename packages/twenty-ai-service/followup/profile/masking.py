@@ -7,10 +7,10 @@ so those LLMs see stable handles (``person001``) instead — while record ids
 attribution). Real values are restored on the way out via :meth:`ProfileMasker.unmask`,
 so persisted facts and the synthesized narrative keep real names.
 
-Scope is deliberately **person + email only**. Company / competitor / location
-names are business context, not PII, and the NER tagger mislabels ordinary words
-("Budget", "Segment") as companies — masking them would corrupt the facts. Only
-the two genuinely-sensitive labels are masked here.
+Scope is deliberately **person + email + phone only**. Company / competitor /
+location names are business context, not PII, and the NER tagger mislabels
+ordinary words ("Budget", "Segment") as companies — masking them would corrupt
+the facts. Only the genuinely-sensitive labels are masked here.
 
 Model loading is an explicit startup concern, not a per-call one: the Presidio /
 spaCy models are loaded once by :func:`ensure_models_loaded` (called from
@@ -30,7 +30,12 @@ logger = logging.getLogger(__name__)
 
 # The only NER labels that are genuinely PII in a B2B CRM context. Everything
 # else (company, location, url, …) is left visible for the model to reason over.
-_PII_LABELS: dict[str, str] = {"person": "person", "email address": "email"}
+# Phone numbers are unambiguous PII (no company-mislabel risk), so they mask too.
+_PII_LABELS: dict[str, str] = {
+    "person": "person",
+    "email address": "email",
+    "phone number": "phone",
+}
 
 # The shared EntityHandleMap deliberately preserves email addresses (it stashes
 # them so name-masking can't corrupt them), so we mask them ourselves with this

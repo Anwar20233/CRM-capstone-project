@@ -38,6 +38,7 @@ export type StreamAgentChatOptions = {
   workspace: WorkspaceEntity;
   text: string;
   browsingContext: BrowsingContextType | null;
+  timezone?: string | null;
   modelId?: string;
   messageId?: string;
   fileIds?: string[];
@@ -65,6 +66,7 @@ export class AgentChatStreamingService {
     workspace,
     text,
     browsingContext,
+    timezone,
     modelId,
     messageId,
     fileIds,
@@ -122,6 +124,7 @@ export class AgentChatStreamingService {
         workspaceId: workspace.id,
         messages: previousMessages,
         browsingContext,
+        timezone,
         modelId,
         lastUserMessageText: text,
         lastUserMessageParts: userMessageParts,

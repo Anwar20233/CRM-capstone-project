@@ -57,6 +57,19 @@ _ACTION_TIER_MAP: dict[str, dict[str, Any]] = {
         "required_fields": ["title"],
         "escalated": False,
     },
+    # Linking a note/task to a person/company/opportunity is a low-risk join
+    # write — must NOT hit the tier-3 confirmation gate. Unknown actions default
+    # to tier 3, which was wrongly prompting the user to approve every link.
+    "create_note_target": {
+        "tier": 1,
+        "required_fields": ["noteId"],
+        "escalated": False,
+    },
+    "create_task_target": {
+        "tier": 1,
+        "required_fields": ["taskId"],
+        "escalated": False,
+    },
 
     # ── Tier 2 — medium risk, show diff. ────────────────────────────────
     "create_person": {

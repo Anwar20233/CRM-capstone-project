@@ -6,6 +6,7 @@ export const SEND_CHAT_MESSAGE = gql`
     $text: String!
     $messageId: UUID!
     $browsingContext: JSON
+    $timezone: String
     $modelId: String
     $fileIds: [UUID!]
   ) {
@@ -14,6 +15,7 @@ export const SEND_CHAT_MESSAGE = gql`
       text: $text
       messageId: $messageId
       browsingContext: $browsingContext
+      timezone: $timezone
       modelId: $modelId
       fileIds: $fileIds
     ) {

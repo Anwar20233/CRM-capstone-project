@@ -249,6 +249,14 @@ def _write_targets(deal_context: "DealContext") -> list[dict[str, Any]]:
             "name": deal_context.opportunity_name,
         }
     ]
+    if deal_context.company_id:
+        targets.append(
+            {
+                "type": "company",
+                "id": deal_context.company_id,
+                "name": deal_context.company_name,
+            }
+        )
     targets += [
         {"type": "person", "id": contact.crm_id, "name": contact.name}
         for contact in deal_context.contacts
@@ -309,12 +317,20 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
         # proposes real, calendar-verified times instead of inventing them.
         trigger = ctx.state.get("trigger") or {}
         proposed = trigger.get("proposed_times") or (ctx.plan.metadata or {}).get("proposed_times") or []
+        # Honour the requested meeting length (e.g. a "15-min check-in") instead of
+        # always booking 30 minutes — otherwise the slot contradicts the request
+        # and the email. Falls back to 30 when no duration was specified.
+        duration_minutes = (
+            trigger.get("duration_minutes")
+            or (ctx.plan.metadata or {}).get("duration_minutes")
+            or 30
+        )
         result = await check_availability(
             calendar_reader=deps.pipeline.calendar_reader,
             owner_user_id=trigger.get("owner_user_id"),
             workspace_id=ctx.state["workspace_id"],
             proposed_times=proposed,
-            duration_minutes=30,
+            duration_minutes=int(duration_minutes),
             find_slots_when_empty=True,
         )
         return {"calendar": result}
@@ -372,6 +388,7 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
             available_slots=available_slots,
             reply_context=reply_context,
             previous_draft=previous_draft,
+            timezone=trigger.get("timezone"),
         )
         result = await deps.agents.drafting.run(request)
         out: dict[str, Any] = {"draft": result}

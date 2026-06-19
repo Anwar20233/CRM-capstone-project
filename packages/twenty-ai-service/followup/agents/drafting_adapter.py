@@ -26,9 +26,11 @@ from followup.agents.mapping import to_drafting_context
 from followup.contracts.drafting import DraftRequest, DraftResult, MockDraftingAgent
 from followup.emailer.agents.drafting.agent import run_drafting_agent
 from followup.emailer.agents.drafting.schemas import DraftType, EmailDraft
+from followup.emailer.context.schemas import DealContext as DraftingDealContext
 from followup.emailer.events.schemas import FollowUpEvent
 from followup.emailer.rag.file_retriever import FileRetriever
 from followup.emailer.rag.service import RetrievalService
+from followup.profile.masking import ProfileMasker
 from tracing import traceable
 
 logger = logging.getLogger(__name__)
@@ -65,14 +67,56 @@ def _tone_for(classification: dict | None) -> str:
     return _CLASSIFICATION_TO_TONE.get((classification.get("type") or "").lower(), "professional")
 
 
-def _slot_lines(available_slots: list[dict] | None) -> str:
+def _safe_zone(tz_name: str | None):
+    """The rep's IANA timezone, falling back to UTC for missing/unknown names."""
+    if not tz_name:
+        return timezone.utc
+    try:
+        from zoneinfo import ZoneInfo
+
+        return ZoneInfo(tz_name)
+    except Exception:  # noqa: BLE001 — unknown/zoneinfo-missing → UTC
+        return timezone.utc
+
+
+def _fmt_slot_time(iso_value: str | None, tz_name: str | None = None) -> str:
+    """Human-readable, weekday-correct rendering of an ISO slot time.
+
+    Slots are stored in UTC; we render them in the REP'S timezone so the email
+    states a local wall-clock the recipient can act on (never raw "07:00 UTC").
+    The drafting LLM must NOT compute weekdays/zones itself (it gets them wrong),
+    so we hand it the fully-formatted string to copy verbatim.
+    """
+    if not iso_value:
+        return "?"
+    try:
+        parsed = datetime.fromisoformat(iso_value.replace("Z", "+00:00"))
+    except ValueError:
+        return iso_value
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    local = parsed.astimezone(_safe_zone(tz_name))
+    label = tz_name or "UTC"
+    # e.g. "Thursday, June 25, 2026 at 01:00 PM (Asia/Riyadh)"
+    return local.strftime("%A, %B %d, %Y at %I:%M %p") + f" ({label})"
+
+
+def _slot_lines(available_slots: list[dict] | None, tz_name: str | None = None) -> str:
     if not available_slots:
         return ""
     offered = [s for s in available_slots if s.get("available")][:3]
     if not offered:
         return ""
-    bullets = "\n".join(f"  - {s.get('start', '?')} to {s.get('end', '?')}" for s in offered)
-    return f"\n\nProposed meeting times to offer:\n{bullets}"
+    bullets = "\n".join(
+        f"  - {_fmt_slot_time(s.get('start'), tz_name)} to "
+        f"{_fmt_slot_time(s.get('end'), tz_name)}"
+        for s in offered
+    )
+    return (
+        "\n\nProposed meeting times to offer (use these EXACT dates and times "
+        f"verbatim — do not change, recompute the day of week, or convert the "
+        f"timezone):\n{bullets}"
+    )
 
 
 class OrchestratorDraftingAgent:
@@ -99,6 +143,12 @@ class OrchestratorDraftingAgent:
             # next-step agent chose) and any calendar slots into the deal's notes
             # so the drafter's prompt sees them as concrete guidance.
             context = self._with_directive(context, request)
+            # PII discipline (mirrors the note/task authors): names, emails and
+            # phone numbers are masked to handles before the deal picture reaches
+            # the cloud drafting LLM, then restored on the way out, so the prose
+            # the rep reviews keeps the real contact while the LLM never sees it.
+            masker = self._masker(request)
+            context = self._mask_context(context, masker)
             result = await run_drafting_agent(
                 context=context,
                 event=self._synthetic_event(request),
@@ -113,14 +163,71 @@ class OrchestratorDraftingAgent:
         email = result.email_drafts[0] if result.email_drafts else None
         if email is None:
             return await self._mock.run(request)
+        email = email.model_copy(
+            update={
+                "subject": masker.unmask(email.subject),
+                "body": masker.unmask(email.body),
+            }
+        )
         return self._to_draft_result(email, request)
+
+    def _masker(self, request: DraftRequest) -> ProfileMasker:
+        """A masking session seeded with the deal's known people.
+
+        Registered names mask consistently; emails, phone numbers and any
+        not-yet-known names in free text (notes, the inbound reply body) are
+        discovered by NER at :meth:`mask` time.
+        """
+        contacts = [
+            {"id": c.crm_id, "name": c.name, "email": c.email}
+            for c in request.deal_context.contacts
+        ]
+        return ProfileMasker().register(contacts=contacts)
+
+    def _mask_context(
+        self, context: DraftingDealContext, masker: ProfileMasker
+    ) -> DraftingDealContext:
+        """Mask the PII-bearing free-text fields of the deal picture in place.
+
+        Company name, opportunity stage/amount and template guidance stay visible
+        (business context, not PII). Quality scoring runs on this masked context
+        AND the masked draft, so its name/contact heuristics still match (handle
+        vs handle) before we unmask the final prose.
+        """
+        contact = context.contact.model_copy(
+            update={
+                "name": masker.mask(context.contact.name) if context.contact.name else context.contact.name,
+                "email": masker.mask(context.contact.email) if context.contact.email else context.contact.email,
+            }
+        )
+        notes = [
+            note.model_copy(
+                update={
+                    "title": masker.mask(note.title) if note.title else note.title,
+                    "body": masker.mask(note.body) if note.body else note.body,
+                }
+            )
+            for note in context.recent_notes
+        ]
+        meetings = [
+            meeting.model_copy(
+                update={
+                    "summary": masker.mask(meeting.summary) if meeting.summary else meeting.summary,
+                    "attendees": [masker.mask(name) for name in meeting.attendees],
+                }
+            )
+            for meeting in context.recent_meetings
+        ]
+        return context.model_copy(
+            update={"contact": contact, "recent_notes": notes, "recent_meetings": meetings}
+        )
 
     def _with_directive(self, context, request: DraftRequest):
         """Inject the directive + slots as a leading note the drafter prompt reads."""
         from followup.emailer.context.schemas import NoteSummary
 
         directive = request.intent or ""
-        slots = _slot_lines(request.available_slots)
+        slots = _slot_lines(request.available_slots, request.timezone)
         if request.reply_context and request.reply_context.get("body"):
             directive += f"\n\nReplying to: {request.reply_context['body']}"
         directive += slots

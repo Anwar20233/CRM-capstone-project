@@ -57,7 +57,7 @@ from agent.workers.base_worker import BaseWorker
 # Default model for the orchestrator's planning loop when neither the caller nor
 # the ORCHESTRATOR_MODEL env var specifies one. Kept distinct from the sub-agent
 # default (env LLM_MODEL) so routing stays cheap/fast independent of the workers.
-DEFAULT_ORCHESTRATOR_MODEL = "deepseek/deepseek-v4-flash"
+DEFAULT_ORCHESTRATOR_MODEL = "qwen/qwen3-next-80b-a3b-instruct"
 
 # Replay the conversation verbatim until it exceeds this many tokens, then
 # compact older turns into a summary. Tunable — start at 35k and watch.
@@ -153,7 +153,7 @@ plan for that instead of choreographing many.
 - Delegate; do not fabricate CRM data or invent record ids.
 - React to `{{"ok": false, "error": {{...}}}}` results — don't ignore them.
 - Identity (workspace, role, user) is handled automatically — never ask about it.
-- **Linking tasks & notes:** When asking the writer to create a task or note, you MUST explicitly include any relevant target entity IDs (opportunity, company, person) in your instruction and explicitly tell the writer to link the task/note to them using the `create_task_target` or `create_note_target` tools. Otherwise, the task/note will float without context.
+- **Linking tasks & notes:** When asking the writer to create a task or note, you MUST name EVERY relevant entity it should attach to — person AND/OR company AND/OR opportunity — by passing their handles/ids in the instruction, and explicitly tell the writer to link the record to each of them (one `create_task_target` / `create_note_target` row per entity). "Add a note to <person>" must link the note to that person — a person-only note is valid and common, not just deal notes. A task/note with no target floats invisibly and is a failure.
 """
 
 
@@ -554,6 +554,7 @@ async def delegate_write(
     pii_map: Any = None,
     session_id: str,
     model: str | None = None,
+    auto_approve: bool = False,
 ) -> dict[str, Any]:
     """Orchestrator → writer seam: run one write through the writer sub-agent.
 
@@ -563,12 +564,23 @@ async def delegate_write(
     targeting). The writer unmasks tool args at its execute step via ``pii_map``,
     so the writer LLM only ever sees handles — never the real content.
 
+    When ``auto_approve`` is set, the caller has already obtained the user's
+    approval for the write (e.g. a follow-up action the rep explicitly accepted),
+    so the writer's tier-3 confirmation gate is auto-confirmed instead of being
+    surfaced as an interrupt. The same worker instance (and its checkpointer) is
+    reused to resume.
+
     Returns the writer's result dict (``{"response", "tool_calls", "type"}`` or an
     interrupt payload).
     """
     from agent.workers.writer_worker import WriterWorker
 
-    writer = WriterWorker(session_id=session_id, model=model, pii_map=pii_map)
+    # With auto_approve the writer's tier-3 gate never interrupts, so the write
+    # runs to completion in a single pass (no nested-interrupt to resume — which
+    # would otherwise raise when the writer runs inside the accept graph).
+    writer = WriterWorker(
+        session_id=session_id, model=model, pii_map=pii_map, auto_approve=auto_approve
+    )
     return await writer.run(instruction)
 
 

@@ -44,6 +44,9 @@ class DraftRequest:
     # The inbound email being replied to (email trigger path). Lets the draft
     # engine address the sender and reference the specific points they raised.
     reply_context: dict | None = None  # {sender_email, sender_name, subject, body}
+    # The rep's IANA timezone, so proposed meeting times are rendered in local
+    # wall-clock ("1:00 PM (Asia/Riyadh)") instead of raw UTC in the email.
+    timezone: str | None = None
 
 
 @dataclass
@@ -152,6 +155,7 @@ class MockDraftingAgent:
 
         lines.append("Best regards,")
         lines.append("[Your Name]")
+        lines.append("BeamData")
 
         return DraftResult(
             opportunity_id=ctx.opportunity_id,
