@@ -170,7 +170,22 @@ async def main() -> None:
     parser.add_argument("--body", default=None)
     parser.add_argument("--no-accept", action="store_true", help="stop after the pending action")
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument(
+        "--real-subagents",
+        action="store_true",
+        help="use real P2/P3/P4 subagents (default; unset FOLLOWUP_USE_MOCK_AGENTS)",
+    )
+    parser.add_argument(
+        "--mock-subagents",
+        action="store_true",
+        help="force mock subagents for a fast trace (sets FOLLOWUP_USE_MOCK_AGENTS=1)",
+    )
     args = parser.parse_args()
+
+    if args.mock_subagents:
+        os.environ["FOLLOWUP_USE_MOCK_AGENTS"] = "1"
+    elif args.real_subagents:
+        os.environ.pop("FOLLOWUP_USE_MOCK_AGENTS", None)
 
     if args.list:
         print("Available email scenarios:\n")
@@ -184,6 +199,9 @@ async def main() -> None:
     subject = args.subject or scenario.subject
     body = args.body or scenario.body
     _configure_logging(args.quiet)
+
+    subagent_mode = "mock" if os.environ.get("FOLLOWUP_USE_MOCK_AGENTS") else "real"
+    print(f"\n  subagents: {subagent_mode}")
 
     db = await Database.connect()
     try:

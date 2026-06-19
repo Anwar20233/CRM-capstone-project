@@ -344,6 +344,24 @@ class ReaderAgentCRMReader:
         )
         return [_reader_person_to_contact(record) for record in records]
 
+    async def _ids_targeting_opportunity(
+        self, target_tool: str, id_field: str, opportunity_id: str, limit: int
+    ) -> list[str]:
+        # Notes/tasks can't be filtered by their `noteTargets`/`taskTargets`
+        # relation — the backend only allows filtering many-to-one relations (the
+        # side owning a join column). So we query the junction object directly by
+        # its `targetOpportunityId` join column and collect the linked record ids.
+        targets = await self._bridge_find(
+            target_tool,
+            {"limit": limit, "targetOpportunityId": {"eq": opportunity_id}},
+        )
+        ids: list[str] = []
+        for target in targets:
+            record_id = target.get(id_field)
+            if record_id and record_id not in ids:
+                ids.append(record_id)
+        return ids
+
     async def get_activities_for_opportunity(
         self, opportunity_id: str, limit: int = 10
     ) -> list[dict[str, Any]]:
@@ -352,21 +370,35 @@ class ReaderAgentCRMReader:
         # empty timeline is a legitimate answer (a quiet deal).
         # orderBy is an array of single-key objects (the backend does
         # `(orderBy ?? []).filter(...)`, so an object value throws).
-        notes = await self._bridge_find(
-            "find_notes",
-            {
-                "limit": limit,
-                "noteTargets": {"some": {"opportunityId": {"eq": opportunity_id}}},
-                "orderBy": [{"updatedAt": "DescNullsLast"}],
-            },
+        note_ids = await self._ids_targeting_opportunity(
+            "find_note_targets", "noteId", opportunity_id, limit
         )
-        tasks = await self._bridge_find(
-            "find_tasks",
-            {
-                "limit": limit,
-                "taskTargets": {"some": {"opportunityId": {"eq": opportunity_id}}},
-                "orderBy": [{"updatedAt": "DescNullsLast"}],
-            },
+        task_ids = await self._ids_targeting_opportunity(
+            "find_task_targets", "taskId", opportunity_id, limit
+        )
+        notes = (
+            await self._bridge_find(
+                "find_notes",
+                {
+                    "limit": limit,
+                    "id": {"in": note_ids},
+                    "orderBy": [{"updatedAt": "DescNullsLast"}],
+                },
+            )
+            if note_ids
+            else []
+        )
+        tasks = (
+            await self._bridge_find(
+                "find_tasks",
+                {
+                    "limit": limit,
+                    "id": {"in": task_ids},
+                    "orderBy": [{"updatedAt": "DescNullsLast"}],
+                },
+            )
+            if task_ids
+            else []
         )
         activities = [_activity_from_record("note", r) for r in notes]
         activities += [_activity_from_record("task", r) for r in tasks]
@@ -381,11 +413,16 @@ class ReaderAgentCRMReader:
         # timeline discards — ProfileService needs them to flag overdue work and
         # to drop abandoned tasks. orderBy is an array of single-key objects (the
         # backend does `(orderBy ?? []).filter(...)`, so an object value throws).
+        task_ids = await self._ids_targeting_opportunity(
+            "find_task_targets", "taskId", opportunity_id, limit
+        )
+        if not task_ids:
+            return []
         records = await self._bridge_find(
             "find_tasks",
             {
                 "limit": limit,
-                "taskTargets": {"some": {"opportunityId": {"eq": opportunity_id}}},
+                "id": {"in": task_ids},
                 "status": {"in": ["TODO", "IN_PROGRESS"]},
                 "orderBy": [{"dueAt": "AscNullsLast"}],
             },

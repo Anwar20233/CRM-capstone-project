@@ -448,8 +448,10 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
             when_to_use="When the deal needs an internal record rather than outreach.",
             instructions=(
                 "Summarize the recommendation as an internal note on the "
-                "opportunity. This is a deferred write — only the payload is "
-                "shaped here; creation happens after the rep accepts."
+                "opportunity. IMPORTANT: You MUST explicitly use the provided targets "
+                "to link the note to the relevant opportunity, company, and person IDs "
+                "using the create_note_target tool. This is a deferred write — only "
+                "the payload is shaped here; creation happens after the rep accepts."
             ),
             input_schema={"body": "str"},
             handler=_write_note,
@@ -462,8 +464,10 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
             when_to_use="When the deal needs a concrete to-do rather than outreach.",
             instructions=(
                 "Turn the recommendation into a single actionable task on the "
-                "opportunity. This is a deferred write — only the payload is "
-                "shaped here; creation happens after the rep accepts."
+                "opportunity. IMPORTANT: You MUST explicitly use the provided targets "
+                "to link the task to the relevant opportunity, company, and person IDs "
+                "using the create_task_target tool. This is a deferred write — only "
+                "the payload is shaped here; creation happens after the rep accepts."
             ),
             input_schema={"title": "str"},
             handler=_create_task,

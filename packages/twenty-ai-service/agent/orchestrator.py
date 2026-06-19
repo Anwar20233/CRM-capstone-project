@@ -151,8 +151,9 @@ plan for that instead of choreographing many.
 ## Rules
 
 - Delegate; do not fabricate CRM data or invent record ids.
-- React to ``{{"ok": false, "error": {{...}}}}`` results — don't ignore them.
+- React to `{{"ok": false, "error": {{...}}}}` results — don't ignore them.
 - Identity (workspace, role, user) is handled automatically — never ask about it.
+- **Linking tasks & notes:** When asking the writer to create a task or note, you MUST explicitly include any relevant target entity IDs (opportunity, company, person) in your instruction and explicitly tell the writer to link the task/note to them using the `create_task_target` or `create_note_target` tools. Otherwise, the task/note will float without context.
 """
 
 

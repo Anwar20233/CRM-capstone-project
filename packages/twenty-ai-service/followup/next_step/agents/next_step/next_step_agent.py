@@ -1,15 +1,16 @@
 """Next Step Intelligence Agent — tool-using planning agent.
 
 The agent receives raw deal context and the triggering signal from the
-orchestrator. It uses knowledge tools to read the relevant stage playbook and
-BANT framework, then produces a structured plan of 1–5 next actions grounded
-in the deal facts.
+orchestrator. It is shown a catalog of the planning skills available in this
+workspace (company-edited skills from the Skills tab plus bundled defaults),
+loads the ones relevant to the deal, then produces a structured plan of 1–5
+next actions grounded in the deal facts.
 
 Planning loop (two phases):
-    Phase 1 — gather: LLM calls read_stage_playbook, read_bant_framework
-              (required), and optionally read_best_practices. We execute each
-              tool call locally (file reads — no network) and feed results back
-              as ToolMessages. Up to _MAX_TOOL_ROUNDS gather iterations.
+    Phase 1 — gather: LLM calls read_planning_skill (and may call
+              list_planning_skills) to load the guidance relevant to this deal.
+              We execute each tool call locally (DB read + file fallback) and
+              feed results back as ToolMessages. Up to _MAX_TOOL_ROUNDS rounds.
     Phase 2 — plan: with all tool results in context, LLM produces
               NextStepLLMOutput via structured output.
 
@@ -37,6 +38,7 @@ from followup.next_step.agents.next_step.tools import (
     PLANNER_TOOLS,
     compute_bant_gaps,
     compute_engagement_signals,
+    planner_catalog_text,
 )
 from followup.next_step.context.schemas import DealContext
 from followup.next_step.events.schemas import FollowUpEvent, FollowUpEventType
@@ -242,7 +244,12 @@ async def run_next_step_agent(
 
     bant = compute_bant_gaps(context)
     engagement = compute_engagement_signals(context)
-    context_msg = build_deal_context_message(context, trigger_context, bant, engagement)
+    # Discover the planning skills available at run time so the agent can load
+    # the ones it deems relevant (DB skills from the Skills tab + bundled defaults).
+    planning_catalog = planner_catalog_text()
+    context_msg = build_deal_context_message(
+        context, trigger_context, bant, engagement, planning_catalog
+    )
 
     messages: list = [
         SystemMessage(content=SYSTEM_PROMPT),
