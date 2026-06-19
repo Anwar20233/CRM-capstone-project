@@ -184,7 +184,7 @@ The Risk Agent scores one opportunity. The daily sweep runs the Risk Agent acros
 Command:
 
 ```bash
-PYTHONPATH=. .venv/bin/python -m followup.risk.daily_sweep
+PYTHONPATH=. .venv/bin/python -m followup.risk_agent.daily_sweep
 ```
 
 The daily sweep does this:
@@ -265,7 +265,7 @@ The backend scoring and daily sweep are working. Full product integration still 
 
 ```text
 1. Production scheduler
-   Run python -m followup.risk.daily_sweep every morning, for example 06:00 Asia/Riyadh.
+   Run python -m followup.risk_agent.daily_sweep every morning, for example 06:00 Asia/Riyadh.
 
 2. P1/frontend notification UI
    Read followup_agent.followup_pending_actions where trigger_type = risk_alert
