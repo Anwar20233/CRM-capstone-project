@@ -334,3 +334,31 @@ CREATE TABLE IF NOT EXISTS followup_agent.risk_snapshots (
 );
 
 ALTER TABLE followup_agent.risk_snapshots ALTER COLUMN id SET DEFAULT gen_random_uuid();
+
+-- ===========================================================================
+-- Daily Risk Sweep — score history used only for threshold-crossing detection.
+-- ===========================================================================
+
+CREATE TABLE IF NOT EXISTS followup_agent.risk_daily_scores (
+    id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    opportunity_id          uuid NOT NULL,
+    workspace_id            uuid NOT NULL,
+    risk_score              double precision NOT NULL,
+    risk_level              text NOT NULL CHECK (risk_level IN ('low', 'medium', 'high')),
+    top_factors             jsonb NOT NULL DEFAULT '[]'::jsonb,
+    assessment              jsonb NOT NULL,
+    trigger_type            text NOT NULL DEFAULT 'daily_sweep',
+    assessed_at             timestamptz NOT NULL DEFAULT now(),
+    created_pending_action_id uuid
+);
+
+ALTER TABLE followup_agent.risk_daily_scores ALTER COLUMN id SET DEFAULT gen_random_uuid();
+ALTER TABLE followup_agent.risk_daily_scores ALTER COLUMN top_factors SET DEFAULT '[]'::jsonb;
+ALTER TABLE followup_agent.risk_daily_scores ALTER COLUMN trigger_type SET DEFAULT 'daily_sweep';
+ALTER TABLE followup_agent.risk_daily_scores ALTER COLUMN assessed_at SET DEFAULT now();
+
+CREATE INDEX IF NOT EXISTS risk_daily_scores_opportunity_idx
+    ON followup_agent.risk_daily_scores (opportunity_id, assessed_at DESC);
+
+CREATE INDEX IF NOT EXISTS risk_daily_scores_workspace_idx
+    ON followup_agent.risk_daily_scores (workspace_id, assessed_at DESC);

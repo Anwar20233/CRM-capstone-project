@@ -163,20 +163,35 @@ class BridgeCalendarReader:
         # Overlap filter: an event intersects [start, end] iff it starts before
         # end and ends after start.
         # TODO: confirm against learn_tools("find_calendar_events") before
-        # production — the time fields (startsAt/endsAt), the all-day flag
-        # (isFullDay), and the owner/participant filter below follow Twenty's
-        # standard calendarEvent schema (see seed_data.add_calendar_event) but
-        # have not been verified against the live reader. The fake covers tests.
+        # production — the time fields (startsAt/endsAt) and the all-day flag
+        # (isFullDay) follow Twenty's standard calendarEvent schema (see
+        # seed_data.add_calendar_event) but have not been verified against the
+        # live reader. The fake covers tests.
+        #
+        # Restrict to the rep's events via the participant join. Events can't be
+        # filtered by their `calendarEventParticipants` relation (the backend
+        # only allows filtering many-to-one relations), so we resolve the rep's
+        # event ids through the junction object first. owner_user_id is the rep's
+        # workspace-member id.
+        participants = await self._bridge_find(
+            "find_calendar_event_participants",
+            {"limit": 200, "workspaceMemberId": {"eq": owner_user_id}},
+        )
+        event_ids: list[str] = []
+        for participant in participants:
+            event_id = participant.get("calendarEventId")
+            if event_id and event_id not in event_ids:
+                event_ids.append(event_id)
+        if not event_ids:
+            return []
+        # orderBy must be an array of single-key objects — the backend does
+        # `(orderBy ?? []).filter(...)`, so a bare object value throws.
         args: dict[str, Any] = {
             "limit": 100,
+            "id": {"in": event_ids},
             "startsAt": {"lt": end.isoformat()},
             "endsAt": {"gt": start.isoformat()},
-            # Restrict to the rep's events via the participant join. owner_user_id
-            # is the rep's workspace-member id.
-            "calendarEventParticipants": {
-                "some": {"workspaceMemberId": {"eq": owner_user_id}}
-            },
-            "orderBy": {"startsAt": "AscNullsLast"},
+            "orderBy": [{"startsAt": "AscNullsLast"}],
         }
         records = await self._bridge_find("find_calendar_events", args)
         events: list[CalendarEvent] = []

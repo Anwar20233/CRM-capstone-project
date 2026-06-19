@@ -18,16 +18,25 @@ _MAX_TIMELINE_ITEMS = 10
 SYSTEM_PROMPT = """\
 You are an expert B2B sales coach embedded in a CRM.
 
-You have three knowledge tools:
-  read_stage_playbook(stage)  — reads the full playbook for a pipeline stage
-  read_bant_framework()       — reads the BANT qualification framework
-  read_best_practices()       — reads general B2B sales best practices
+You have a library of *planning skills* — written guidance your company maintains
+on how to plan the next best action: stage playbooks, qualification frameworks,
+best practices, and any custom guidance the team has added. The available skills
+are listed under "Available planning skills" in the deal context below, and you
+can read any of them.
+
+You have two tools:
+  list_planning_skills()    — list the planning skills available to you
+  read_planning_skill(name) — read the full content of a skill by its exact name
 
 ## Required workflow
-1. Call read_stage_playbook with the deal's current stage.
-2. Call read_bant_framework.
-3. Optionally call read_best_practices when the engagement or task situation warrants it.
-4. Using the retrieved knowledge and the deal context below, produce 1–5 next actions.
+1. Review the "Available planning skills" catalog in the context (or call
+   list_planning_skills if it is missing).
+2. Read EVERY skill relevant to THIS deal with read_planning_skill — judge
+   relevance from the deal's stage, the trigger, BANT gaps, and engagement.
+   Load more than one when several apply (e.g. a stage playbook plus the BANT or
+   best-practices skill). Do NOT assume a skill exists for the exact stage name;
+   pick the closest relevant guidance by reading its description.
+3. Using the guidance you read and the deal context, produce 1–5 next actions.
 
 ## Output contract
 - Return JSON ONLY matching the provided schema. No prose, no markdown fences.
@@ -37,8 +46,8 @@ You have three knowledge tools:
   items, engagement metrics, contacts, BANT signals, profile facts).
 - orchestrator_tool must be one of: create_task, schedule_meeting, send_email,
   update_opportunity, log_activity, create_reminder.
-- orchestrator_instruction must reference the opportunity id and describe
-  exactly what to execute if the rep accepts this action.
+- orchestrator_instruction must reference the opportunity id (and any relevant company/person ids) and describe
+  exactly what to execute if the rep accepts this action. IMPORTANT: When instructing to create a task or note, you MUST explicitly ask the orchestrator to link it to the relevant opportunity, company, or person IDs (e.g. "Create task and link to opportunity XYZ and company ABC using the target tools").
 - priority 1 (highest) to 5 (lowest). Avoid ties unless genuinely equal urgency.
 - Ground every action in the provided deal context. Do not invent facts.\
 """
@@ -49,11 +58,13 @@ def build_deal_context_message(
     trigger: str | None,
     bant: BANTSignals,
     engagement: EngagementSignals,
+    planning_skills_catalog: str | None = None,
 ) -> str:
     """Compact, structured deal context for the planner's initial message.
 
-    Contains only facts (observations about the deal). The rules (what to do
-    given these facts) come from the tool calls the agent makes.
+    Contains only facts (observations about the deal) plus the catalog of
+    planning skills the agent can load. The rules (what to do given these facts)
+    come from the skills the agent reads.
     """
     sections: list[str] = []
 
@@ -123,9 +134,17 @@ def build_deal_context_message(
         eng_lines.append("Risk flags: " + "; ".join(engagement.risk_flags))
     sections.append("## Engagement\n" + "\n".join(eng_lines))
 
+    if planning_skills_catalog and planning_skills_catalog.strip():
+        sections.append(
+            "## Available planning skills\n"
+            "Read the ones relevant to this deal with read_planning_skill(name):\n"
+            f"{planning_skills_catalog.strip()}"
+        )
+
     sections.append(
         "## Task\n"
-        "Call read_stage_playbook and read_bant_framework first, then recommend 1–5 next actions.\n"
+        "First read the relevant planning skills above with read_planning_skill, "
+        "then recommend 1–5 next actions.\n"
         'Return JSON matching the NextStepLLMOutput schema: '
         '{"actions": [...], "summary_reasoning": str, "confidence": float (0.0–1.0)}.'
     )

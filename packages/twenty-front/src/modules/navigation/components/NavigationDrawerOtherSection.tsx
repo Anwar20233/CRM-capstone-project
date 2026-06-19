@@ -1,6 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
-import { SettingsPath } from 'twenty-shared/types';
-import { IconHelpCircle, IconSettings } from 'twenty-ui/display';
+import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { IconHelpCircle, IconSettings, IconSparkles } from 'twenty-ui/display';
 import { AnimatedExpandableContainer } from 'twenty-ui/layout';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
@@ -47,6 +47,11 @@ export const NavigationDrawerOtherSection = () => {
         containAnimation
         initial={false}
       >
+        <NavigationDrawerItem
+          label={t`Skills`}
+          Icon={IconSparkles}
+          to={AppPath.SkillsPage}
+        />
         <NavigationDrawerItem
           label={t`Settings`}
           Icon={IconSettings}
