@@ -214,11 +214,13 @@ async def resolve_workspace_schema(
             ''',
             workspace_id,
         )
-        if not schema:
-            raise ValueError(f"Workspace schema not found for workspace_id={workspace_id}")
-        if not _TRUSTED_WORKSPACE_SCHEMA.fullmatch(schema):
-            raise ValueError(f"Unsafe workspace schema resolved: {schema!r}")
-        return schema
+        if schema:
+            if not _TRUSTED_WORKSPACE_SCHEMA.fullmatch(schema):
+                raise ValueError(f"Unsafe workspace schema resolved: {schema!r}")
+            return schema
+        # core."dataSource" can be empty in a dev/seeded database. Don't give up
+        # on the workspace_id — fall through to the information_schema scan that
+        # locates the opportunity by id across the workspace_* schemas.
 
     schemas = await conn.fetch(
         """
