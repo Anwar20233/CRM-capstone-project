@@ -216,6 +216,8 @@ class WriterWorker:
 
         # Pre-compute tool name list so chat.py's preflight() can display it.
         _tools = build_crm_tools(WRITER_SCOPE, write_policy=None) + build_utility_tools()
+        self._tools = list(_tools)
+        self._tools_by_name = {tool.name: tool for tool in self._tools}
         self._tool_names: list[str] = sorted(t.name for t in _tools)
 
         # Register for resume lookups.
@@ -224,6 +226,33 @@ class WriterWorker:
     @property
     def tool_names(self) -> list[str]:
         return self._tool_names
+
+    @property
+    def tools(self) -> list[Any]:
+        """Compatibility surface matching BaseWorker for tests and preflight code."""
+        return list(self._tools)
+
+    async def invoke_tool(self, name: str, args: dict[str, Any] | None = None) -> dict:
+        """Invoke a single writer utility/meta tool directly, bypassing the LLM."""
+        tool = self._tools_by_name.get(name)
+        if tool is None:
+            return {
+                "ok": False,
+                "error": {
+                    "code": "UNKNOWN_TOOL",
+                    "message": f"Tool '{name}' is not in this worker's toolset",
+                },
+            }
+        try:
+            return await tool.ainvoke(args or {})
+        except Exception as error:  # noqa: BLE001
+            return {
+                "ok": False,
+                "error": {
+                    "code": "INVALID_ARGUMENTS",
+                    "message": f"Tool '{name}' rejected the arguments: {error}",
+                },
+            }
 
     # ------------------------------------------------------------------
     # Public interface (same shape as BaseWorker.run)

@@ -216,3 +216,27 @@ def test_build_crm_instruction_for_proposal_draft():
     assert "proposal draft" in instruction
     assert draft.title in instruction
     assert format_proposal_sections(draft) in instruction
+
+
+def test_accept_builder_email_fields_align_with_send_args_shape():
+    from types import SimpleNamespace
+
+    from followup.api.execution import build_send_email_args
+
+    draft = _email_draft(DraftType.FOLLOW_UP_EMAIL)
+    action = SimpleNamespace(
+        action_payload={
+            "draft": {
+                "recipient_email": "jane@acme.com",
+                "subject": draft.subject,
+                "body": draft.body,
+            }
+        },
+        draft_result=None,
+    )
+    send_args = build_send_email_args(action)
+
+    assert send_args is not None
+    assert send_args["recipients"]["to"] == "jane@acme.com"
+    assert send_args["subject"] == draft.subject
+    assert draft.body.replace("\n", "<br>") in send_args["body"]
