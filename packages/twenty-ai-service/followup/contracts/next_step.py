@@ -118,7 +118,8 @@ class MockNextStepAgent:
         )
 
         steps: list[PlannedStep] = []
-        if risk >= 0.7:
+        high_risk_threshold = 70 if risk > 1 else 0.7
+        if risk >= high_risk_threshold:
             headline = "escalate"
             steps.append(PlannedStep(
                 kind="draft_email",

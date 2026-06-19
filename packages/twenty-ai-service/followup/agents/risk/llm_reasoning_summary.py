@@ -31,7 +31,7 @@ _LLM_TIMEOUT_SECONDS = 12
 async def generate_llm_reasoning_summary(
     *,
     opportunity_name: str | None,
-    risk_score: int,
+    risk_score: float,
     risk_level: str,
     risk_factors: list,
     deterministic_summary: str,
@@ -94,7 +94,7 @@ async def _call_llm_reasoning_summary(prompt: str) -> str:
 def _build_prompt(
     *,
     opportunity_name: str | None,
-    risk_score: int,
+    risk_score: float,
     risk_level: str,
     risk_factors: list,
     deterministic_summary: str,
@@ -112,9 +112,11 @@ Rules:
 - Use only the evidence provided.
 - Do not invent facts.
 - Do not mention that you are an AI.
-- Keep the summary to 2-3 sentences.
+- Keep the summary to 2-3 complete sentences.
 - Be direct and useful for a sales rep.
-- Customize the explanation for this specific deal; mention the opportunity name when provided.
+- Customize the explanation for this specific opportunity record.
+- Mention the opportunity name when provided.
+- Do not write a generic summary that could apply to any deal.
 - If evidence is limited, say the risk is based on the available CRM signals.
 
 Input:

@@ -355,10 +355,10 @@ async def test_risk_daily_score_roundtrip(conn, opportunity_id, workspace_id):
         {
             "opportunity_id": opportunity_id,
             "workspace_id": workspace_id,
-            "risk_score": 0.24,
+            "risk_score": 24,
             "risk_level": "low",
             "top_factors": [{"factor_type": "engagement_gap"}],
-            "assessment": {"risk_score": 0.24, "risk_level": "low"},
+            "assessment": {"risk_score": 24, "risk_level": "low"},
             "assessed_at": older,
         }
     )
@@ -366,10 +366,10 @@ async def test_risk_daily_score_roundtrip(conn, opportunity_id, workspace_id):
         {
             "opportunity_id": opportunity_id,
             "workspace_id": workspace_id,
-            "risk_score": 0.82,
+            "risk_score": 82,
             "risk_level": "high",
             "top_factors": [{"factor_type": "sentiment_decline"}],
-            "assessment": {"risk_score": 0.82, "risk_level": "high"},
+            "assessment": {"risk_score": 82, "risk_level": "high"},
             "assessed_at": newer,
         }
     )
@@ -378,6 +378,6 @@ async def test_risk_daily_score_roundtrip(conn, opportunity_id, workspace_id):
 
     assert fetched is not None
     assert fetched.id == latest.id
-    assert fetched.risk_score == 0.82
+    assert fetched.risk_score == 82
     assert fetched.risk_level == "high"
     assert fetched.top_factors == [{"factor_type": "sentiment_decline"}]

@@ -13,7 +13,7 @@ Given this opportunity, what is the current risk level and why?
 It returns:
 
 ```text
-risk_score: 0.0 to 1.0
+risk_score: 0 to 100
 risk_level: low | medium | high
 factors: why the opportunity is risky
 reasoning_summary: short explanation
@@ -29,7 +29,7 @@ workspace_id, optional
 trigger_type
 ```
 
-The agent then fetches the risk evidence it needs directly from PostgreSQL. It also uses the LLM in two bounded places: before scoring to extract structured risk signals from messy CRM text, and after scoring to write a clearer sales-friendly summary.
+The agent then fetches the risk evidence it needs directly from PostgreSQL. It uses the LLM only for the sales-facing reasoning summary.
 
 ## Single Deal Workflow
 
@@ -52,53 +52,34 @@ the Risk Agent does this:
 5. Fetch latest profile narrative / pending action context.
 6. Fetch recent messages, notes, and tasks.
 7. Build an internal RiskDealContext.
-8. Ask the LLM to extract structured risk signals from compact profile narrative, messages, notes, and tasks.
-9. Add those extracted signals to the context as profile-fact-like evidence.
-10. Score the opportunity with deterministic rules.
-11. Ask the LLM to rewrite only the reasoning summary.
-12. Return a RiskAssessment.
+8. Score the opportunity with deterministic rules.
+9. Ask the LLM to write only the reasoning summary.
+10. Copy the final customized summary into the notification message.
+11. Return a RiskAssessment.
 ```
 
 The internal context is private to the Risk Agent. It is not passed in from P1.
 
 ## How The LLM Is Used
 
-The Risk Agent uses a hybrid approach:
+The Risk Agent uses this flow:
 
 ```text
 PostgreSQL data
 → RiskDealContext
-→ LLM signal extractor
 → deterministic scoring
 → LLM reasoning summary
+→ customized notification message
 → RiskAssessment
 ```
 
-The LLM is used before scoring to understand messy text. For example, if a note says:
+The LLM writes the explanation in sales-friendly language once the deterministic score already exists. It must not change the score, level, factors, urgency, notification decision, or action type.
 
-```text
-Budget owner wants below $25k while current ask is $32k.
-```
-
-the LLM can extract:
-
-```json
-{
-  "fact_type": "budget",
-  "fact_value": "Budget owner wants below $25k while current ask is $32k",
-  "sentiment": "negative",
-  "confidence": 0.9
-}
-```
-
-Then the deterministic scorer maps that signal into a risk factor such as `budget_concern` and decides how much it affects the score.
-
-The LLM is also used after scoring to rewrite the explanation into sales-friendly language. It must not change the score, level, factors, urgency, notification decision, or action type.
+The summary should be 2-3 complete sentences, customized for the opportunity record, and mention the opportunity name when available. The same final summary is used as the notification message shown to the sales rep.
 
 If the LLM is unavailable or fails, the Risk Agent still works:
 
 ```text
-signal extraction failure -> score from original database evidence
 summary generation failure -> use deterministic summary
 ```
 
@@ -160,7 +141,7 @@ followup_agent.risk_snapshots
 followup_agent.followup_pending_actions.risk_assessment
 ```
 
-Those are old or previously computed risk outputs. The current score is calculated from current CRM, profile, relationship, and activity evidence.
+Those are stored risk outputs. The current score is calculated from current CRM, profile, relationship, and activity evidence.
 
 ## What The Agent Looks For
 
@@ -197,7 +178,7 @@ positive_momentum:
   Buying signals, approvals, commitment, scheduled next steps, or similar positive evidence.
 ```
 
-Some signals come directly from database fields, such as `updatedAt`, `closeDate`, `stage`, and task due dates. Other signals come from stored profile facts or from the LLM signal extractor. The LLM extractor does not score the deal; it only converts unstructured text into structured evidence that the deterministic scorer can evaluate.
+Signals come from database fields such as `updatedAt`, `closeDate`, `stage`, task due dates, stored profile facts, stakeholder relationships, messages, notes, and tasks. The LLM does not add scoring evidence in the current flow; it only explains the already-calculated result.
 
 ## Real Database Example
 
@@ -218,7 +199,7 @@ opportunity_id: a45a119e-376d-5eb2-8b96-33c2631660ea
 Result:
 
 ```text
-risk_score: 1.0
+risk_score: 100
 risk_level: high
 should_notify: true
 urgency: high
@@ -379,7 +360,7 @@ The backend scoring and daily sweep are working. Full product integration still 
    Add logs/alerts if the daily sweep fails.
 
 8. Retention policy
-   Decide whether old risk_daily_scores rows should be kept forever, archived,
+   Decide whether historical risk_daily_scores rows should be kept forever, archived,
    or deleted after a retention window.
 
 9. Historical calibration

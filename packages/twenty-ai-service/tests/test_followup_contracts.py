@@ -236,7 +236,7 @@ async def test_mock_risk_accepts_minimal_identifiers() -> None:
 async def test_mock_risk_does_not_require_previous_score() -> None:
     req = RiskAssessmentRequest(opportunity_id="opp-001")
     result = await MockRiskAgent().run(req)
-    assert 0.0 <= result.risk_score <= 1.0
+    assert 0 <= result.risk_score <= 100
     assert result.previous_score is None
 
 
@@ -383,5 +383,5 @@ async def test_agent_bundle_mocks_run_end_to_end() -> None:
     )
 
     assert plan.headline_action in NEXT_STEP_TYPES
-    assert 0.0 <= assessment.risk_score <= 1.0
+    assert 0 <= assessment.risk_score <= 100
     assert draft.subject and draft.body

@@ -12,14 +12,13 @@ from __future__ import annotations
 import os
 import re
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Protocol, runtime_checkable
 
 import asyncpg
 
 from followup.agents.risk.llm_reasoning_summary import generate_llm_reasoning_summary
-from followup.agents.risk.llm_signal_extractor import extract_llm_risk_signals
 
 DEFAULT_DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/default"
 DATABASE_URL = os.getenv("DATABASE_URL", os.getenv("PG_DATABASE_URL", DEFAULT_DATABASE_URL))
@@ -112,13 +111,13 @@ class RiskFactor:
 class RiskAssessment:
     """Output of the Risk Assessment agent.
 
-    ``risk_score`` is in [0.0, 1.0] (1.0 = highest risk). All fields are
+    ``risk_score`` is in [0, 100] (100 = highest risk). All fields are
     str/float/list/dict/None so asdict(assessment) is JSON-safe for storage
     in PendingAction.risk_assessment.
     """
 
     opportunity_id: str
-    risk_score: float  # 0.0–1.0
+    risk_score: float  # 0–100
     risk_level: str  # ∈ RISK_LEVELS
     factors: list[RiskFactor]  # asdict recurses into each RiskFactor
     previous_score: float | None
@@ -480,9 +479,9 @@ def _severity_points(severity: str) -> float:
 
 
 def _risk_level(score: float) -> str:
-    if score >= 0.7:
+    if score >= 70:
         return "high"
-    if score >= 0.4:
+    if score >= 40:
         return "medium"
     return "low"
 
@@ -503,7 +502,7 @@ def _notification_for(
         "title": f"Deal at risk: {title_suffix}",
         "message": (
             f"{opportunity_name or 'This deal'} is currently {risk_level} risk "
-            f"(score {risk_score:.2f})."
+            f"(score {risk_score:.0f}/100)."
         ),
         "recommended_action": (
             "Follow up with the champion, confirm the next step, and address the "
@@ -721,8 +720,9 @@ def evaluate_risk_context(
     positive_factors = [factor for factor in factors if factor.factor_type == "positive_momentum"]
     score += sum(_severity_points(factor.severity) for factor in risk_factors)
     score -= min(len(positive_factors) * 0.08, 0.24)
-    score = round(max(0.0, min(score, 1.0)), 4)
-    risk_level = _risk_level(score)
+    normalized_score = round(max(0.0, min(score, 1.0)), 4)
+    risk_score = round(normalized_score * 100, 2)
+    risk_level = _risk_level(risk_score)
 
     ordered = sorted(
         factors,
@@ -751,7 +751,7 @@ def evaluate_risk_context(
 
     return RiskAssessment(
         opportunity_id=str(opportunity.get("opportunity_id")),
-        risk_score=score,
+        risk_score=risk_score,
         risk_level=risk_level,
         factors=ordered,
         previous_score=None,
@@ -760,7 +760,7 @@ def evaluate_risk_context(
         recommended_notification=_notification_for(
             opportunity_name=opportunity_name,
             risk_level=risk_level,
-            risk_score=score,
+            risk_score=risk_score,
             factors=ordered,
         ),
         metadata={
@@ -783,24 +783,13 @@ def _recent_activity_summary(context: RiskDealContext) -> str:
     )
 
 
-async def _with_llm_risk_signals(context: RiskDealContext) -> RiskDealContext:
-    signals = await extract_llm_risk_signals(
-        opportunity_name=_text(context.opportunity.get("name")),
-        profile_narrative=context.profile_narrative,
-        recent_messages=context.recent_messages,
-        recent_notes=context.recent_notes,
-        recent_tasks=context.recent_tasks,
-    )
-    if not signals:
-        return context
-
-    return replace(
-        context,
-        profile_facts=[
-            *context.profile_facts,
-            *signals,
-        ],
-    )
+def _with_summary_notification(
+    assessment: RiskAssessment,
+    reasoning_summary: str,
+) -> dict[str, Any]:
+    notification = dict(assessment.recommended_notification)
+    notification["message"] = reasoning_summary
+    return notification
 
 
 ContextBuilder = Callable[[str, str | None], Awaitable[RiskDealContext]]
@@ -831,7 +820,6 @@ class DatabaseRiskAgent:
         context = await self._context_builder(
             opportunity_id, workspace_id
         )
-        context = await _with_llm_risk_signals(context)
         risk_assessment = evaluate_risk_context(context, trigger_type=trigger_type)
         llm_summary = await generate_llm_reasoning_summary(
             opportunity_name=_text(context.opportunity.get("name")),
@@ -843,6 +831,10 @@ class DatabaseRiskAgent:
             recent_activity_summary=_recent_activity_summary(context),
         )
         risk_assessment.reasoning_summary = llm_summary
+        risk_assessment.recommended_notification = _with_summary_notification(
+            risk_assessment,
+            llm_summary,
+        )
         return risk_assessment
 
 
@@ -862,7 +854,7 @@ class MockRiskAgent:
         workspace_id: str | None = None,
         trigger_type: str | None = None,
     ) -> RiskAssessment:
-        score = 0.2
+        score = 20.0
         factors = [
             RiskFactor(
                 factor_type="engagement_gap",

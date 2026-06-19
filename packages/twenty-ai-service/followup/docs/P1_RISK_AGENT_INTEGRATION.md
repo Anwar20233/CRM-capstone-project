@@ -2,7 +2,7 @@
 
 ## Summary
 
-The Risk Agent evaluates the current risk level of a CRM opportunity. P1 only passes identifiers, and the Risk Agent independently loads the evidence it needs from PostgreSQL, builds a private `RiskDealContext`, optionally asks an LLM to extract structured risk signals from messy CRM text, scores the deal with deterministic rules, and returns a structured `RiskAssessment` plus a notification recommendation.
+The Risk Agent evaluates the current risk level of a CRM opportunity. P1 only passes identifiers, and the Risk Agent independently loads the evidence it needs from PostgreSQL, builds a private `RiskDealContext`, scores the deal with deterministic rules, and optionally asks an LLM to write the sales-facing reasoning summary.
 
 This agent intentionally does not depend on the shared `DealContext` used by next-step, drafting, and profile flows. It also does not use mock or historical risk fields as scoring evidence.
 
@@ -20,9 +20,9 @@ It does this by:
 2. Loading the opportunity and current CRM evidence from PostgreSQL.
 3. Loading follow-up profile evidence extracted by the profile agent.
 4. Building an internal `RiskDealContext`.
-5. Using the LLM as an optional evidence extractor for recent messages, notes, tasks, and profile narrative.
-6. Applying deterministic risk scoring rules to database facts plus any LLM-extracted structured signals.
-7. Using the LLM as an optional summary writer after scoring.
+5. Applying deterministic risk scoring rules to database evidence.
+6. Using the LLM as an optional summary writer once scoring is complete.
+7. Copying the final customized summary into the recommended notification message.
 8. Returning a `RiskAssessment` with factors, reasoning, metadata, and a recommended notification payload.
 
 The agent is designed for P1 risk surfacing and sales-rep notification workflows. P1 remains responsible for delivery, UI state, deduplication, dismissal, and any follow-up workflow triggered by the recommendation.
@@ -42,17 +42,16 @@ build_risk_deal_context_from_db(...)
   fetches opportunity/profile/activity evidence from PostgreSQL
         |
         v
-extract_llm_risk_signals(...)
-  converts compact CRM text into structured profile-fact-like signals
-  never calculates risk score, risk level, urgency, or notification decision
-        |
-        v
 evaluate_risk_context(...)
   deterministically calculates score, level, factors, reasoning, notification
         |
         v
 generate_llm_reasoning_summary(...)
-  rewrites only reasoning_summary in sales-friendly language
+  rewrites only reasoning_summary in customized sales-friendly language
+        |
+        v
+recommended_notification.message
+  uses the same final customized reasoning summary
         |
         v
 RiskAssessment
@@ -181,20 +180,16 @@ Workspace schemas are resolved from trusted metadata in `core."dataSource"`. Bef
 
 This matters because table names cannot be passed as normal SQL parameters. Values such as `opportunity_id` and `workspace_id` remain parameterized.
 
-## Hybrid LLM Use
+## LLM Reasoning Summary
 
-The Risk Agent now uses the LLM in two bounded places:
+The Risk Agent uses the LLM in one bounded place:
 
 ```text
-1. Before scoring:
-   extract_llm_risk_signals(...)
-   reads compact profile narrative, messages, notes, and tasks
-   returns structured signals such as budget, objection, blocker, delay,
-   sentiment, or buying_signal
-
-2. After scoring:
-   generate_llm_reasoning_summary(...)
-   rewrites only the already-calculated reasoning_summary
+Once deterministic scoring is complete:
+  generate_llm_reasoning_summary(...)
+  rewrites only the already-calculated reasoning_summary
+  produces a 2-3 sentence customized explanation for the opportunity record
+  mentions the opportunity name when available
 ```
 
 The LLM is not allowed to calculate or override:
@@ -210,33 +205,18 @@ threshold crossing
 daily sweep deduplication
 ```
 
-The pre-scoring extractor returns profile-fact-like dictionaries:
+The LLM-generated summary is also copied into `recommended_notification.message`, so the notification text shown to the sales rep is customized for the specific opportunity record.
 
-```python
-{
-    "fact_type": "budget",
-    "fact_value": "Budget owner wants below $25k while current ask is $32k",
-    "sentiment": "negative",
-    "confidence": 0.9,
-    "source_type": "llm_risk_signal",
-    "source_snippet": "budget owner wants below $25k",
-}
-```
-
-Those signals are appended to `RiskDealContext.profile_facts`, then the normal deterministic `evaluate_risk_context(...)` scoring logic maps them into factors such as `budget_concern`, `unresolved_objection`, `deal_velocity_drop`, `sentiment_decline`, or `positive_momentum`.
-
-If either LLM call fails, times out, returns invalid JSON, returns an empty response, or is not configured, the Risk Agent falls back safely:
+If the LLM call fails, times out, returns an empty response, or is not configured, the Risk Agent falls back safely:
 
 ```text
-signal extraction failure -> continue with original database context
 summary generation failure -> keep deterministic reasoning_summary
+notification message -> uses the same deterministic reasoning_summary fallback
 ```
 
 ## Scoring Logic
 
-`evaluate_risk_context(...)` starts with a low base score and adds or subtracts points based on evidence. It is the only place where risk score and risk level are calculated.
-
-Evidence can come from stored database facts or from the LLM signal extractor. LLM-extracted signals are treated as additional profile facts, so the same deterministic scoring rules still decide how much each signal changes the score.
+`evaluate_risk_context(...)` starts with a low base score and adds or subtracts points based on database evidence. It is the only place where risk score and risk level are calculated.
 
 Risk-increasing signals include:
 
@@ -278,15 +258,15 @@ positive_momentum:
   scheduled, committed, signed, or interested
 ```
 
-The score is clamped to `0.0..1.0`, and the level is derived from the final score:
+The score is returned on a `0..100` scale, and the level is derived from the final score:
 
 ```text
-low:    below medium threshold
-medium: notify-worthy risk
-high:   highest urgency risk
+low:    0-39
+medium: 40-69, notify-worthy risk
+high:   70-100, highest urgency risk
 ```
 
-Each factor carries evidence, source, severity, and confidence so P1 can show the reason behind the notification. When a factor originated from pre-scoring LLM extraction, its source remains `profile_facts`, and the underlying fact has `source_type = llm_risk_signal`.
+Each factor carries evidence, source, severity, and confidence so P1 can show the reason behind the notification.
 
 ## Output Contract
 
@@ -295,7 +275,7 @@ The result is a `RiskAssessment` dataclass:
 ```python
 {
     "opportunity_id": "...",
-    "risk_score": 0.0,
+    "risk_score": 87,
     "risk_level": "low | medium | high",
     "factors": [
         {
@@ -314,7 +294,7 @@ The result is a `RiskAssessment` dataclass:
         "should_notify": True,
         "urgency": "low | medium | high",
         "title": "Deal at risk: ...",
-        "message": "... is currently high risk (score 0.82).",
+        "message": "... customized risk summary ...",
         "recommended_action": "Follow up with the champion, confirm the next step, and address the highest-confidence concern.",
     },
     "metadata": {
@@ -332,7 +312,7 @@ The result is a `RiskAssessment` dataclass:
 
 Implementation note: the dataclass stores factors in `factors`. `risk_factors` is a Python property alias for P1-facing consumers, and `RiskFactor.factor` is a property alias for `factor_type`. These aliases are available in Python code but are not emitted by `dataclasses.asdict(...)`.
 
-`reasoning_summary` may be LLM-generated, but it is produced after scoring. P1 can display it as the richer sales-facing explanation while still relying on the deterministic `risk_score`, `risk_level`, and `factors` for product logic.
+`reasoning_summary` may be LLM-generated, but scoring is already complete when it is created. P1 can display it as the richer sales-facing explanation while still relying on the deterministic `risk_score`, `risk_level`, and `factors` for product logic.
 
 ## Notification Contract
 
@@ -585,9 +565,8 @@ does not duplicate alert on unchanged medium/high
 does not duplicate when a pending risk_alert already exists
 works without a P1 trigger
 supports local schema override for dev testing
-LLM signal extraction can enrich profile facts before scoring
-LLM signal extraction failure does not crash scoring
 LLM reasoning summary can replace only reasoning_summary
+LLM reasoning summary is copied into recommended_notification.message
 LLM reasoning summary failure falls back to deterministic reasoning
 ```
 
@@ -624,8 +603,8 @@ Use this checklist when wiring the P1 UI/backend to the Risk Agent:
 [ ] Call evaluate_deal_risk with opportunity_id, workspace_id, trigger_type only.
 [ ] Do not pass DealContext or preloaded profile data.
 [ ] Do not use risk_snapshots or pending_action.risk_assessment as fresh evidence.
-[ ] Configure LLM_PROVIDER, LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL if using LLM signal extraction or LLM summaries.
-[ ] Treat missing or failing LLM config as degraded explanation/enrichment, not as risk-score failure.
+[ ] Configure LLM_PROVIDER, LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL if using LLM summaries.
+[ ] Treat missing or failing LLM config as degraded explanation, not as risk-score failure.
 [ ] Show risk_level, risk_score, reasoning_summary, and top risk factors.
 [ ] Use recommended_notification.should_notify to decide whether to notify.
 [ ] Keep delivery, dedupe, dismissal, and analytics in P1.
@@ -788,7 +767,7 @@ async def main():
             f"updated: {opportunity['updatedAt']}"
         )
         print(
-            f"   risk: {result.risk_level} ({result.risk_score:.2f}) | "
+            f"   risk: {result.risk_level} ({result.risk_score:.0f}/100) | "
             f"notify: {notification['should_notify']} | "
             f"urgency: {notification['urgency']}"
         )
@@ -825,20 +804,20 @@ trigger_type: manual_test_case
 
 ```text
 Enterprise Plan Upgrade
-  score: 0.34
+  score: 34
   notify: false
   top signal: close_date_pressure — Close date is overdue.
   evidence: facts=0, relationships=0, messages=20, notes=5, tasks=5
 
 New Expansion Deal
-  score: 0.38
+  score: 38
   notify: false
   top signals:
     missing_stakeholder — No clear deal owner is assigned.
     missing_stakeholder — No point of contact is linked to the opportunity.
 
 Test Corp — New Client
-  score: 0.38
+  score: 38
   notify: false
   top signals:
     missing_stakeholder — No clear deal owner is assigned.
@@ -852,7 +831,7 @@ Several newer or test-created opportunities stayed in the `low` range because th
 ```text
 Platform Migration
   opportunity_id: 822639e5-9bf7-40f1-8882-a11140362339
-  score: 0.47
+  score: 47
   notify: true
   top signals:
     close_date_pressure — Close date is overdue.
@@ -860,7 +839,7 @@ Platform Migration
 
 Workspace Expansion
   opportunity_id: 75de302f-1044-4957-8da4-1f67ebefd52b
-  score: 0.47
+  score: 47
   notify: true
   top signals:
     close_date_pressure — Close date is overdue.
@@ -868,7 +847,7 @@ Workspace Expansion
 
 API Integration Deal
   opportunity_id: 2beb07b0-340c-41d7-be33-5aa91757f329
-  score: 0.47
+  score: 47
   notify: true
   top signals:
     close_date_pressure — Close date is overdue.
@@ -876,7 +855,7 @@ API Integration Deal
 
 Figma — Design Collaboration Platform
   opportunity_id: 0cacee5d-89d4-577e-8298-2d2bfec138ea
-  score: 0.69
+  score: 69
   notify: true
   top signals:
     engagement_gap — Opportunity has not been updated for 47 days.
@@ -889,7 +868,7 @@ Figma — Design Collaboration Platform
 ```text
 Airbnb — Platform Integration
   opportunity_id: a45a119e-376d-5eb2-8b96-33c2631660ea
-  score: 1.00
+  score: 100
   notify: true
   top signals:
     engagement_gap — Opportunity has not been updated for 47 days.
@@ -899,7 +878,7 @@ Airbnb — Platform Integration
 
 Stripe — Analytics Suite
   opportunity_id: b278fc35-b5e0-5846-a9a4-7b4618952be7
-  score: 0.79
+  score: 79
   notify: true
   top signals:
     engagement_gap — Opportunity has not been updated for 47 days.
@@ -909,7 +888,7 @@ Stripe — Analytics Suite
 
 Notion — Workflow Automation
   opportunity_id: 3a24c9cd-dcbc-5b9f-8456-d1de97de951d
-  score: 0.87
+  score: 87
   notify: true
   top signals:
     engagement_gap — Opportunity has not been updated for 47 days.
@@ -942,7 +921,7 @@ opportunity_id: a45a119e-376d-5eb2-8b96-33c2631660ea
 Result:
 
 ```text
-risk_score: 1.0
+risk_score: 100
 risk_level: high
 should_notify: true
 urgency: high
@@ -1006,13 +985,13 @@ risk_alert pending_actions total: 8
 
 ## Verification
 
-Latest verification after Risk Agent and daily sweep implementation:
+Current verification for Risk Agent and daily sweep behavior:
 
 ```text
 python compile:
   py_compile passed for 184 Python files under packages/twenty-ai-service
 
-focused previously failing tests:
+focused regression tests:
   44 passed, 43 warnings
 
 risk focused tests:
@@ -1030,12 +1009,12 @@ command:
 
 Warnings are dependency/deprecation warnings and are not test failures.
 
-Latest focused verification after hybrid LLM signal extraction and reasoning-summary additions:
+Latest focused verification for customized LLM reasoning summaries:
 
 ```text
 risk agent focused tests:
   packages/twenty-ai-service/tests/test_risk_agent.py
-  11 passed in 0.38s
+  9 passed in 0.22s
 
 python compile:
   py_compile passed for changed Risk Agent files

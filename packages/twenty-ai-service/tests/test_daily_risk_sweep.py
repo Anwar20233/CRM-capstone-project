@@ -102,38 +102,38 @@ class FakeConnection:
 def test_should_create_risk_alert_for_first_medium_score() -> None:
     assert should_create_risk_alert(
         previous_score=None,
-        assessment=_assessment(risk_level="medium", risk_score=0.55),
+        assessment=_assessment(risk_level="medium", risk_score=55),
     )
 
 
 def test_should_not_create_risk_alert_when_level_does_not_increase() -> None:
     assert not should_create_risk_alert(
-        previous_score=_daily_score(risk_level="medium", risk_score=0.52),
-        assessment=_assessment(risk_level="medium", risk_score=0.65),
+        previous_score=_daily_score(risk_level="medium", risk_score=52),
+        assessment=_assessment(risk_level="medium", risk_score=65),
     )
 
 
 def test_should_create_risk_alert_when_medium_crosses_to_high() -> None:
     assert should_create_risk_alert(
-        previous_score=_daily_score(risk_level="medium", risk_score=0.52),
-        assessment=_assessment(risk_level="high", risk_score=0.83),
+        previous_score=_daily_score(risk_level="medium", risk_score=52),
+        assessment=_assessment(risk_level="high", risk_score=83),
     )
 
 
 def test_should_not_create_risk_alert_when_pending_alert_exists() -> None:
     assert not should_create_risk_alert(
-        previous_score=_daily_score(risk_level="low", risk_score=0.2),
-        assessment=_assessment(risk_level="high", risk_score=0.9),
+        previous_score=_daily_score(risk_level="low", risk_score=20),
+        assessment=_assessment(risk_level="high", risk_score=90),
         has_pending_risk_alert=True,
     )
 
 
 @pytest.mark.asyncio
 async def test_daily_sweep_scores_and_creates_risk_alert() -> None:
-    assessment = _assessment(risk_level="high", risk_score=0.88)
+    assessment = _assessment(risk_level="high", risk_score=88)
     risk_agent = FakeRiskAgent(assessment)
     score_repository = FakeScoreRepository(
-        previous_score=_daily_score(risk_level="low", risk_score=0.2)
+        previous_score=_daily_score(risk_level="low", risk_score=20)
     )
     pending_repository = FakePendingActionRepository()
     sweep = DailyRiskSweep(
@@ -174,12 +174,12 @@ async def test_daily_sweep_persists_score_without_duplicate_alert() -> None:
         action_payload={},
     )
     score_repository = FakeScoreRepository(
-        previous_score=_daily_score(risk_level="low", risk_score=0.2)
+        previous_score=_daily_score(risk_level="low", risk_score=20)
     )
     pending_repository = FakePendingActionRepository(pending=[pending])
     sweep = DailyRiskSweep(
         executor=object(),
-        risk_agent=FakeRiskAgent(_assessment(risk_level="high", risk_score=0.9)),
+        risk_agent=FakeRiskAgent(_assessment(risk_level="high", risk_score=90)),
         score_repository=score_repository,
         pending_action_repository=pending_repository,
     )
@@ -221,7 +221,7 @@ def _candidate() -> OpportunityCandidate:
 
 
 def _assessment(
-    *, risk_level: str = "medium", risk_score: float = 0.55
+    *, risk_level: str = "medium", risk_score: float = 55
 ) -> RiskAssessment:
     return RiskAssessment(
         opportunity_id=OPPORTUNITY_ID,

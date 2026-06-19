@@ -122,7 +122,9 @@ def synthesize_plan(state: FollowUpState) -> NextStepPlan:
     if state["entry_point"] == "risk":
         risk = state.get("risk_assessment")
         score = risk.risk_score if risk else (deal.risk_score or 0.0)
-        if score >= 0.7:
+        high_risk_threshold = 70 if risk else 0.7
+        display_score = score if risk else score * 100
+        if score >= high_risk_threshold:
             headline = "escalate"
             steps = [
                 PlannedStep(kind="draft_email", intent=f"Re-engage {deal.opportunity_name} on the flagged risk.", priority="high"),
@@ -134,7 +136,7 @@ def synthesize_plan(state: FollowUpState) -> NextStepPlan:
         return NextStepPlan(
             steps=steps,
             headline_action=headline,
-            summary=f"Risk sweep flagged '{deal.opportunity_name}' (score {score:.2f}).",
+            summary=f"Risk sweep flagged '{deal.opportunity_name}' (score {display_score:.0f}/100).",
             metadata={"opportunity_id": deal.opportunity_id, "source": "risk_sweep"},
         )
 

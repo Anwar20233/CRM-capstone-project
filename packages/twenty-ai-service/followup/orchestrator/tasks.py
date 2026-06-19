@@ -263,7 +263,9 @@ def infer_tone(deal_context: "DealContext") -> str:
     A high risk score warrants urgency; otherwise stay professional. Kept simple
     and deterministic — the real P4 agent will refine tone from the narrative.
     """
-    if (deal_context.risk_score or 0.0) >= 0.7:
+    risk_score = deal_context.risk_score or 0.0
+    high_risk_threshold = 70 if risk_score > 1 else 0.7
+    if risk_score >= high_risk_threshold:
         return "urgent"
     return "professional"
 
