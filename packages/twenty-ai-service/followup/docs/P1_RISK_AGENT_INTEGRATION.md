@@ -330,7 +330,7 @@ The orchestrator stores the returned `RiskAssessment` in state and uses it when 
 
 ## Daily Risk Sweep
 
-Status: implemented in `followup.risk.daily_sweep`.
+Status: implemented in `followup.risk_agent.daily_sweep`.
 
 The daily sweep is a standalone backend job that runs without P1 needing to trigger risk scoring manually. It wraps the existing `DatabaseRiskAgent` and uses persisted daily score history to decide when an opportunity newly needs sales-rep attention.
 
@@ -374,7 +374,7 @@ The exact scheduler can be cron, Docker cron, a deployment-provider scheduled jo
 Run the standalone sweep from `packages/twenty-ai-service`:
 
 ```bash
-PYTHONPATH=. .venv/bin/python -m followup.risk.daily_sweep
+PYTHONPATH=. .venv/bin/python -m followup.risk_agent.daily_sweep
 ```
 
 Recommended local env:
@@ -559,7 +559,7 @@ Use this checklist when wiring the P1 UI/backend to the Risk Agent:
 [ ] Keep delivery, dedupe, dismissal, and analytics in P1.
 [ ] Preserve factors/evidence in UI or audit logs so reps can understand why the deal was flagged.
 [ ] Treat errors as unavailable fresh risk, not as low risk.
-[ ] Configure a production scheduler for `python -m followup.risk.daily_sweep`.
+[ ] Configure a production scheduler for `python -m followup.risk_agent.daily_sweep`.
 [ ] Monitor `followup_agent.risk_daily_scores` for sweep history.
 [ ] Confirm P1 renders `risk_alert` pending actions created by the sweep.
 ```
