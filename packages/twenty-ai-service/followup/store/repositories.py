@@ -579,6 +579,15 @@ class PendingActionRepository:
                 PendingAction, await _upsert(conn, "followup_pending_actions", _to_dict(action))
             )
 
+    async def expire_existing_for_opportunity(self, opportunity_id: uuid.UUID) -> int:
+        async with _acquire(self._executor) as conn:
+            result = await conn.execute(
+                f"UPDATE {SCHEMA}.followup_pending_actions SET status = 'expired' "
+                f"WHERE opportunity_id = $1 AND status = 'pending'",
+                opportunity_id,
+            )
+        return int(result.split()[-1])
+
     async def list_accepted_for_outbox(
         self, workspace_id: uuid.UUID, batch_size: int = 20
     ) -> list[PendingAction]:
@@ -678,6 +687,14 @@ class InboundEmail:
 class InboundEmailRepository:
     def __init__(self, executor: Any) -> None:
         self._executor = executor
+
+    async def get(self, email_id: uuid.UUID) -> Optional[InboundEmail]:
+        """Fetch a queued inbound email by id (used to show a workflow's source)."""
+        async with _acquire(self._executor) as conn:
+            row = await conn.fetchrow(
+                f"SELECT * FROM {SCHEMA}.inbound_email_queue WHERE id = $1", email_id
+            )
+        return _from_row(InboundEmail, row)
 
     async def enqueue(self, email_data: dict[str, Any]) -> Optional[InboundEmail]:
         """Insert a row; returns None when message_id already exists (dedupe)."""

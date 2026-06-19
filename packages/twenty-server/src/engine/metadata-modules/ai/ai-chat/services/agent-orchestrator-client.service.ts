@@ -25,6 +25,16 @@ export type OrchestratorStreamHandlers = {
   onToken?: (text: string) => void;
 };
 
+// When the chat is opened on an opportunity record page, we scope the turn to
+// the Follow-Up agent (deal-aware) instead of the generic Orchestrator. Carrying
+// the opportunity id is what flips the ai-service onto the follow-up path.
+export type FollowupChatContext = {
+  opportunityId: string;
+  workspaceId?: string;
+  userId?: string;
+  timezone?: string;
+};
+
 // One NDJSON event emitted by the Python /agent/*/stream endpoints.
 type OrchestratorStreamEvent =
   | { kind: 'stage'; text: string }
@@ -46,10 +56,15 @@ export class AgentOrchestratorClientService {
     private readonly twentyConfigService: TwentyConfigService,
   ) {}
 
-  async chat(sessionId: string, message: string): Promise<OrchestratorResult> {
+  async chat(
+    sessionId: string,
+    message: string,
+    followupContext?: FollowupChatContext,
+  ): Promise<OrchestratorResult> {
     return this.post('/agent/chat', {
       session_id: sessionId,
       message,
+      ...this.followupBody(followupContext),
     });
   }
 
@@ -70,12 +85,34 @@ export class AgentOrchestratorClientService {
     sessionId: string,
     message: string,
     handlers: OrchestratorStreamHandlers,
+    followupContext?: FollowupChatContext,
   ): Promise<OrchestratorResult> {
     return this.postStream(
       '/agent/chat/stream',
-      { session_id: sessionId, message },
+      {
+        session_id: sessionId,
+        message,
+        ...this.followupBody(followupContext),
+      },
       handlers,
     );
+  }
+
+  // Maps the optional follow-up context onto the snake_case body the ai-service
+  // expects; returns an empty object so generic chats are untouched.
+  private followupBody(
+    followupContext?: FollowupChatContext,
+  ): Record<string, unknown> {
+    if (!isDefined(followupContext)) {
+      return {};
+    }
+
+    return {
+      opportunity_id: followupContext.opportunityId,
+      workspace_id: followupContext.workspaceId,
+      user_id: followupContext.userId,
+      timezone: followupContext.timezone,
+    };
   }
 
   async resumeStream(

@@ -14,6 +14,15 @@ Consultative, outcome-focused, and credible.
 - **Approach and Timeline:** Methodology and milestone schedule
 - **Investment:** Reference deal amount or engagement range when available
 - **Next Steps:** Approval path and kickoff prerequisites
+- **Sign-off:** Professional closing with rep placeholder and BeamData branding
+
+## Sign-off
+End every draft with this exact closing block (keep the rep name placeholder unless a sender name is in context):
+```
+Best regards,
+[Your Name]
+BeamData
+```
 
 ## Placeholders
 Use deal context to replace:
@@ -25,4 +34,5 @@ Use deal context to replace:
 
 ## Do not
 - Invent deliverables not grounded in catalog snippets
-- Leave bracket placeholders in the final draft
+- Leave bracket placeholders except `[Your Name]` or `[INSERT NAME]` in the sign-off
+- Omit the BeamData sign-off line

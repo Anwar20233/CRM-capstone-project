@@ -213,7 +213,7 @@ def _coerce_uuid(value: Any) -> uuid.UUID:
 # ===========================================================================
 
 
-async def _run_prep_task(
+async def run_prep_task(
     deps: OrchestratorDeps,
     task_name: str,
     state: FollowUpState,
@@ -250,7 +250,7 @@ async def _run_prep_task(
         return {}
 
 
-def _merge_task_output(out: dict[str, Any], merged: dict[str, Any]) -> None:
+def merge_task_output(out: dict[str, Any], merged: dict[str, Any]) -> None:
     """Fold one task's artifact dict into the accumulating run artifacts."""
     if out.get("calendar") is not None:
         merged["calendar"] = out["calendar"]
@@ -405,24 +405,24 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
             # Phase A — calendar first (the draft depends on its slots).
             calendar_result = None
             if "check_calendar" in task_names:
-                cal_out = await _run_prep_task(
+                cal_out = await run_prep_task(
                     deps, "check_calendar", state, deal, current_plan, risk, None
                 )
-                _merge_task_output(cal_out, merged)
+                merge_task_output(cal_out, merged)
                 calendar_result = merged.get("calendar")
 
             # Phase B — the independent writers, concurrently.
             rest = [name for name in task_names if name != "check_calendar"]
             outs = await asyncio.gather(
                 *(
-                    _run_prep_task(
+                    run_prep_task(
                         deps, name, state, deal, current_plan, risk, calendar_result
                     )
                     for name in rest
                 )
             )
             for out in outs:
-                _merge_task_output(out, merged)
+                merge_task_output(out, merged)
 
             updates: dict[str, Any] = {"plan": current_plan, **merged}
             return _advance(state, "run_tasks", **updates)
@@ -453,6 +453,8 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
                 "status": "pending",
                 "expires_at": compute_expiry(urgency),
             }
+            # Expire any existing pending actions for this opportunity to prevent duplicates
+            await deps.pipeline.pending_actions.expire_existing_for_opportunity(opportunity_uuid)
             action = await deps.pipeline.pending_actions.create(action_data)
 
             run_data = {
@@ -505,6 +507,8 @@ def _asdict_or_none(value: Any) -> dict[str, Any] | None:
 
 __all__ = [
     "build_nodes",
+    "run_prep_task",
+    "merge_task_output",
     "synthesize_plan",
     "determine_action_type",
     "build_action_payload",

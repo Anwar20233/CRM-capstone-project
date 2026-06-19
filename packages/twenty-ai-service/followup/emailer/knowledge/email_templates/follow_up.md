@@ -13,6 +13,14 @@ Professional, warm, and action-oriented. Keep paragraphs short.
 - **Call to action:** Propose a clear next step with a specific timeframe
 - **Closing:** Offer availability and sign off professionally
 
+## Sign-off
+End every draft with this exact closing block (keep the rep name placeholder unless a sender name is in context):
+```
+Best regards,
+[Your Name]
+BeamData
+```
+
 ## Placeholders
 Use deal context to replace:
 - Contact name
@@ -22,5 +30,6 @@ Use deal context to replace:
 - Proposed next step
 
 ## Do not
-- Leave bracket placeholders like [INSERT NAME]
+- Leave bracket placeholders except `[Your Name]` or `[INSERT NAME]` in the sign-off
 - Use generic filler without deal-specific details
+- Omit the BeamData sign-off line

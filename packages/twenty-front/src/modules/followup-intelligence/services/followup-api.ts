@@ -4,6 +4,7 @@ import {
   type FollowupAction,
   type FollowupProfile,
   type FollowupReviseResult,
+  type FollowupRisk,
 } from '@/followup-intelligence/types/followup-action';
 
 const followupRequest = async <TResponse>(
@@ -46,15 +47,25 @@ export const fetchFollowupProfile = async (
   return followupRequest<FollowupProfile>(`/followup/profile/${opportunityId}`);
 };
 
+export const fetchFollowupRisk = async (
+  opportunityId: string,
+): Promise<FollowupRisk> => {
+  return followupRequest<FollowupRisk>(`/followup/risk/${opportunityId}`);
+};
+
 export const acceptFollowupAction = async (
   actionId: string,
   userId: string,
+  disabledStepIndices: number[] = [],
 ): Promise<FollowupAcceptResult> => {
   return followupRequest<FollowupAcceptResult>(
     `/followup/actions/${actionId}/accept`,
     {
       method: 'POST',
-      body: JSON.stringify({ user_id: userId }),
+      body: JSON.stringify({
+        user_id: userId,
+        disabled_step_indices: disabledStepIndices,
+      }),
     },
   );
 };

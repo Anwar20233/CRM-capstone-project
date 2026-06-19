@@ -26,6 +26,8 @@ from followup.api.execution import FollowupActionExecutor, _action_to_fact
 from followup.api.models import (
     AcceptRequest,
     AcceptResult,
+    ChatRequest,
+    ChatResponse,
     DirectFollowUpRequest,
     EmailFetchRequest,
     EmailFetchResult,
@@ -39,6 +41,9 @@ from followup.api.models import (
     RejectRequest,
     ReviseRequest,
     ReviseResult,
+    ReviseStepRequest,
+    ReviseStepResult,
+    RiskScoreResponse,
     RiskSweepRequest,
     RiskSweepResult,
 )
@@ -141,6 +146,10 @@ async def trigger_direct_followup(
     }
     if request.proposed_times:
         trigger["proposed_times"] = request.proposed_times
+    if request.duration_minutes:
+        trigger["duration_minutes"] = request.duration_minutes
+    if request.timezone:
+        trigger["timezone"] = request.timezone
 
     return await _run_followup_pipeline(
         deps=deps,
@@ -222,10 +231,30 @@ async def list_actions(
     deps: OrchestratorDeps = Depends(get_deps),
 ) -> list[PendingActionResponse]:
     """List pending actions for an opportunity (opportunity tab)."""
+    from followup.api.models import SourceEmail
+    from followup.store.repositories import InboundEmailRepository
+
     actions = await deps.pipeline.pending_actions.list_pending(
         uuid.UUID(opportunity_id), status=status
     )
-    return [PendingActionResponse.from_db(a) for a in actions]
+    responses = [PendingActionResponse.from_db(a) for a in actions]
+
+    # Attach the inbound email each email-triggered workflow responds to.
+    inbound_repo = InboundEmailRepository(deps.pipeline.executor)
+    for action, response in zip(actions, responses):
+        if "email" in (action.trigger_type or "") and action.trigger_id:
+            try:
+                email = await inbound_repo.get(uuid.UUID(action.trigger_id))
+            except Exception:  # noqa: BLE001 — never fail the list over a bad trigger id
+                email = None
+            if email is not None:
+                response.source_email = SourceEmail(
+                    subject=email.subject,
+                    body=email.body,
+                    sender_email=email.sender_email,
+                )
+
+    return responses
 
 
 @router.post("/actions/{action_id}/accept", response_model=AcceptResult)
@@ -251,6 +280,7 @@ async def accept_action(
         "user_id": request.user_id,
         "workspace_id": str(action.workspace_id),
         "opportunity_id": str(action.opportunity_id),
+        "disabled_step_indices": request.disabled_step_indices,
     }
     try:
         result = await accept_graph.ainvoke(initial_state)
@@ -341,6 +371,54 @@ async def revise_action(
     )
 
 
+@router.post("/actions/{action_id}/revise-step", response_model=ReviseStepResult)
+async def revise_action_step(
+    action_id: str,
+    request: ReviseStepRequest,
+    deps: OrchestratorDeps = Depends(get_deps),
+) -> ReviseStepResult:
+    """Edit ONE step of a pending action in place (Strategy A — targeted revise).
+
+    Preserves the rest of the workflow. For a meeting-time change that lands on a
+    booked slot, returns ``status="unavailable"`` with free alternatives instead
+    of applying the change.
+    """
+    from followup.orchestrator.revise import revise_step_in_place
+
+    action = await deps.pipeline.pending_actions.get(uuid.UUID(action_id))
+    if action is None:
+        raise HTTPException(status_code=404, detail="Action not found")
+    if action.status != "pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Action is '{action.status}', not 'pending'",
+        )
+
+    result = await revise_step_in_place(
+        deps,
+        action=action,
+        target=request.target,
+        instructions=request.instructions,
+        requested_time=request.requested_time,
+        requested_duration_minutes=request.requested_duration_minutes,
+        user_id=request.user_id,
+        tz_name=request.timezone,
+    )
+
+    if result["status"] == "error":
+        raise HTTPException(status_code=400, detail=result.get("error", "revise failed"))
+    if result["status"] == "unavailable":
+        return ReviseStepResult(
+            status="unavailable",
+            requested_time=result.get("requested_time"),
+            alternatives=result.get("alternatives", []),
+        )
+    return ReviseStepResult(
+        status="updated",
+        action=PendingActionResponse.from_db(result["action"]),
+    )
+
+
 @router.post("/actions/{action_id}/reject")
 async def reject_action(
     action_id: str,
@@ -363,6 +441,42 @@ async def reject_action(
     await deps.pipeline.pending_actions.save(action)
 
     return {"action_id": action_id, "status": "rejected"}
+
+
+# ===========================================================================
+# Conversational chat (opportunity Follow-Up tab)
+# ===========================================================================
+
+
+@router.post("/chat", response_model=ChatResponse)
+async def chat(
+    request: ChatRequest,
+    deps: OrchestratorDeps = Depends(get_deps),
+    accept_graph: Any = Depends(get_accept_graph),
+    followup_graph: Any = Depends(get_followup_graph),
+) -> ChatResponse:
+    """One conversational turn for the opportunity Follow-Up tab.
+
+    The agent may read or act on pending actions (accept / reject / revise) or
+    create a new follow-up, reusing the same operations as the structured
+    endpoints. Returns the reply plus the refreshed pending-action list.
+    """
+    from followup.chat import run_followup_chat
+
+    result = await run_followup_chat(
+        deps=deps,
+        accept_graph=accept_graph,
+        followup_graph=followup_graph,
+        run_pipeline=_run_followup_pipeline,
+        opportunity_id=request.opportunity_id,
+        workspace_id=request.workspace_id,
+        user_id=request.user_id,
+        message=request.message,
+        history=[turn.model_dump() for turn in (request.history or [])],
+        tz_name=request.timezone,
+    )
+
+    return ChatResponse(reply=result.reply, actions=result.actions)
 
 
 # ===========================================================================
@@ -480,6 +594,28 @@ async def get_profile_narrative(
         "risk_score": narrative.risk_score,
         "generated_at": narrative.generated_at.isoformat(),
     }
+
+
+@router.get("/risk/{opportunity_id}", response_model=RiskScoreResponse)
+async def get_daily_risk(
+    opportunity_id: str,
+    deps: OrchestratorDeps = Depends(get_deps),
+) -> RiskScoreResponse:
+    """Return the latest daily-computed risk score (read-only, no LLM)."""
+    from followup.store.repositories import RiskDailyScoreRepository
+
+    repo = RiskDailyScoreRepository(deps.pipeline.executor)
+    score = await repo.get_latest(uuid.UUID(opportunity_id))
+    if score is None:
+        return RiskScoreResponse(opportunity_id=opportunity_id)
+
+    return RiskScoreResponse(
+        opportunity_id=opportunity_id,
+        risk_score=score.risk_score,
+        risk_level=score.risk_level,
+        top_factors=score.top_factors or [],
+        assessed_at=score.assessed_at.isoformat() if score.assessed_at else None,
+    )
 
 
 @router.post("/actions/expire")

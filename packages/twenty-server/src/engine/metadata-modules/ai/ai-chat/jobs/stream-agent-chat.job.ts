@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import {
   AgentOrchestratorClientService,
+  type FollowupChatContext,
   type OrchestratorResult,
 } from 'src/engine/metadata-modules/ai/ai-chat/services/agent-orchestrator-client.service';
 
@@ -37,6 +38,30 @@ import { STREAM_AGENT_CHAT_JOB_NAME } from './stream-agent-chat-job-name.constan
 import { type StreamAgentChatJobData } from './stream-agent-chat-job.types';
 
 export { STREAM_AGENT_CHAT_JOB_NAME, type StreamAgentChatJobData };
+
+// When the chat is opened on an opportunity record page, scope the turn to the
+// deal-aware Follow-Up agent. The browsing context (carried from the front-end)
+// is the reliable signal; tab ids are random per workspace so we key off the
+// opportunity record itself.
+const getFollowupChatContext = (
+  data: StreamAgentChatJobData,
+): FollowupChatContext | undefined => {
+  const browsingContext = data.browsingContext;
+
+  if (
+    browsingContext?.type === 'recordPage' &&
+    browsingContext.objectNameSingular === 'opportunity'
+  ) {
+    return {
+      opportunityId: browsingContext.recordId,
+      workspaceId: data.workspaceId,
+      userId: data.userWorkspaceId,
+      timezone: data.timezone ?? undefined,
+    };
+  }
+
+  return undefined;
+};
 
 @Processor({ queueName: MessageQueue.aiStreamQueue, scope: Scope.REQUEST })
 export class StreamAgentChatJob {
@@ -264,6 +289,7 @@ export class StreamAgentChatJob {
               data.threadId,
               data.lastUserMessageText,
               handlers,
+              getFollowupChatContext(data),
             );
 
         if (result.type === 'interrupt') {
@@ -283,7 +309,11 @@ export class StreamAgentChatJob {
         } else if (result.response.length > 0) {
           // No tokens streamed (edge case) — emit the whole answer at once.
           writer.write({ type: 'text-start', id: textId });
-          writer.write({ type: 'text-delta', id: textId, delta: result.response });
+          writer.write({
+            type: 'text-delta',
+            id: textId,
+            delta: result.response,
+          });
           writer.write({ type: 'text-end', id: textId });
         }
       },

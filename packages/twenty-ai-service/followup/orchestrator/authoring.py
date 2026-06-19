@@ -124,14 +124,27 @@ class ContentAuthor:
         # The next-step agent decides what to do and in what manner — carry that
         # guidance into the directive so its intent actually shapes the email.
         parts.extend(self._next_step_guidance(ctx, "draft_email", "book_meeting"))
+        # If a meeting slot is in play, state its exact length so the prose can't
+        # contradict the booked slot (e.g. a 15-min slot called a 30-min meeting).
+        minutes = self._meeting_duration_minutes(ctx)
+        if minutes:
+            parts.append(f"If proposing a meeting, it is {minutes} minutes long.")
         return " ".join(parts)
 
     def meeting_context(self, ctx: "TaskContext") -> str:
-        """A deliberately minimal meeting brief: the people + the reason, nothing more."""
+        """A deliberately minimal meeting brief: the people, the reason, the length.
+
+        The duration is read from the chosen calendar slot so the email's stated
+        length always matches the slot that will be booked (single source of truth).
+        """
         deal = ctx.deal_context
         names = ", ".join(c.name for c in deal.contacts if c.name) or "the contact"
         reason = self._top_concern(deal) or f"discuss {deal.opportunity_name}"
-        return f"Meeting with {names}. Reason: {reason}."
+        brief = f"Meeting with {names}. Reason: {reason}."
+        minutes = self._meeting_duration_minutes(ctx)
+        if minutes:
+            brief += f" Length: {minutes} minutes (state this exact duration)."
+        return brief
 
     # -- Internals -------------------------------------------------------
 
@@ -178,6 +191,12 @@ class ContentAuthor:
         trigger = ctx.state.get("trigger") or {}
         if trigger.get("body"):
             lines.append(f"Latest message: {trigger['body']}")
+        # When a meeting has been scheduled (or just moved on a revise), surface
+        # the chosen time so the note/task the author writes references the right
+        # date instead of a stale one.
+        meeting_time = self._meeting_time(ctx)
+        if meeting_time:
+            lines.append(f"Scheduled meeting time: {meeting_time}")
         # The next-step agent's guidance + evidence for THIS step kind, so the
         # note/task the agent reviews is grounded in what the planner intended.
         lines.extend(self._next_step_guidance(ctx, *kinds))
@@ -206,6 +225,40 @@ class ContentAuthor:
         if evidence:
             lines.append("Grounded in: " + "; ".join(str(item) for item in evidence[:3]))
         return lines
+
+    @staticmethod
+    def _meeting_time(ctx: "TaskContext") -> Optional[str]:
+        """The first available/chosen calendar slot's start, if a meeting is set."""
+        calendar = ctx.calendar
+        if calendar is None or not getattr(calendar, "available_slots", None):
+            return None
+        chosen = next(
+            (slot for slot in calendar.available_slots if getattr(slot, "available", False)),
+            None,
+        )
+        return chosen.start if chosen is not None else None
+
+    @staticmethod
+    def _meeting_duration_minutes(ctx: "TaskContext") -> Optional[int]:
+        """Minutes between the chosen slot's start and end, if a meeting is set."""
+        from datetime import datetime
+
+        calendar = ctx.calendar
+        if calendar is None or not getattr(calendar, "available_slots", None):
+            return None
+        chosen = next(
+            (slot for slot in calendar.available_slots if getattr(slot, "available", False)),
+            None,
+        )
+        if chosen is None:
+            return None
+        try:
+            start = datetime.fromisoformat(str(chosen.start).replace("Z", "+00:00"))
+            end = datetime.fromisoformat(str(chosen.end).replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        minutes = int((end - start).total_seconds() // 60)
+        return minutes if minutes > 0 else None
 
     @staticmethod
     def _top_concern(deal: Any) -> Optional[str]:

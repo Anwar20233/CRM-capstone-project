@@ -295,7 +295,7 @@ export const DEFAULT_OPPORTUNITY_RECORD_PAGE_LAYOUT: PageLayout = {
       isActive: true,
       title: 'Follow-Up',
       icon: 'IconSparkles',
-      position: 650,
+      position: 5,
       layoutMode: PageLayoutTabLayoutMode.CANVAS,
       pageLayoutId: DEFAULT_OPPORTUNITY_RECORD_PAGE_LAYOUT_ID,
       createdAt: new Date().toISOString(),

@@ -2,89 +2,83 @@ import { styled } from '@linaria/react';
 import { useLingui } from '@lingui/react/macro';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
-import { type FollowupAction, type FollowupProfile } from '@/followup-intelligence/types/followup-action';
+import { type FollowupRisk } from '@/followup-intelligence/types/followup-action';
 
 const StyledContainer = styled.div`
-  background: ${themeCssVariables.background.transparent.lighter};
-  border: 1px solid ${themeCssVariables.border.color.medium};
-  border-radius: ${themeCssVariables.border.radius.md};
-  display: flex;
-  flex-direction: column;
-  gap: ${themeCssVariables.spacing[2]};
-  padding: ${themeCssVariables.spacing[3]};
-`;
-
-const StyledTitle = styled.div`
-  color: ${themeCssVariables.font.color.primary};
-  font-size: ${themeCssVariables.font.size.md};
-  font-weight: ${themeCssVariables.font.weight.semiBold};
-`;
-
-const StyledMetricRow = styled.div`
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: ${themeCssVariables.spacing[2]};
 `;
 
-const StyledMetricLabel = styled.span`
+const StyledLabel = styled.span`
   color: ${themeCssVariables.font.color.tertiary};
   font-size: ${themeCssVariables.font.size.sm};
 `;
 
-const StyledMetricValue = styled.span`
+const StyledRiskBadge = styled.span<{ level: string }>`
+  background: ${({ level }) =>
+    level === 'high'
+      ? themeCssVariables.tag.background.red
+      : level === 'low'
+        ? themeCssVariables.tag.background.green
+        : themeCssVariables.tag.background.orange};
+  border-radius: ${themeCssVariables.border.radius.sm};
   color: ${themeCssVariables.font.color.primary};
-  font-size: ${themeCssVariables.font.size.md};
+  font-size: ${themeCssVariables.font.size.sm};
   font-weight: ${themeCssVariables.font.weight.medium};
+  padding: ${themeCssVariables.spacing[1]} ${themeCssVariables.spacing[2]};
+  text-transform: capitalize;
 `;
 
-const StyledNarrative = styled.div`
+const StyledCount = styled.span`
   color: ${themeCssVariables.font.color.secondary};
   font-size: ${themeCssVariables.font.size.sm};
-  line-height: 1.5;
 `;
 
+// The daily score is 0-1; render as a whole percentage.
 const formatRiskScore = (riskScore: number | null | undefined) => {
   if (riskScore === null || riskScore === undefined) {
-    return '—';
+    return null;
   }
 
   return `${Math.round(riskScore * 100)}%`;
 };
 
 type OpportunityHealthPanelProps = {
-  profile: FollowupProfile | null;
-  pendingActions: FollowupAction[];
-  profileLoading: boolean;
-  profileError: string | null;
+  risk: FollowupRisk | null;
+  riskLoading: boolean;
+  pendingCount: number;
 };
 
 export const OpportunityHealthPanel = ({
-  profile,
-  pendingActions,
-  profileLoading,
-  profileError,
+  risk,
+  riskLoading,
+  pendingCount,
 }: OpportunityHealthPanelProps) => {
   const { t } = useLingui();
 
+  const level = risk?.risk_level ?? 'medium';
+  const scoreLabel = formatRiskScore(risk?.risk_score);
+
   return (
     <StyledContainer>
-      <StyledTitle>{t`Opportunity health`}</StyledTitle>
-      <StyledMetricRow>
-        <StyledMetricLabel>{t`Risk score`}</StyledMetricLabel>
-        <StyledMetricValue>
-          {profileLoading ? t`Loading…` : formatRiskScore(profile?.risk_score)}
-        </StyledMetricValue>
-      </StyledMetricRow>
-      <StyledMetricRow>
-        <StyledMetricLabel>{t`Pending actions`}</StyledMetricLabel>
-        <StyledMetricValue>{pendingActions.length}</StyledMetricValue>
-      </StyledMetricRow>
-      {profileError && (
-        <StyledNarrative>{profileError}</StyledNarrative>
+      <StyledLabel>{t`Deal risk`}</StyledLabel>
+      {riskLoading ? (
+        <StyledCount>{t`Loading…`}</StyledCount>
+      ) : risk?.risk_level || scoreLabel ? (
+        <StyledRiskBadge level={level}>
+          {risk?.risk_level ?? t`Unknown`}
+          {scoreLabel ? ` · ${scoreLabel}` : ''}
+        </StyledRiskBadge>
+      ) : (
+        <StyledCount>{t`Not yet scored`}</StyledCount>
       )}
-      {!profileLoading && profile?.narrative && (
-        <StyledNarrative>{profile.narrative}</StyledNarrative>
-      )}
+      <StyledCount>
+        {pendingCount === 1
+          ? t`1 pending workflow`
+          : t`${pendingCount} pending workflows`}
+      </StyledCount>
     </StyledContainer>
   );
 };

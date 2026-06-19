@@ -29,7 +29,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-from typing import Any, AsyncIterator
+from typing import Any, AsyncIterator, Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -51,6 +51,44 @@ def _get_or_create_orchestrator(session_id: str) -> Orchestrator:
     return _orchestrators[session_id]
 
 
+# Per-session conversation history for follow-up chats, so a session continues
+# with full context across turns (keyed by the platform chat's session_id).
+_followup_histories: dict[str, list[dict[str, str]]] = {}
+
+
+async def _handle_followup_chat(body: "ChatRequest") -> str:
+    """Route a message to the Follow-Up agent scoped to ``body.opportunity_id``.
+
+    Maintains per-session history so the conversation continues with context on
+    the standing plan / deal, then returns the assistant reply text.
+    """
+    from followup.api.dependencies import (
+        get_accept_graph,
+        get_deps,
+        get_followup_graph,
+    )
+    from followup.api.routes import _run_followup_pipeline
+    from followup.chat import run_followup_chat
+
+    history = _followup_histories.setdefault(body.session_id, [])
+    result = await run_followup_chat(
+        deps=get_deps(),
+        accept_graph=get_accept_graph(),
+        followup_graph=get_followup_graph(),
+        run_pipeline=_run_followup_pipeline,
+        opportunity_id=body.opportunity_id,  # type: ignore[arg-type]
+        workspace_id=body.workspace_id,
+        user_id=body.user_id or "chat",
+        message=body.message,
+        history=list(history),
+        tz_name=body.timezone,
+    )
+
+    history.append({"role": "user", "content": body.message})
+    history.append({"role": "assistant", "content": result.reply})
+    return result.reply
+
+
 # ---------------------------------------------------------------------------
 # Request / response models
 # ---------------------------------------------------------------------------
@@ -58,6 +96,15 @@ def _get_or_create_orchestrator(session_id: str) -> Orchestrator:
 class ChatRequest(BaseModel):
     session_id: str = Field(..., description="Opaque session id from the authenticated context")
     message: str = Field(..., min_length=1, description="The user's message")
+    # When present, the message is routed to the Follow-Up agent (scoped to this
+    # opportunity) instead of the generic Orchestrator — this is how the platform
+    # chat embedded on the opportunity Follow-Up tab talks to the follow-up agent.
+    opportunity_id: Optional[str] = Field(default=None)
+    user_id: Optional[str] = Field(default=None)
+    workspace_id: Optional[str] = Field(default=None)
+    # The rep's IANA timezone (e.g. "America/New_York") so clock times they type
+    # ("1pm") are interpreted as local and converted to UTC before booking.
+    timezone: Optional[str] = Field(default=None)
 
 
 class ResumeRequest(BaseModel):
@@ -76,6 +123,10 @@ async def chat(body: ChatRequest) -> dict[str, Any]:
     Returns a normal response or an interrupt payload when the writer needs
     approval before executing a high-risk action.
     """
+    if body.opportunity_id:
+        reply = await _handle_followup_chat(body)
+        return {"type": "response", "response": reply, "tool_calls": []}
+
     orchestrator = _get_or_create_orchestrator(body.session_id)
     result = await orchestrator.handle(body.message)
 
@@ -212,6 +263,24 @@ async def _stream_final_response(result: dict[str, Any]) -> AsyncIterator[str]:
 @router.post("/chat/stream")
 async def chat_stream(body: ChatRequest) -> StreamingResponse:
     """Stream the orchestrator's progress and answer as NDJSON events."""
+    if body.opportunity_id:
+        # Follow-up agent path: run the (non-streaming) follow-up turn, then
+        # type the reply out so the platform chat renders it like any answer.
+        async def generate_followup() -> AsyncIterator[str]:
+            yield _ndjson({"kind": "stage", "text": "Reviewing the deal…"})
+            try:
+                reply = await _handle_followup_chat(body)
+            except Exception as error:  # noqa: BLE001 — surface, never crash the stream
+                yield _ndjson({"kind": "error", "message": str(error)})
+                yield _ndjson({"kind": "done"})
+                return
+            async for event in _stream_final_response({"response": reply}):
+                yield event
+
+        return StreamingResponse(
+            generate_followup(), media_type="application/x-ndjson"
+        )
+
     orchestrator = _get_or_create_orchestrator(body.session_id)
     queue: asyncio.Queue = asyncio.Queue()
     last_stage: dict[str, str | None] = {"text": None}

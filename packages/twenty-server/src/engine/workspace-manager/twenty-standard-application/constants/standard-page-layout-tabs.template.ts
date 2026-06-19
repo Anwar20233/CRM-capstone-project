@@ -94,6 +94,12 @@ export const CANVAS_LAYOUT_POSITIONS = {
 } as const satisfies Record<string, PageLayoutWidgetCanvasPosition>;
 
 export const TAB_PROPS = {
+  followup: {
+    title: 'Follow-Up',
+    position: 5,
+    icon: 'IconSparkles',
+    layoutMode: PageLayoutTabLayoutMode.CANVAS,
+  },
   home: {
     title: 'Home',
     position: 10,
@@ -157,6 +163,12 @@ export const TAB_PROPS = {
 } as const;
 
 export const WIDGET_PROPS = {
+  followupIntelligence: {
+    title: 'Follow-Up Intelligence',
+    type: WidgetType.VIEW,
+    gridPosition: GRID_POSITIONS.FULL_WIDTH,
+    position: CANVAS_LAYOUT_POSITIONS.DEFAULT,
+  },
   fields: {
     title: 'Fields',
     type: WidgetType.FIELDS,

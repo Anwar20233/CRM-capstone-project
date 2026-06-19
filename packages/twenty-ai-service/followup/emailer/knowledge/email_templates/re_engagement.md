@@ -13,6 +13,14 @@ Empathetic, low-pressure, and value-focused. Avoid sounding desperate.
 - **Risk-aware ask:** One simple question or low-friction offer (e.g. 15-min call)
 - **Closing:** Easy opt-out and professional sign-off
 
+## Sign-off
+End every draft with this exact closing block (keep the rep name placeholder unless a sender name is in context):
+```
+Best regards,
+[Your Name]
+BeamData
+```
+
 ## Placeholders
 Use deal context to replace:
 - Contact name
@@ -23,4 +31,5 @@ Use deal context to replace:
 ## Do not
 - Blame the prospect for going quiet
 - Use aggressive urgency language
-- Leave placeholder brackets in the final draft
+- Leave bracket placeholders except `[Your Name]` or `[INSERT NAME]` in the sign-off
+- Omit the BeamData sign-off line
