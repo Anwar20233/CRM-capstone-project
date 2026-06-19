@@ -152,6 +152,7 @@ class MockDraftingAgent:
 
         lines.append("Best regards,")
         lines.append("[Your Name]")
+        lines.append("BeamData")
 
         return DraftResult(
             opportunity_id=ctx.opportunity_id,
