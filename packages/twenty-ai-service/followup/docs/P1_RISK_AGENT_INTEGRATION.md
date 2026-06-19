@@ -2,7 +2,7 @@
 
 ## Summary
 
-The Risk Agent evaluates the current risk level of a CRM opportunity. P1 only passes identifiers, and the Risk Agent independently loads the evidence it needs from PostgreSQL, builds a private `RiskDealContext`, scores the deal, and returns a structured `RiskAssessment` plus a notification recommendation.
+The Risk Agent evaluates the current risk level of a CRM opportunity. P1 only passes identifiers, and the Risk Agent independently loads the evidence it needs from PostgreSQL, builds a private `RiskDealContext`, optionally asks an LLM to extract structured risk signals from messy CRM text, scores the deal with deterministic rules, and returns a structured `RiskAssessment` plus a notification recommendation.
 
 This agent intentionally does not depend on the shared `DealContext` used by next-step, drafting, and profile flows. It also does not use mock or historical risk fields as scoring evidence.
 
@@ -20,8 +20,10 @@ It does this by:
 2. Loading the opportunity and current CRM evidence from PostgreSQL.
 3. Loading follow-up profile evidence extracted by the profile agent.
 4. Building an internal `RiskDealContext`.
-5. Applying deterministic risk scoring rules.
-6. Returning a `RiskAssessment` with factors, reasoning, metadata, and a recommended notification payload.
+5. Using the LLM as an optional evidence extractor for recent messages, notes, tasks, and profile narrative.
+6. Applying deterministic risk scoring rules to database facts plus any LLM-extracted structured signals.
+7. Using the LLM as an optional summary writer after scoring.
+8. Returning a `RiskAssessment` with factors, reasoning, metadata, and a recommended notification payload.
 
 The agent is designed for P1 risk surfacing and sales-rep notification workflows. P1 remains responsible for delivery, UI state, deduplication, dismissal, and any follow-up workflow triggered by the recommendation.
 
@@ -40,8 +42,17 @@ build_risk_deal_context_from_db(...)
   fetches opportunity/profile/activity evidence from PostgreSQL
         |
         v
+extract_llm_risk_signals(...)
+  converts compact CRM text into structured profile-fact-like signals
+  never calculates risk score, risk level, urgency, or notification decision
+        |
+        v
 evaluate_risk_context(...)
-  calculates score, level, factors, reasoning, notification
+  deterministically calculates score, level, factors, reasoning, notification
+        |
+        v
+generate_llm_reasoning_summary(...)
+  rewrites only reasoning_summary in sales-friendly language
         |
         v
 RiskAssessment
@@ -170,9 +181,62 @@ Workspace schemas are resolved from trusted metadata in `core."dataSource"`. Bef
 
 This matters because table names cannot be passed as normal SQL parameters. Values such as `opportunity_id` and `workspace_id` remain parameterized.
 
+## Hybrid LLM Use
+
+The Risk Agent now uses the LLM in two bounded places:
+
+```text
+1. Before scoring:
+   extract_llm_risk_signals(...)
+   reads compact profile narrative, messages, notes, and tasks
+   returns structured signals such as budget, objection, blocker, delay,
+   sentiment, or buying_signal
+
+2. After scoring:
+   generate_llm_reasoning_summary(...)
+   rewrites only the already-calculated reasoning_summary
+```
+
+The LLM is not allowed to calculate or override:
+
+```text
+risk_score
+risk_level
+risk_factors
+should_notify
+urgency
+action_type
+threshold crossing
+daily sweep deduplication
+```
+
+The pre-scoring extractor returns profile-fact-like dictionaries:
+
+```python
+{
+    "fact_type": "budget",
+    "fact_value": "Budget owner wants below $25k while current ask is $32k",
+    "sentiment": "negative",
+    "confidence": 0.9,
+    "source_type": "llm_risk_signal",
+    "source_snippet": "budget owner wants below $25k",
+}
+```
+
+Those signals are appended to `RiskDealContext.profile_facts`, then the normal deterministic `evaluate_risk_context(...)` scoring logic maps them into factors such as `budget_concern`, `unresolved_objection`, `deal_velocity_drop`, `sentiment_decline`, or `positive_momentum`.
+
+If either LLM call fails, times out, returns invalid JSON, returns an empty response, or is not configured, the Risk Agent falls back safely:
+
+```text
+signal extraction failure -> continue with original database context
+summary generation failure -> keep deterministic reasoning_summary
+```
+
 ## Scoring Logic
 
-`evaluate_risk_context(...)` starts with a low base score and adds or subtracts points based on evidence.
+`evaluate_risk_context(...)` starts with a low base score and adds or subtracts points based on evidence. It is the only place where risk score and risk level are calculated.
+
+Evidence can come from stored database facts or from the LLM signal extractor. LLM-extracted signals are treated as additional profile facts, so the same deterministic scoring rules still decide how much each signal changes the score.
 
 Risk-increasing signals include:
 
@@ -222,7 +286,7 @@ medium: notify-worthy risk
 high:   highest urgency risk
 ```
 
-Each factor carries evidence, source, severity, and confidence so P1 can show the reason behind the notification.
+Each factor carries evidence, source, severity, and confidence so P1 can show the reason behind the notification. When a factor originated from pre-scoring LLM extraction, its source remains `profile_facts`, and the underlying fact has `source_type = llm_risk_signal`.
 
 ## Output Contract
 
@@ -267,6 +331,8 @@ The result is a `RiskAssessment` dataclass:
 ```
 
 Implementation note: the dataclass stores factors in `factors`. `risk_factors` is a Python property alias for P1-facing consumers, and `RiskFactor.factor` is a property alias for `factor_type`. These aliases are available in Python code but are not emitted by `dataclasses.asdict(...)`.
+
+`reasoning_summary` may be LLM-generated, but it is produced after scoring. P1 can display it as the richer sales-facing explanation while still relying on the deterministic `risk_score`, `risk_level`, and `factors` for product logic.
 
 ## Notification Contract
 
@@ -519,6 +585,10 @@ does not duplicate alert on unchanged medium/high
 does not duplicate when a pending risk_alert already exists
 works without a P1 trigger
 supports local schema override for dev testing
+LLM signal extraction can enrich profile facts before scoring
+LLM signal extraction failure does not crash scoring
+LLM reasoning summary can replace only reasoning_summary
+LLM reasoning summary failure falls back to deterministic reasoning
 ```
 
 ## Error Behavior
@@ -554,6 +624,8 @@ Use this checklist when wiring the P1 UI/backend to the Risk Agent:
 [ ] Call evaluate_deal_risk with opportunity_id, workspace_id, trigger_type only.
 [ ] Do not pass DealContext or preloaded profile data.
 [ ] Do not use risk_snapshots or pending_action.risk_assessment as fresh evidence.
+[ ] Configure LLM_PROVIDER, LLM_BASE_URL, LLM_API_KEY, and LLM_MODEL if using LLM signal extraction or LLM summaries.
+[ ] Treat missing or failing LLM config as degraded explanation/enrichment, not as risk-score failure.
 [ ] Show risk_level, risk_score, reasoning_summary, and top risk factors.
 [ ] Use recommended_notification.should_notify to decide whether to notify.
 [ ] Keep delivery, dedupe, dismissal, and analytics in P1.
@@ -957,3 +1029,14 @@ command:
 ```
 
 Warnings are dependency/deprecation warnings and are not test failures.
+
+Latest focused verification after hybrid LLM signal extraction and reasoning-summary additions:
+
+```text
+risk agent focused tests:
+  packages/twenty-ai-service/tests/test_risk_agent.py
+  11 passed in 0.38s
+
+python compile:
+  py_compile passed for changed Risk Agent files
+```

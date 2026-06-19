@@ -20,6 +20,24 @@ OPPORTUNITY_ID = "11111111-1111-1111-1111-111111111111"
 WORKSPACE_ID = "22222222-2222-2222-2222-222222222222"
 
 
+@pytest.fixture(autouse=True)
+def disable_real_llm_calls(monkeypatch) -> None:
+    async def no_llm_risk_signals(prompt: str) -> str:
+        return '{"signals": []}'
+
+    async def no_llm_reasoning_summary(prompt: str) -> str:
+        raise RuntimeError("LLM summary disabled in tests")
+
+    monkeypatch.setattr(
+        "followup.agents.risk.llm_signal_extractor._call_llm_signal_extractor",
+        no_llm_risk_signals,
+    )
+    monkeypatch.setattr(
+        "followup.agents.risk.llm_reasoning_summary._call_llm_reasoning_summary",
+        no_llm_reasoning_summary,
+    )
+
+
 class FakeAcquire:
     def __init__(self, conn: "FakeConnection") -> None:
         self._conn = conn
@@ -225,6 +243,182 @@ async def test_database_risk_agent_exposes_p1_evaluate_entrypoint() -> None:
     assert result.risk_factors == result.factors
     assert result.risk_factors[0].factor == result.risk_factors[0].factor_type
     assert result.metadata["trigger_type"] == "daily_sweep"
+
+
+@pytest.mark.asyncio
+async def test_database_risk_agent_uses_llm_extracted_signals_before_scoring(
+    monkeypatch,
+) -> None:
+    context = _risk_context(profile_facts=[])
+    async def fake_call_llm_signal_extractor(prompt: str) -> str:
+        return """
+        {
+          "signals": [
+            {
+              "fact_type": "budget",
+              "fact_value": "Budget owner wants below $25k while current ask is $32k",
+              "sentiment": "negative",
+              "confidence": 0.9,
+              "source_snippet": "budget owner wants below $25k"
+            }
+          ]
+        }
+        """
+
+    monkeypatch.setattr(
+        "followup.agents.risk.llm_signal_extractor._call_llm_signal_extractor",
+        fake_call_llm_signal_extractor,
+    )
+
+    async def context_builder(
+        opportunity_id: str, workspace_id: str | None
+    ) -> RiskDealContext:
+        return context
+
+    result = await DatabaseRiskAgent(context_builder=context_builder).evaluate_deal_risk(
+        opportunity_id=OPPORTUNITY_ID,
+        workspace_id=WORKSPACE_ID,
+        trigger_type="daily_sweep",
+    )
+
+    assert result.metadata["facts_considered"] == 1
+    assert any(
+        factor.factor_type == "budget_concern"
+        and "Budget owner wants below $25k" in factor.description
+        for factor in result.risk_factors
+    )
+
+
+@pytest.mark.asyncio
+async def test_database_risk_agent_continues_when_llm_signal_extraction_fails(
+    monkeypatch,
+) -> None:
+    context = _risk_context(profile_facts=[])
+    deterministic_result = evaluate_risk_context(context, trigger_type="daily_sweep")
+
+    async def failing_call_llm_signal_extractor(prompt: str) -> str:
+        raise RuntimeError("provider timeout")
+
+    monkeypatch.setattr(
+        "followup.agents.risk.llm_signal_extractor._call_llm_signal_extractor",
+        failing_call_llm_signal_extractor,
+    )
+
+    async def context_builder(
+        opportunity_id: str, workspace_id: str | None
+    ) -> RiskDealContext:
+        return context
+
+    result = await DatabaseRiskAgent(context_builder=context_builder).evaluate_deal_risk(
+        opportunity_id=OPPORTUNITY_ID,
+        workspace_id=WORKSPACE_ID,
+        trigger_type="daily_sweep",
+    )
+
+    assert result.risk_score == deterministic_result.risk_score
+    assert result.risk_level == deterministic_result.risk_level
+    assert result.risk_factors == deterministic_result.risk_factors
+    assert result.metadata["facts_considered"] == 0
+
+
+@pytest.mark.asyncio
+async def test_database_risk_agent_keeps_scoring_outputs_when_llm_summary_changes(
+    monkeypatch,
+) -> None:
+    context = _risk_context()
+    deterministic_result = evaluate_risk_context(context, trigger_type="daily_sweep")
+    llm_summary = (
+        "This deal is high risk because engagement is stale and the close date is overdue."
+    )
+
+    async def fake_call_llm_reasoning_summary(prompt: str) -> str:
+        return llm_summary
+
+    monkeypatch.setattr(
+        "followup.agents.risk.llm_reasoning_summary._call_llm_reasoning_summary",
+        fake_call_llm_reasoning_summary,
+    )
+
+    async def context_builder(
+        opportunity_id: str, workspace_id: str | None
+    ) -> RiskDealContext:
+        return context
+
+    result = await DatabaseRiskAgent(context_builder=context_builder).evaluate_deal_risk(
+        opportunity_id=OPPORTUNITY_ID,
+        workspace_id=WORKSPACE_ID,
+        trigger_type="daily_sweep",
+    )
+
+    assert result.risk_score == deterministic_result.risk_score
+    assert result.risk_level == deterministic_result.risk_level
+    assert result.risk_factors == deterministic_result.risk_factors
+    assert result.reasoning_summary == llm_summary
+    assert result.reasoning_summary != deterministic_result.reasoning_summary
+
+
+@pytest.mark.asyncio
+async def test_database_risk_agent_falls_back_when_llm_summary_fails(
+    monkeypatch,
+) -> None:
+    context = _risk_context()
+    deterministic_result = evaluate_risk_context(context, trigger_type="daily_sweep")
+
+    async def failing_call_llm_reasoning_summary(prompt: str) -> str:
+        raise RuntimeError("provider timeout")
+
+    monkeypatch.setattr(
+        "followup.agents.risk.llm_reasoning_summary._call_llm_reasoning_summary",
+        failing_call_llm_reasoning_summary,
+    )
+
+    async def context_builder(
+        opportunity_id: str, workspace_id: str | None
+    ) -> RiskDealContext:
+        return context
+
+    result = await DatabaseRiskAgent(context_builder=context_builder).evaluate_deal_risk(
+        opportunity_id=OPPORTUNITY_ID,
+        workspace_id=WORKSPACE_ID,
+        trigger_type="daily_sweep",
+    )
+
+    assert result.reasoning_summary == deterministic_result.reasoning_summary
+    assert result.risk_score == deterministic_result.risk_score
+    assert result.risk_level == deterministic_result.risk_level
+    assert result.risk_factors == deterministic_result.risk_factors
+
+
+@pytest.mark.asyncio
+async def test_database_risk_agent_uses_llm_summary_when_available(monkeypatch) -> None:
+    llm_summary = (
+        "This deal is high risk because engagement is stale and the close date is overdue."
+    )
+    prompts: list[str] = []
+
+    async def fake_call_llm_reasoning_summary(prompt: str) -> str:
+        prompts.append(prompt)
+        return llm_summary
+
+    monkeypatch.setattr(
+        "followup.agents.risk.llm_reasoning_summary._call_llm_reasoning_summary",
+        fake_call_llm_reasoning_summary,
+    )
+
+    async def context_builder(
+        opportunity_id: str, workspace_id: str | None
+    ) -> RiskDealContext:
+        return _risk_context()
+
+    result = await DatabaseRiskAgent(context_builder=context_builder).evaluate_deal_risk(
+        opportunity_id=OPPORTUNITY_ID,
+        workspace_id=WORKSPACE_ID,
+        trigger_type="daily_sweep",
+    )
+
+    assert result.reasoning_summary == llm_summary
+    assert "Opportunity name: Acme Expansion" in prompts[0]
+    assert "mention the opportunity name when provided" in prompts[0]
 
 
 def test_evaluate_risk_context_handles_missing_optional_profile_data() -> None:

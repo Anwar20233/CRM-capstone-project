@@ -29,7 +29,7 @@ workspace_id, optional
 trigger_type
 ```
 
-The agent then fetches the risk evidence it needs directly from PostgreSQL.
+The agent then fetches the risk evidence it needs directly from PostgreSQL. It also uses the LLM in two bounded places: before scoring to extract structured risk signals from messy CRM text, and after scoring to write a clearer sales-friendly summary.
 
 ## Single Deal Workflow
 
@@ -52,11 +52,89 @@ the Risk Agent does this:
 5. Fetch latest profile narrative / pending action context.
 6. Fetch recent messages, notes, and tasks.
 7. Build an internal RiskDealContext.
-8. Score the opportunity.
-9. Return a RiskAssessment.
+8. Ask the LLM to extract structured risk signals from compact profile narrative, messages, notes, and tasks.
+9. Add those extracted signals to the context as profile-fact-like evidence.
+10. Score the opportunity with deterministic rules.
+11. Ask the LLM to rewrite only the reasoning summary.
+12. Return a RiskAssessment.
 ```
 
 The internal context is private to the Risk Agent. It is not passed in from P1.
+
+## How The LLM Is Used
+
+The Risk Agent uses a hybrid approach:
+
+```text
+PostgreSQL data
+→ RiskDealContext
+→ LLM signal extractor
+→ deterministic scoring
+→ LLM reasoning summary
+→ RiskAssessment
+```
+
+The LLM is used before scoring to understand messy text. For example, if a note says:
+
+```text
+Budget owner wants below $25k while current ask is $32k.
+```
+
+the LLM can extract:
+
+```json
+{
+  "fact_type": "budget",
+  "fact_value": "Budget owner wants below $25k while current ask is $32k",
+  "sentiment": "negative",
+  "confidence": 0.9
+}
+```
+
+Then the deterministic scorer maps that signal into a risk factor such as `budget_concern` and decides how much it affects the score.
+
+The LLM is also used after scoring to rewrite the explanation into sales-friendly language. It must not change the score, level, factors, urgency, notification decision, or action type.
+
+If the LLM is unavailable or fails, the Risk Agent still works:
+
+```text
+signal extraction failure -> score from original database evidence
+summary generation failure -> use deterministic summary
+```
+
+## LLM Model Configuration
+
+The Risk Agent uses the shared `LLMClient` from:
+
+```text
+packages/twenty-ai-service/agent/llm_client.py
+```
+
+The actual model is controlled by environment variables:
+
+```text
+LLM_PROVIDER
+LLM_BASE_URL
+LLM_API_KEY
+LLM_MODEL
+```
+
+`LLM_MODEL` is resolved through:
+
+```text
+packages/twenty-ai-service/agent/models.py
+```
+
+Supported aliases include:
+
+```text
+deepseek-v4-flash -> deepseek/deepseek-v4-flash
+deepseek-v4-pro -> deepseek/deepseek-v4-pro
+qwen3-next-80b -> qwen/qwen3-next-80b-a3b-instruct
+gpt-4o -> openai/gpt-4o
+gpt-4o-mini -> openai/gpt-4o-mini
+gemma-free -> google/gemma-4-31b-it:free
+```
 
 ## Database Sources
 
@@ -118,6 +196,8 @@ Risk-reducing signals include:
 positive_momentum:
   Buying signals, approvals, commitment, scheduled next steps, or similar positive evidence.
 ```
+
+Some signals come directly from database fields, such as `updatedAt`, `closeDate`, `stage`, and task due dates. Other signals come from stored profile facts or from the LLM signal extractor. The LLM extractor does not score the deal; it only converts unstructured text into structured evidence that the deterministic scorer can evaluate.
 
 ## Real Database Example
 
@@ -259,6 +339,16 @@ action_payload = notification payload + risk details
 
 P1 or the frontend must read these rows and render them to the sales rep.
 
+The richer LLM-generated reasoning summary is stored in:
+
+```text
+followup_pending_actions.reasoning
+followup_pending_actions.action_payload.reasoning_summary
+followup_pending_actions.risk_assessment.reasoning_summary
+```
+
+If the frontend renders `reasoning` or `action_payload.reasoning_summary`, the sales rep sees the LLM summary. If it only renders `recommended_notification.message`, the rep sees the shorter notification text.
+
 ## What Is Missing For Full Integration
 
 The backend scoring and daily sweep are working. Full product integration still needs:
@@ -272,7 +362,7 @@ The backend scoring and daily sweep are working. Full product integration still 
    and status = pending.
 
 3. Notification display
-   Show urgency, title, reasoning, top risk factors, and recommended action.
+   Show urgency, title, LLM reasoning summary, top risk factors, and recommended action.
 
 4. Rep actions
    Let the sales rep accept, dismiss, snooze, or act on the alert.
@@ -291,6 +381,14 @@ The backend scoring and daily sweep are working. Full product integration still 
 8. Retention policy
    Decide whether old risk_daily_scores rows should be kept forever, archived,
    or deleted after a retention window.
+
+9. Historical calibration
+   Compare scores against closed-won and closed-lost outcomes to tune thresholds
+   and factor weights.
+
+10. Rep feedback loop
+   Let reps mark alerts as useful, not useful, already handled, or wrong reason
+   so future thresholds can improve.
 ```
 
 ## Simple Mental Model

@@ -12,11 +12,14 @@ from __future__ import annotations
 import os
 import re
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from typing import Any, Protocol, runtime_checkable
 
 import asyncpg
+
+from followup.agents.risk.llm_reasoning_summary import generate_llm_reasoning_summary
+from followup.agents.risk.llm_signal_extractor import extract_llm_risk_signals
 
 DEFAULT_DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/default"
 DATABASE_URL = os.getenv("DATABASE_URL", os.getenv("PG_DATABASE_URL", DEFAULT_DATABASE_URL))
@@ -603,12 +606,12 @@ def evaluate_risk_context(
         sentiment = _text(fact.get("sentiment")).lower()
         confidence = float(fact.get("confidence") or 0.8)
         factor_type = "unresolved_objection"
-        if fact_type == "sentiment" or sentiment == "negative":
-            factor_type = "sentiment_decline"
-        elif fact_type in {"gate", "process", "delay"}:
+        if fact_type in {"gate", "process", "delay"}:
             factor_type = "deal_velocity_drop"
         elif fact_type == "budget":
             factor_type = "budget_concern"
+        elif fact_type == "sentiment" or sentiment == "negative":
+            factor_type = "sentiment_decline"
 
         if (
             fact_type in _RISK_INCREASING_FACT_TYPES
@@ -773,6 +776,33 @@ def evaluate_risk_context(
     )
 
 
+def _recent_activity_summary(context: RiskDealContext) -> str:
+    return (
+        f"Recent evidence considered: {len(context.recent_messages)} message(s), "
+        f"{len(context.recent_notes)} note(s), {len(context.recent_tasks)} task(s)."
+    )
+
+
+async def _with_llm_risk_signals(context: RiskDealContext) -> RiskDealContext:
+    signals = await extract_llm_risk_signals(
+        opportunity_name=_text(context.opportunity.get("name")),
+        profile_narrative=context.profile_narrative,
+        recent_messages=context.recent_messages,
+        recent_notes=context.recent_notes,
+        recent_tasks=context.recent_tasks,
+    )
+    if not signals:
+        return context
+
+    return replace(
+        context,
+        profile_facts=[
+            *context.profile_facts,
+            *signals,
+        ],
+    )
+
+
 ContextBuilder = Callable[[str, str | None], Awaitable[RiskDealContext]]
 
 
@@ -801,7 +831,19 @@ class DatabaseRiskAgent:
         context = await self._context_builder(
             opportunity_id, workspace_id
         )
-        return evaluate_risk_context(context, trigger_type=trigger_type)
+        context = await _with_llm_risk_signals(context)
+        risk_assessment = evaluate_risk_context(context, trigger_type=trigger_type)
+        llm_summary = await generate_llm_reasoning_summary(
+            opportunity_name=_text(context.opportunity.get("name")),
+            risk_score=risk_assessment.risk_score,
+            risk_level=risk_assessment.risk_level,
+            risk_factors=risk_assessment.risk_factors,
+            deterministic_summary=risk_assessment.reasoning_summary,
+            profile_narrative=context.profile_narrative,
+            recent_activity_summary=_recent_activity_summary(context),
+        )
+        risk_assessment.reasoning_summary = llm_summary
+        return risk_assessment
 
 
 class MockRiskAgent:

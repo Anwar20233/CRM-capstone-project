@@ -13,10 +13,6 @@ they can be swapped in without touching either side:
 
 from __future__ import annotations
 
-from followup.agents.bundle import build_agent_bundle, subagent_model, use_mock_agents
-from followup.agents.drafting_adapter import OrchestratorDraftingAgent
-from followup.agents.next_step_adapter import OrchestratorNextStepAgent
-
 __all__ = [
     "build_agent_bundle",
     "subagent_model",
@@ -24,3 +20,30 @@ __all__ = [
     "OrchestratorNextStepAgent",
     "OrchestratorDraftingAgent",
 ]
+
+
+def __getattr__(name: str):
+    if name in {"build_agent_bundle", "subagent_model", "use_mock_agents"}:
+        from followup.agents.bundle import (
+            build_agent_bundle,
+            subagent_model,
+            use_mock_agents,
+        )
+
+        return {
+            "build_agent_bundle": build_agent_bundle,
+            "subagent_model": subagent_model,
+            "use_mock_agents": use_mock_agents,
+        }[name]
+
+    if name == "OrchestratorDraftingAgent":
+        from followup.agents.drafting_adapter import OrchestratorDraftingAgent
+
+        return OrchestratorDraftingAgent
+
+    if name == "OrchestratorNextStepAgent":
+        from followup.agents.next_step_adapter import OrchestratorNextStepAgent
+
+        return OrchestratorNextStepAgent
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

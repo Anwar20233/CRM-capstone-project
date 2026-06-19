@@ -16,49 +16,25 @@ Public surface:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
-from followup.contracts.drafting import (
-    DRAFT_MODES,
-    DRAFT_TONE_TYPES,
-    DraftingAgent,
-    DraftRequest,
-    DraftResult,
-    MockDraftingAgent,
-    mock_run_draft,
-    run_draft,
-)
-from followup.contracts.events import EmailSignalEvent, SIGNAL_TYPES
-from followup.contracts.next_step import (
-    MockNextStepAgent,
-    NEXT_STEP_MODES,
-    NEXT_STEP_TYPES,
-    NextStepAgent,
-    NextStepPlan,
-    NextStepRequest,
-    PlannedStep,
-    PRIORITY_LEVELS,
-    STEP_KINDS,
-    mock_run_next_step,
-    run_next_step,
-)
-from followup.contracts.risk import (
-    DatabaseRiskAgent,
-    MockRiskAgent,
-    RISK_FACTOR_TYPES,
-    RISK_LEVELS,
-    RISK_MODES,
-    RiskAgent,
-    RiskAssessment,
-    RiskAssessmentRequest,
-    RiskDealContext,
-    RiskFactor,
-    SEVERITY_LEVELS,
-    build_risk_deal_context_from_db,
-    evaluate_deal_risk,
-    evaluate_risk_context,
-    mock_run_risk_assessment,
-    run_risk_assessment,
-)
+
+def _default_next_step_agent() -> Any:
+    from followup.contracts.next_step import MockNextStepAgent
+
+    return MockNextStepAgent()
+
+
+def _default_risk_agent() -> Any:
+    from followup.contracts.risk import MockRiskAgent
+
+    return MockRiskAgent()
+
+
+def _default_drafting_agent() -> Any:
+    from followup.contracts.drafting import MockDraftingAgent
+
+    return MockDraftingAgent()
 
 
 @dataclass
@@ -69,9 +45,9 @@ class AgentBundle:
     swapped in by replacing the field — no orchestrator changes needed.
     """
 
-    next_step: NextStepAgent = field(default_factory=MockNextStepAgent)
-    risk: RiskAgent = field(default_factory=MockRiskAgent)
-    drafting: DraftingAgent = field(default_factory=MockDraftingAgent)
+    next_step: Any = field(default_factory=_default_next_step_agent)
+    risk: Any = field(default_factory=_default_risk_agent)
+    drafting: Any = field(default_factory=_default_drafting_agent)
 
 
 __all__ = [
@@ -119,3 +95,54 @@ __all__ = [
     # bundle
     "AgentBundle",
 ]
+
+_EXPORT_MODULES = {
+    "EmailSignalEvent": "followup.contracts.events",
+    "SIGNAL_TYPES": "followup.contracts.events",
+    "NextStepPlan": "followup.contracts.next_step",
+    "PlannedStep": "followup.contracts.next_step",
+    "NextStepRequest": "followup.contracts.next_step",
+    "NextStepAgent": "followup.contracts.next_step",
+    "MockNextStepAgent": "followup.contracts.next_step",
+    "NEXT_STEP_TYPES": "followup.contracts.next_step",
+    "STEP_KINDS": "followup.contracts.next_step",
+    "NEXT_STEP_MODES": "followup.contracts.next_step",
+    "PRIORITY_LEVELS": "followup.contracts.next_step",
+    "run_next_step": "followup.contracts.next_step",
+    "mock_run_next_step": "followup.contracts.next_step",
+    "RiskFactor": "followup.contracts.risk",
+    "RiskAssessment": "followup.contracts.risk",
+    "RiskAssessmentRequest": "followup.contracts.risk",
+    "RiskDealContext": "followup.contracts.risk",
+    "RiskAgent": "followup.contracts.risk",
+    "DatabaseRiskAgent": "followup.contracts.risk",
+    "MockRiskAgent": "followup.contracts.risk",
+    "RISK_FACTOR_TYPES": "followup.contracts.risk",
+    "RISK_LEVELS": "followup.contracts.risk",
+    "RISK_MODES": "followup.contracts.risk",
+    "SEVERITY_LEVELS": "followup.contracts.risk",
+    "build_risk_deal_context_from_db": "followup.contracts.risk",
+    "evaluate_deal_risk": "followup.contracts.risk",
+    "evaluate_risk_context": "followup.contracts.risk",
+    "run_risk_assessment": "followup.contracts.risk",
+    "mock_run_risk_assessment": "followup.contracts.risk",
+    "DraftRequest": "followup.contracts.drafting",
+    "DraftResult": "followup.contracts.drafting",
+    "DraftingAgent": "followup.contracts.drafting",
+    "MockDraftingAgent": "followup.contracts.drafting",
+    "DRAFT_TONE_TYPES": "followup.contracts.drafting",
+    "DRAFT_MODES": "followup.contracts.drafting",
+    "run_draft": "followup.contracts.drafting",
+    "mock_run_draft": "followup.contracts.drafting",
+}
+
+
+def __getattr__(name: str) -> Any:
+    module_name = _EXPORT_MODULES.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    from importlib import import_module
+
+    module = import_module(module_name)
+    return getattr(module, name)
