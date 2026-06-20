@@ -27,6 +27,7 @@ from followup.contracts.next_step import (
     NextStepRequest,
     PlannedStep,
 )
+from followup.crm.opportunity_update import fetch_pipeline_stages, kind_for_field
 from followup.next_step.agents.next_step.next_step_agent import run_next_step_agent
 from followup.next_step.agents.next_step.schemas import (
     NextStepAgentResult,
@@ -78,20 +79,30 @@ def _priority_label(priority: int) -> str:
 def _step_from_recommendation(rec: RecommendedAction) -> PlannedStep:
     tool = (rec.orchestrator_action.tool or "").lower()
     kind = _TOOL_TO_KIND.get(tool) or _TOOL_TO_KIND.get(rec.action_type.lower(), "draft_email")
+    params = rec.orchestrator_action.params or {}
+    metadata: dict = {
+        "title": rec.title,
+        "approach": rec.reasoning,
+        "evidence": list(rec.evidence),
+        "profile_fact_refs": list(rec.profile_fact_refs),
+        "action_type": rec.action_type,
+        "source_priority": rec.priority,
+    }
+    # An opportunity update carries a structured {field, value}. Route stage vs
+    # non-stage to the right kind (a date push must NOT collapse into a stage
+    # edit) and carry the change through so the executor writes it deterministically.
+    if tool == "update_opportunity":
+        field = params.get("field")
+        value = params.get("value")
+        kind = kind_for_field(field)
+        metadata["change"] = {"field": field, "value": value}
     return PlannedStep(
         kind=kind,
         intent=rec.description or rec.orchestrator_action.instruction or rec.title,
         priority=_priority_label(rec.priority),
         # Carry the agent's grounding so the rep reviews WHY + the manner/style
         # the agent recommended — threaded into the writers downstream.
-        metadata={
-            "title": rec.title,
-            "approach": rec.reasoning,
-            "evidence": list(rec.evidence),
-            "profile_fact_refs": list(rec.profile_fact_refs),
-            "action_type": rec.action_type,
-            "source_priority": rec.priority,
-        },
+        metadata=metadata,
     )
 
 
@@ -199,10 +210,15 @@ class OrchestratorNextStepAgent:
             # email — before the cloud planner sees them, then restore real values
             # in the recommendations so the rep reviews a plan with real names.
             masker = self._masker(deal)
+            # Ground stage recommendations against the REAL pipeline: hand the
+            # planner the workspace's actual stage values so it can only advance to
+            # a stage that exists (no PII — enum values, not people).
+            pipeline_stages = await self._pipeline_stages()
             result = await run_next_step_agent(
                 self._mask_context(context, masker),
                 event,
                 trigger_context=masker.mask(_trigger_description(request)),
+                pipeline_stages=pipeline_stages,
                 model=self._model,
             )
             result = self._unmask_result(result, masker)
@@ -211,6 +227,20 @@ class OrchestratorNextStepAgent:
             return _fallback_plan(opportunity_id, f"Next-step unavailable ({error}).")
 
         return self._to_plan(result, opportunity_id, deal)
+
+    @staticmethod
+    async def _pipeline_stages() -> list[dict]:
+        """Read the workspace's real pipeline stages; [] if the read fails.
+
+        Non-fatal: an empty list just means the planner gets no stage menu (and
+        the accept-time resolver will reject an ungrounded stage with a reason),
+        so a metadata hiccup never crashes planning.
+        """
+        try:
+            return await fetch_pipeline_stages()
+        except Exception as error:  # noqa: BLE001
+            logger.warning("could not load pipeline stages for planner: %s", error)
+            return []
 
     def _masker(self, deal) -> ProfileMasker:
         """A masking session seeded with the deal's known people (see drafting adapter)."""

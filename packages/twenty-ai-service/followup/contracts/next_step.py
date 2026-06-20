@@ -42,7 +42,8 @@ STEP_KINDS: frozenset[str] = frozenset(
         "write_note",
         "create_task",
         "book_meeting",
-        "update_stage",
+        "update_stage",  # stage change (kept as its own kind for back-compat)
+        "update_opportunity",  # non-stage opportunity field change (e.g. close date)
     }
 )
 

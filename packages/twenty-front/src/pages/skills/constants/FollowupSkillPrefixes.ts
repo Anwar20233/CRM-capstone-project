@@ -9,4 +9,7 @@ export const FOLLOWUP_SKILL_PREFIXES = {
   PLAYBOOK: 'followup-playbook-',
   EMAIL_TEMPLATE: 'followup-email-template-',
   PROPOSAL_TEMPLATE: 'followup-proposal-template-',
+  // Real product/service offerings the drafter grounds proposals in.
+  PRODUCT_CATALOG: 'followup-product-catalog-',
+  SERVICE_CATALOG: 'followup-service-catalog-',
 } as const;

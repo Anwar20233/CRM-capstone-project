@@ -8,7 +8,8 @@ drafter its house style through the Skills UI.
 
 It creates one skill per knowledge file under a stable naming convention
 (``followup-playbook-*``, ``followup-bant``, ``followup-best-practices``,
-``followup-email-template-*``, ``followup-proposal-template-*``) and is
+``followup-email-template-*``, ``followup-proposal-template-*``,
+``followup-product-catalog-*``, ``followup-service-catalog-*``) and is
 idempotent: skills that already exist (by name) are left untouched.
 
 Skills are workspace metadata created through the guarded ``createSkill``
@@ -121,6 +122,32 @@ def build_skill_defs() -> list[SkillDef]:
                 label=f"Follow-Up Proposal Template: {key}",
                 description=f"Proposal drafter style/template for '{key}'.",
                 icon="IconFileText",
+                content=_read(path),
+            )
+        )
+
+    # Product catalog the drafter grounds proposals in.
+    for path in sorted((_EMAILER_KNOWLEDGE / "product_catalog").glob("*.md")):
+        key = path.stem
+        defs.append(
+            SkillDef(
+                name=skill_store.product_catalog_skill_name(key),
+                label=f"Follow-Up Product Catalog: {key}",
+                description=f"Product offering '{key}' the drafter cites in proposals.",
+                icon="IconBox",
+                content=_read(path),
+            )
+        )
+
+    # Service catalog the drafter grounds proposals in.
+    for path in sorted((_EMAILER_KNOWLEDGE / "service_catalog").glob("*.md")):
+        key = path.stem
+        defs.append(
+            SkillDef(
+                name=skill_store.service_catalog_skill_name(key),
+                label=f"Follow-Up Service Catalog: {key}",
+                description=f"Service offering '{key}' the drafter cites in proposals.",
+                icon="IconTool",
                 content=_read(path),
             )
         )

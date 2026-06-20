@@ -76,6 +76,24 @@ class NextStepAgentResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class OpportunityFieldUpdate(BaseModel):
+    """Structured change for an update_opportunity action.
+
+    Carries the exact CRM field and value so the orchestrator can write it
+    deterministically — no free-text parsing, no inventing a stage that does not
+    exist. ``field`` is the canonical field; ``value`` is the exact target (a real
+    pipeline stage value for stage, an ISO ``YYYY-MM-DD`` for close date).
+    """
+
+    field: str = Field(description="The opportunity field to change: 'stage' or 'closeDate'.")
+    value: str = Field(
+        description=(
+            "The exact new value. For stage, EXACTLY one of the provided pipeline "
+            "stage values. For closeDate, an ISO date (YYYY-MM-DD)."
+        )
+    )
+
+
 class NextStepLLMActionItem(BaseModel):
     """Single action item as returned by the structured LLM call."""
 
@@ -91,6 +109,13 @@ class NextStepLLMActionItem(BaseModel):
     )
     orchestrator_instruction: str = Field(
         description="Instruction for the Orchestrator tool, must reference the opportunity id"
+    )
+    field_update: OpportunityFieldUpdate | None = Field(
+        default=None,
+        description=(
+            "REQUIRED when orchestrator_tool is 'update_opportunity': the exact "
+            "field + value to write. Omit for every other tool."
+        ),
     )
 
 
