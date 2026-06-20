@@ -26,7 +26,7 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(pathlib.Path(__file__).resolve().parent.parent / ".env", override=False)
 
-from scripts.followup_email_scenarios import SCENARIOS, get  # noqa: E402
+from scripts.followup_email_scenarios import DEFAULT_SCENARIO, SCENARIOS, get  # noqa: E402
 
 from followup.agents.bundle import subagent_model  # noqa: E402
 from followup.agents.drafting_adapter import OrchestratorDraftingAgent  # noqa: E402
@@ -67,7 +67,7 @@ def _deal_for(scenario) -> DealContext:
 
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", default="airbnb_new_stakeholder", choices=sorted(SCENARIOS))
+    parser.add_argument("--scenario", default=DEFAULT_SCENARIO, choices=sorted(SCENARIOS))
     parser.add_argument(
         "--real-drafter",
         action="store_true",

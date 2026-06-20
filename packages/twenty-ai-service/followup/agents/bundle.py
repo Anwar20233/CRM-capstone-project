@@ -22,8 +22,14 @@ logger = logging.getLogger(__name__)
 
 
 def subagent_model() -> str:
-    """The model the follow-up subagents run on (env override → Qwen default)."""
-    return os.environ.get("FOLLOWUP_SUBAGENT_MODEL") or FOLLOWUP_SUBAGENT_MODEL_ALIAS
+    """The model the follow-up subagents and reader worker run on."""
+    explicit = os.environ.get("FOLLOWUP_SUBAGENT_MODEL")
+    if explicit:
+        return explicit
+    # OpenAI rejects OpenRouter slugs like qwen/... — use LLM_MODEL instead.
+    if os.environ.get("LLM_PROVIDER", "").lower() == "openai":
+        return os.environ.get("LLM_MODEL", "gpt-4o-mini")
+    return FOLLOWUP_SUBAGENT_MODEL_ALIAS
 
 
 def use_mock_agents() -> bool:

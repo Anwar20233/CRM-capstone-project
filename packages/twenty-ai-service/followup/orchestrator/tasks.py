@@ -234,6 +234,34 @@ def _recipient(deal_context: "DealContext") -> Optional[str]:
     return next((c.email for c in deal_context.contacts if c.email), None)
 
 
+def should_offer_meeting_slots(ctx: TaskContext) -> bool:
+    """Whether calendar slots belong in the outbound draft.
+
+    Direct-answer emails (e.g. pricing questions) should not offer meetings
+    just because the plan also has a separate book_meeting step.
+    """
+    classification = ctx.classification or {}
+    email_type = (classification.get("type") or "").lower()
+    if email_type == "question":
+        return False
+    if classification.get("requires_calendar"):
+        return True
+    if email_type == "meeting_request":
+        return True
+    if (ctx.plan.headline_action or "") == "schedule_meeting":
+        return True
+    return False
+
+
+def _draft_recipient(
+    deal_context: "DealContext", trigger: dict[str, Any]
+) -> Optional[str]:
+    """Prefer the inbound sender on email triggers; else first CRM contact."""
+    if trigger.get("sender_email"):
+        return str(trigger["sender_email"])
+    return _recipient(deal_context)
+
+
 def _write_targets(deal_context: "DealContext") -> list[dict[str, Any]]:
     """Resolved ``{type, id, name}`` references the writer addresses a write to.
 
@@ -298,7 +326,7 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
         # both are planned (see STEP_PREP ordering).
         available_slots = None
         cal = ctx.calendar
-        if cal and cal.available_slots:
+        if should_offer_meeting_slots(ctx) and cal and cal.available_slots:
             available_slots = [asdict(s) for s in cal.available_slots]
             if cal.all_busy and cal.suggested_alternatives:
                 available_slots += [asdict(s) for s in cal.suggested_alternatives]
@@ -337,7 +365,7 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
             intent=directive,
             classification=ctx.classification,
             mode="single",
-            recipient_email=_recipient(ctx.deal_context),
+            recipient_email=_draft_recipient(ctx.deal_context, trigger),
             available_slots=available_slots,
             reply_context=reply_context,
             previous_draft=previous_draft,
@@ -452,4 +480,5 @@ __all__ = [
     "build_task_tools",
     "build_default_task_registry",
     "infer_tone",
+    "should_offer_meeting_slots",
 ]

@@ -19,6 +19,7 @@ the orchestrator always gets a draft to bundle for rep review.
 from __future__ import annotations
 
 import logging
+import re
 import uuid
 from datetime import datetime, timezone
 
@@ -32,6 +33,32 @@ from followup.emailer.rag.service import RetrievalService
 from tracing import traceable
 
 logger = logging.getLogger(__name__)
+
+_UUID_PATTERN = re.compile(
+    r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+    re.IGNORECASE,
+)
+_INTERNAL_ID_PHRASE = re.compile(
+    r"\(?\s*ID:\s*\)?",
+    re.IGNORECASE,
+)
+_PLACEHOLDER_LINE = re.compile(
+    r"^\s*\[(?:Your Name|Your Position|Your Company|Your Contact Information)\]\s*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def sanitize_draft_text(text: str) -> str:
+    """Strip internal CRM identifiers the drafter must never expose to recipients."""
+    cleaned = _UUID_PATTERN.sub("", text)
+    cleaned = _INTERNAL_ID_PHRASE.sub("", cleaned)
+    cleaned = re.sub(r"\bopportunity\s*,", "deal", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"opportunity\s*\(\s*\)", "deal", cleaned, flags=re.IGNORECASE)
+    cleaned = _PLACEHOLDER_LINE.sub("", cleaned)
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned)
+    cleaned = re.sub(r" *\n *", "\n", cleaned)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    return cleaned.strip()
 
 # The orchestrator bundles ONE email per draft step, so we always ask the drafter
 # for a single, explicit email type chosen from the email classification. Most
@@ -92,8 +119,11 @@ class OrchestratorDraftingAgent:
     @traceable(name="drafting_agent", run_type="chain")
     async def run(self, request: DraftRequest) -> DraftResult:
         try:
+            recipient_email = request.recipient_email
+            if request.reply_context and request.reply_context.get("sender_email"):
+                recipient_email = request.reply_context["sender_email"]
             context = to_drafting_context(
-                request.deal_context, recipient_email=request.recipient_email
+                request.deal_context, recipient_email=recipient_email
             )
             # Thread the orchestrator's directive (the "why + what + manner" the
             # next-step agent chose) and any calendar slots into the deal's notes
@@ -120,9 +150,16 @@ class OrchestratorDraftingAgent:
         from followup.emailer.context.schemas import NoteSummary
 
         directive = request.intent or ""
+        reply = request.reply_context or {}
+        if reply.get("sender_email"):
+            sender_label = reply.get("sender_name") or reply["sender_email"]
+            directive = (
+                f"Recipient: {sender_label} ({reply['sender_email']}).\n"
+                f"{directive}"
+            )
         slots = _slot_lines(request.available_slots)
-        if request.reply_context and request.reply_context.get("body"):
-            directive += f"\n\nReplying to: {request.reply_context['body']}"
+        if reply.get("body"):
+            directive += f"\n\nInbound message to answer:\n{reply['body']}"
         directive += slots
         if not directive.strip():
             return context
@@ -157,8 +194,8 @@ class OrchestratorDraftingAgent:
             recipient = request.reply_context["sender_email"]
         return DraftResult(
             opportunity_id=str(ctx.opportunity_id),
-            subject=email.subject,
-            body=email.body,
+            subject=sanitize_draft_text(email.subject),
+            body=sanitize_draft_text(email.body),
             recipient_email=recipient,
             tone=_tone_for(request.classification),
             drafted_at=datetime.now(timezone.utc).isoformat(),
@@ -172,4 +209,4 @@ class OrchestratorDraftingAgent:
         )
 
 
-__all__ = ["OrchestratorDraftingAgent"]
+__all__ = ["OrchestratorDraftingAgent", "sanitize_draft_text"]

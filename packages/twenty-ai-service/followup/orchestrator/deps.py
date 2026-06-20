@@ -68,7 +68,12 @@ class OrchestratorDeps:
 
         orchestrator_model = (
             os.environ.get("FOLLOWUP_ORCHESTRATOR_MODEL")
-            or FOLLOWUP_ORCHESTRATOR_MODEL_ALIAS
+            or os.environ.get("ORCHESTRATOR_MODEL")
+            or (
+                os.environ.get("LLM_MODEL", "gpt-4o-mini")
+                if os.environ.get("LLM_PROVIDER", "").lower() == "openai"
+                else FOLLOWUP_ORCHESTRATOR_MODEL_ALIAS
+            )
         )
         worker_model = model or subagent_model()
         return cls(

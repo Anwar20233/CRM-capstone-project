@@ -43,14 +43,13 @@ Generate a single draft as JSON matching this schema:
 Draft type: {draft_type.value}
 
 Deal context:
-- Opportunity ID: {context.opportunity.id}
 - Stage: {context.opportunity.stage}
 - Amount: {context.opportunity.amount}
 - Company: {context.company.name} (industry: {context.company.industry or "unknown"})
-- Contact: {context.contact.name} ({context.contact.email or "no email"})
+- Recipient (write TO this person): {context.contact.name} ({context.contact.email or "no email"})
 - Recent meetings:
 {_format_meetings(context)}
-- Recent notes:
+- Recent notes (includes orchestrator directive — follow it):
 {_format_notes(context)}
 
 Template guidance:
@@ -61,8 +60,13 @@ Catalog snippets (use when relevant for proposals):
 
 Rules:
 - Return valid JSON only, no markdown fences.
+- You are the sales rep; write TO the recipient above. Greetings in the inbound
+  message are them talking to you — do not email those names.
 - Personalize with real names and deal details from context.
-- Do not leave bracket placeholders like [INSERT NAME].
+- Answer specific questions directly when the directive says they asked a question.
+- Do not use bracket placeholders ([Your Name], [INSERT NAME], etc.).
+- End with a simple sign-off (e.g. "Best regards,") — no fake signature block.
+- Do not mention internal CRM ids or opportunity UUIDs.
 - Body or section content should be substantive (roughly 100-800 words total).
 - Set draft_type to "{draft_type.value}".
 """

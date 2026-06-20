@@ -44,14 +44,12 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(pathlib.Path(__file__).resolve().parent.parent / ".env", override=False)
 
-from scripts.followup_email_scenarios import SCENARIOS, get  # noqa: E402
+from scripts.followup_email_scenarios import DEFAULT_SCENARIO, SCENARIOS, get  # noqa: E402
 
 from followup.profile.dependencies import PipelineDeps  # noqa: E402
 from followup.profile.extraction import extract_from_email  # noqa: E402
 from followup.profile.service import ProfileNotFound, ProfileService  # noqa: E402
 from followup.store.repositories import SCHEMA, Database  # noqa: E402
-
-DEFAULT_SCENARIO = "airbnb_new_stakeholder"
 
 
 def _configure_logging() -> None:

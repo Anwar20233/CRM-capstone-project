@@ -42,9 +42,15 @@ _ELIGIBLE_EVENT_TYPES: frozenset[FollowUpEventType] = frozenset({
     FollowUpEventType.MEETING_COMPLETED,
 })
 
-_LLM_FAILURE_SUMMARY = (
+LLM_FAILURE_SUMMARY = (
     "The LLM call failed. No recommendations could be generated for this event. "
     "The Orchestrator may retry this agent when the provider is available."
+)
+
+_LLM_RETRY_SUFFIX = (
+    "\n\nREMINDER: Every action object MUST include orchestrator_tool "
+    "(one of create_task, schedule_meeting, send_email, update_opportunity, "
+    "log_activity, create_reminder) and orchestrator_instruction."
 )
 
 # ---------------------------------------------------------------------------
@@ -167,19 +173,39 @@ async def run_next_step_agent(
 
     prompt = build_next_step_prompt(context, trigger_context=trigger_context)
 
-    try:
-        llm_output: NextStepLLMOutput = await call_llm_json(
-            prompt, schema=NextStepLLMOutput, model=model
-        )
-    except LLMCallError:
-        logger.exception(
-            "Next Step Agent LLM call failed for opportunity_id=%s event_id=%s",
-            context.opportunity.id,
-            event.event_id,
-        )
+    llm_output: NextStepLLMOutput | None = None
+    for attempt, attempt_prompt in enumerate((prompt, prompt + _LLM_RETRY_SUFFIX)):
+        try:
+            llm_output = await call_llm_json(
+                attempt_prompt, schema=NextStepLLMOutput, model=model
+            )
+            break
+        except LLMCallError:
+            if attempt == 0:
+                logger.warning(
+                    "Next Step Agent LLM call failed (attempt 1); retrying for "
+                    "opportunity_id=%s event_id=%s",
+                    context.opportunity.id,
+                    event.event_id,
+                )
+                continue
+            logger.exception(
+                "Next Step Agent LLM call failed for opportunity_id=%s event_id=%s",
+                context.opportunity.id,
+                event.event_id,
+            )
+            return NextStepAgentResult(
+                recommended_actions=[],
+                summary_reasoning=LLM_FAILURE_SUMMARY,
+                confidence=0.0,
+                skipped=False,
+                skip_reason=None,
+            )
+
+    if llm_output is None:
         return NextStepAgentResult(
             recommended_actions=[],
-            summary_reasoning=_LLM_FAILURE_SUMMARY,
+            summary_reasoning=LLM_FAILURE_SUMMARY,
             confidence=0.0,
             skipped=False,
             skip_reason=None,

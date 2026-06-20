@@ -22,10 +22,13 @@ Prerequisites (the user starts these):
   * seeded data (seed_data.py) so the sender resolves to a real person/deal.
 
 Run from packages/twenty-ai-service:
-    .venv/bin/python scripts/followup_orchestrator_e2e.py
-    .venv/bin/python scripts/followup_orchestrator_e2e.py --scenario figma_buying_signal
-    .venv/bin/python scripts/followup_orchestrator_e2e.py --list
-    .venv/bin/python scripts/followup_orchestrator_e2e.py --quiet   # hide DEBUG logs
+    python scripts/followup_orchestrator_e2e.py
+    python scripts/followup_orchestrator_e2e.py --scenario champion_leaving_internal_transfer
+    python scripts/followup_orchestrator_e2e.py --list
+    python scripts/followup_orchestrator_e2e.py --quiet   # hide DEBUG logs
+
+Run all 30 scenarios with a summary table:
+    python scripts/followup_batch_e2e.py
 """
 
 from __future__ import annotations
@@ -37,25 +40,55 @@ import os
 import pathlib
 import sys
 import uuid
+from dataclasses import dataclass, replace
 
-# Make the package importable when run as a script, and load .env before any
-# agent import reads os.environ for identity / LLM config.
+# Make the package importable when run as a script.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
-from dotenv import load_dotenv  # noqa: E402
+from scripts.followup_email_scenarios import (  # noqa: E402
+    DEFAULT_SCENARIO,
+    SCENARIOS,
+    EmailScenario,
+    get,
+)
+from scripts.followup_scenario_scoring import BehavioralScore, plan_used_fallback  # noqa: E402
 
-load_dotenv(pathlib.Path(__file__).resolve().parent.parent / ".env", override=False)
 
-from tracing import configure_tracing  # noqa: E402
+@dataclass(frozen=True)
+class ScenarioRunResult:
+    name: str
+    sender: str
+    exercises: str
+    run_id: str
+    status: str
+    action_type: str | None
+    urgency: str | None
+    risk_score: float | None
+    has_draft: bool
+    has_calendar: bool
+    opportunity_id: str | None
+    trace: str
+    error: str | None
+    plan_fallback: bool = False
+    behavioral: BehavioralScore | None = None
 
-configure_tracing()
+    @property
+    def ok(self) -> bool:
+        return (
+            self.status == "completed"
+            and not self.error
+            and not self.plan_fallback
+        )
 
-from scripts.followup_email_scenarios import SCENARIOS, get  # noqa: E402
 
-from followup.orchestrator import OrchestratorDeps, build_followup_graph  # noqa: E402
-from followup.store.repositories import SCHEMA, Database  # noqa: E402
+def _bootstrap_runtime() -> None:
+    from dotenv import load_dotenv  # noqa: E402
 
-DEFAULT_SCENARIO = "airbnb_new_stakeholder"
+    load_dotenv(pathlib.Path(__file__).resolve().parent.parent / ".env", override=False)
+
+    from tracing import configure_tracing  # noqa: E402
+
+    configure_tracing()
 
 
 def _configure_logging(quiet: bool) -> None:
@@ -124,6 +157,150 @@ def _render_node_update(node: str, update: dict) -> None:
             print(f"      {key:<15}: {_short(value, 300)}")
 
 
+def _result_from_state(
+    scenario: EmailScenario,
+    run_id: str,
+    final_state: dict,
+    *,
+    behavioral: BehavioralScore | None = None,
+) -> ScenarioRunResult:
+    pending = final_state.get("pending_action") or {}
+    risk = final_state.get("risk_assessment")
+    return ScenarioRunResult(
+        name=scenario.name,
+        sender=scenario.sender,
+        exercises=scenario.exercises,
+        run_id=run_id,
+        status=str(final_state.get("status") or "unknown"),
+        action_type=pending.get("action_type"),
+        urgency=pending.get("urgency"),
+        risk_score=risk.risk_score if risk is not None else None,
+        has_draft=final_state.get("draft") is not None,
+        has_calendar=final_state.get("calendar") is not None,
+        opportunity_id=final_state.get("opportunity_id"),
+        trace=" → ".join(final_state.get("trace") or []),
+        error=final_state.get("error"),
+        plan_fallback=plan_used_fallback(final_state),
+        behavioral=behavioral,
+    )
+
+
+async def run_email_scenario(
+    scenario: EmailScenario,
+    *,
+    graph,
+    verbose: bool = False,
+) -> ScenarioRunResult:
+    run_id = str(uuid.uuid4())
+    trigger_id = str(uuid.uuid4())
+    workspace_id = os.environ.get("TWENTY_WORKSPACE_ID", "")
+
+    if verbose:
+        _rule(f"INPUT EMAIL — scenario: {scenario.name}")
+        print(f"  exercises : {scenario.exercises}")
+        print(f"  sender    : {scenario.sender}")
+        print(f"  subject   : {scenario.subject}")
+        print(f"  run_id    : {run_id}")
+        print(f"  workspace : {workspace_id}")
+        print("  ---")
+        print("  " + scenario.body.replace("\n", "\n  "))
+
+    initial_state = {
+        "entry_point": "email",
+        "trigger": {
+            "id": trigger_id,
+            "sender_email": scenario.sender,
+            "subject": scenario.subject,
+            "body": scenario.body,
+            "owner_user_id": os.environ.get("TWENTY_USER_ID"),
+        },
+        "workspace_id": workspace_id,
+        "run_id": run_id,
+        "status": "running",
+        "trace": [],
+    }
+
+    final_state: dict = dict(initial_state)
+    if verbose:
+        _rule("LIVE TRACE — node-by-node (graph.astream)")
+
+    async for chunk in graph.astream(initial_state, stream_mode="updates"):
+        for node, update in chunk.items():
+            if isinstance(update, dict):
+                final_state.update(update)
+                if verbose:
+                    _render_node_update(node, update)
+
+    if verbose:
+        _rule("FINAL STATE")
+        print(f"  status   : {final_state.get('status')}")
+        print(f"  trace    : {' → '.join(final_state.get('trace') or [])}")
+        if final_state.get("error"):
+            print(f"  error    : {final_state['error']}")
+
+    return _result_from_state(scenario, run_id, final_state)
+
+
+async def run_scenario_batch(
+    names: list[str],
+    *,
+    verbose: bool = False,
+) -> list[ScenarioRunResult]:
+    from followup.orchestrator import OrchestratorDeps, build_followup_graph  # noqa: E402
+    from followup.store.repositories import Database  # noqa: E402
+    from scripts.followup_scenario_scoring import score_behavior  # noqa: E402
+
+    db = await Database.connect()
+    results: list[ScenarioRunResult] = []
+    try:
+        deps = OrchestratorDeps.create(db)
+        graph = build_followup_graph(deps)
+        for index, name in enumerate(names, start=1):
+            scenario = get(name)
+            print(f"\n[{index}/{len(names)}] {scenario.name} ({scenario.sender})")
+            try:
+                raw = await run_email_scenario(scenario, graph=graph, verbose=verbose)
+            except Exception as exc:  # noqa: BLE001 — keep batch alive per scenario
+                raw = ScenarioRunResult(
+                    name=scenario.name,
+                    sender=scenario.sender,
+                    exercises=scenario.exercises,
+                    run_id="",
+                    status="failed",
+                    action_type=None,
+                    urgency=None,
+                    risk_score=None,
+                    has_draft=False,
+                    has_calendar=False,
+                    opportunity_id=None,
+                    trace="",
+                    error=str(exc),
+                    plan_fallback=False,
+                )
+                print(f"  -> CRASH  {_short(str(exc), 200)}")
+            behavioral = score_behavior(scenario.expectations, raw)
+            result = replace(raw, behavioral=behavioral)
+            results.append(result)
+            status = "OK" if result.ok else "FAIL"
+            behavior = ""
+            if behavioral is not None:
+                behavior = "  BEHAVIOR=" + ("PASS" if behavioral.behavioral_ok else "FAIL")
+            plan_note = "  PLAN=fallback" if result.plan_fallback else ""
+            print(
+                f"  -> {status}{behavior}{plan_note}  status={result.status}  "
+                f"action={result.action_type or '-'}  "
+                f"urgency={result.urgency or '-'}  run={result.run_id[:8]}..."
+            )
+            if behavioral and not behavioral.behavioral_ok:
+                for mismatch in behavioral.mismatches:
+                    print(f"  -> expected: {mismatch}")
+            if result.error:
+                print(f"  -> error: {_short(result.error, 160)}")
+    finally:
+        await db.close()
+    return results
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scenario", default=DEFAULT_SCENARIO, choices=sorted(SCENARIOS))
@@ -137,80 +314,48 @@ async def main() -> None:
     if args.list:
         print("Available email scenarios:\n")
         for scenario in SCENARIOS.values():
-            print(f"  {scenario.name:<28} {scenario.sender}")
-            print(f"  {'':<28} → {scenario.exercises}\n")
+            print(f"  {scenario.name:<42} {scenario.sender}")
+            print(f"  {'':<42} -> {scenario.exercises}\n")
         return
 
-    scenario = get(args.scenario)
-    sender = args.sender or scenario.sender
-    subject = args.subject or scenario.subject
-    body = args.body or scenario.body
-
+    _bootstrap_runtime()
     _configure_logging(args.quiet)
-    run_id = str(uuid.uuid4())
-    trigger_id = str(uuid.uuid4())
-    workspace_id = os.environ.get("TWENTY_WORKSPACE_ID", "")
 
-    _rule(f"INPUT EMAIL — scenario: {scenario.name}")
-    print(f"  exercises : {scenario.exercises}")
-    print(f"  sender    : {sender}")
-    print(f"  subject   : {subject}")
-    print(f"  run_id    : {run_id}")
-    print(f"  workspace : {workspace_id}")
-    print("  ---")
-    print("  " + body.replace("\n", "\n  "))
+    scenario = get(args.scenario)
+    if args.sender or args.subject or args.body:
+        scenario = EmailScenario(
+            name=scenario.name,
+            sender=args.sender or scenario.sender,
+            subject=args.subject or scenario.subject,
+            body=args.body or scenario.body,
+            exercises=scenario.exercises,
+        )
+
+    from followup.orchestrator import OrchestratorDeps, build_followup_graph  # noqa: E402
+    from followup.store.repositories import SCHEMA, Database  # noqa: E402
 
     db = await Database.connect()
     try:
         deps = OrchestratorDeps.create(db)
         graph = build_followup_graph(deps)
+        result = await run_email_scenario(scenario, graph=graph, verbose=True)
 
-        initial_state = {
-            "entry_point": "email",
-            "trigger": {
-                "id": trigger_id,
-                "sender_email": sender,
-                "subject": subject,
-                "body": body,
-                # owner_user_id lets check_calendar query the rep's calendar; the
-                # configured identity user is the rep here.
-                "owner_user_id": os.environ.get("TWENTY_USER_ID"),
-            },
-            "workspace_id": workspace_id,
-            "run_id": run_id,
-            "status": "running",
-            "trace": [],
-        }
-
-        _rule("LIVE TRACE — node-by-node (graph.astream)")
-        final_state: dict = dict(initial_state)
-        async for chunk in graph.astream(initial_state, stream_mode="updates"):
-            # updates mode yields {node_name: partial_update} per completed node.
-            for node, update in chunk.items():
-                if isinstance(update, dict):
-                    final_state.update(update)
-                    _render_node_update(node, update)
-
-        _rule("FINAL STATE")
-        print(f"  status   : {final_state.get('status')}")
-        print(f"  trace    : {' → '.join(final_state.get('trace') or [])}")
-        if final_state.get("error"):
-            print(f"  error    : {final_state['error']}")
-
-        pending = final_state.get("pending_action")
-        if pending:
+        if result.action_type:
             _rule("PERSISTED PENDING ACTION (followup_agent.followup_pending_actions)")
-            print(f"  id          : {pending.get('id')}")
-            print(f"  action_type : {pending.get('action_type')}")
-            print(f"  urgency     : {pending.get('urgency')}")
-            print(f"  expires_at  : {pending.get('expires_at')}")
-            print(f"  reasoning   : {_short(pending.get('reasoning'), 300)}")
-            await _print_run_log(db, run_id)
+            print(f"  action_type : {result.action_type}")
+            print(f"  urgency     : {result.urgency}")
+            print(f"  run_id      : {result.run_id}")
+            await _print_run_log(db, result.run_id)
     finally:
         await db.close()
 
+    if not result.ok:
+        raise SystemExit(1)
 
-async def _print_run_log(db: Database, run_id: str) -> None:
+
+async def _print_run_log(db, run_id: str) -> None:
+    from followup.store.repositories import SCHEMA  # noqa: E402
+
     async with db.pool.acquire() as conn:
         row = await conn.fetchrow(
             f"SELECT entry_point, status, agents_invoked, pending_action_id "

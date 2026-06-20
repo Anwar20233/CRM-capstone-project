@@ -11,7 +11,38 @@ Internal types (consumed only inside the agent module):
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from typing import Any
+
+from pydantic import BaseModel, Field, model_validator
+
+_VALID_ORCHESTRATOR_TOOLS: frozenset[str] = frozenset(
+    {
+        "create_task",
+        "schedule_meeting",
+        "send_email",
+        "update_opportunity",
+        "log_activity",
+        "create_reminder",
+    }
+)
+
+# When the model fills action_type but omits orchestrator_tool, map common labels.
+_ACTION_TYPE_TO_TOOL: dict[str, str] = {
+    "send_email": "send_email",
+    "send_proposal": "send_email",
+    "follow_up_call": "send_email",
+    "check_in": "send_email",
+    "close_deal": "update_opportunity",
+    "escalate": "create_task",
+    "schedule_meeting": "schedule_meeting",
+    "book_meeting": "schedule_meeting",
+    "schedule_demo": "schedule_meeting",
+    "create_task": "create_task",
+    "log_activity": "log_activity",
+    "create_reminder": "create_reminder",
+    "update_opportunity": "update_opportunity",
+    "update_stage": "update_opportunity",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -84,14 +115,39 @@ class NextStepLLMActionItem(BaseModel):
     description: str
     priority: int = Field(ge=1, le=5)
     reasoning: str
-    evidence: list[str] = Field(min_length=1)
+    evidence: list[str] = Field(default_factory=list)
     profile_fact_refs: list[str] = Field(default_factory=list)
-    orchestrator_tool: str = Field(
-        description="Orchestrator tool to invoke (e.g. 'create_task', 'schedule_meeting')"
+    # Optional in the LLM JSON schema; normalized before field validation.
+    orchestrator_tool: str | None = Field(
+        default=None,
+        description="Orchestrator tool to invoke (e.g. 'create_task', 'schedule_meeting')",
     )
-    orchestrator_instruction: str = Field(
-        description="Instruction for the Orchestrator tool, must reference the opportunity id"
+    orchestrator_instruction: str | None = Field(
+        default=None,
+        description="Instruction for the Orchestrator tool, must reference the opportunity id",
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_partial_action(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+        if not data.get("evidence"):
+            data["evidence"] = ["No specific evidence cited"]
+        action_key = str(data.get("action_type") or "").lower().strip()
+        tool = str(data.get("orchestrator_tool") or "").strip().lower()
+        if not tool or tool not in _VALID_ORCHESTRATOR_TOOLS:
+            tool = _ACTION_TYPE_TO_TOOL.get(action_key, action_key)
+        if tool not in _VALID_ORCHESTRATOR_TOOLS:
+            tool = "send_email"
+        data["orchestrator_tool"] = tool
+        instruction = str(data.get("orchestrator_instruction") or "").strip()
+        if not instruction:
+            instruction = str(
+                data.get("description") or data.get("title") or "Execute recommended action"
+            ).strip()
+        data["orchestrator_instruction"] = instruction
+        return data
 
 
 class NextStepLLMOutput(BaseModel):

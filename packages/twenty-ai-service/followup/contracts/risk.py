@@ -216,11 +216,19 @@ async def resolve_workspace_schema(
             ''',
             workspace_id,
         )
-        if not schema:
-            raise ValueError(f"Workspace schema not found for workspace_id={workspace_id}")
-        if not _TRUSTED_WORKSPACE_SCHEMA.fullmatch(schema):
-            raise ValueError(f"Unsafe workspace schema resolved: {schema!r}")
-        return schema
+        if schema:
+            if not _TRUSTED_WORKSPACE_SCHEMA.fullmatch(schema):
+                raise ValueError(f"Unsafe workspace schema resolved: {schema!r}")
+            return schema
+        # Dev DBs sometimes lack core.dataSource; fall back to schema discovery.
+        discovered = await conn.fetchval(
+            "SELECT table_schema FROM information_schema.tables "
+            "WHERE table_schema LIKE 'workspace\\_%' AND table_name = 'person' "
+            "ORDER BY table_schema LIMIT 1"
+        )
+        if discovered and _TRUSTED_WORKSPACE_SCHEMA.fullmatch(discovered):
+            return discovered
+        raise ValueError(f"Workspace schema not found for workspace_id={workspace_id}")
 
     schemas = await conn.fetch(
         """

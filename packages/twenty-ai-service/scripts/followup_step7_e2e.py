@@ -26,7 +26,7 @@ Prerequisites (you start these):
 
 Run from packages/twenty-ai-service:
     .venv/bin/python scripts/followup_step7_e2e.py
-    .venv/bin/python scripts/followup_step7_e2e.py --scenario airbnb_new_stakeholder
+    .venv/bin/python scripts/followup_step7_e2e.py --scenario historied_account_timeline_slip
     .venv/bin/python scripts/followup_step7_e2e.py --list
     .venv/bin/python scripts/followup_step7_e2e.py --no-accept   # stop after pending action
 """
@@ -52,9 +52,8 @@ from tracing import configure_tracing  # noqa: E402
 configure_tracing()
 
 # Reuse the Step-6 trace harness verbatim (scenarios, renderers, logging).
-from scripts.followup_email_scenarios import SCENARIOS, get  # noqa: E402
+from scripts.followup_email_scenarios import DEFAULT_SCENARIO, SCENARIOS, get  # noqa: E402
 from scripts.followup_orchestrator_e2e import (  # noqa: E402
-    DEFAULT_SCENARIO,
     _configure_logging,
     _render_node_update,
     _rule,

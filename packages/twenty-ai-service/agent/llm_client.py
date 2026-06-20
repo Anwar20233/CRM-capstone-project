@@ -89,24 +89,41 @@ class LLMClient:
 def _load_config() -> dict[str, str]:
     """Read and validate ``LLM_*`` environment variables."""
     values = {name: os.environ.get(name) for name in _ENV_VARS}
+    provider = values.get("LLM_PROVIDER") or ""
 
-    missing = [name for name, value in values.items() if not value]
-    if missing:
-        raise ConfigurationError(
-            "Missing required environment variables: " + ", ".join(missing)
-        )
-
-    provider = values["LLM_PROVIDER"]
     if provider not in ("openrouter", "openai"):
         raise ConfigurationError(
             f"LLM_PROVIDER must be 'openrouter' or 'openai', got {provider!r}"
         )
 
+    api_key = (values.get("LLM_API_KEY") or "").strip()
+    if provider == "openai" and not api_key:
+        api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+
+    base_url = values.get("LLM_BASE_URL") or ""
+    if provider == "openai" and not base_url:
+        base_url = "https://api.openai.com/v1"
+
+    model = values.get("LLM_MODEL")
+    missing = [
+        name
+        for name, value in (
+            ("LLM_API_KEY", api_key),
+            ("LLM_BASE_URL", base_url),
+            ("LLM_MODEL", model),
+        )
+        if not value
+    ]
+    if missing:
+        raise ConfigurationError(
+            "Missing required environment variables: " + ", ".join(missing)
+        )
+
     return {
         "provider": provider,
-        "base_url": values["LLM_BASE_URL"],
-        "api_key": values["LLM_API_KEY"],
-        "model": values["LLM_MODEL"],
+        "base_url": base_url,
+        "api_key": api_key,
+        "model": model,
     }
 
 

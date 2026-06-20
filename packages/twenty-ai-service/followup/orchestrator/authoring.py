@@ -42,12 +42,23 @@ _ACTION_GOAL: dict[str, str] = {
     "no_action": "stay in touch",
 }
 
+# Inbound email type wins over headline action when choosing the draft goal.
+_GOAL_BY_TYPE: dict[str, str] = {
+    "question": "answer their specific question directly in this email",
+    "meeting_request": "confirm or propose meeting times",
+    "buying_signal": "move the proposal or commercial next step forward",
+    "objection": "address their concern clearly and reassure them",
+    "info_sharing": "acknowledge their update and advance the deal",
+    "risk_alert": "address the risk they raised and reassure them",
+    "direct_send": "carry out the rep's outreach request",
+}
+
 # Why we're reaching out — the "why we're emailing" half, from the email triage.
 _REASON_BY_TYPE: dict[str, str] = {
     "objection": "they raised an objection",
     "buying_signal": "they showed a buying signal",
     "meeting_request": "they asked to meet",
-    "question": "they asked a question",
+    "question": "they asked a question that needs a direct answer",
     "info_sharing": "they shared an update",
     "risk_alert": "the deal is flagged at risk",
     "direct_send": "the rep asked us to reach out",
@@ -112,12 +123,33 @@ class ContentAuthor:
         writes the actual prose and owns the tone.
         """
         deal = ctx.deal_context
-        why = _REASON_BY_TYPE.get((ctx.classification or {}).get("type", ""), "")
-        goal = _ACTION_GOAL.get(ctx.plan.headline_action, "keep the deal moving")
-        parts = [f"Email the contact about {deal.opportunity_name}."]
+        trigger = ctx.state.get("trigger") or {}
+        classification = ctx.classification or {}
+        email_type = (classification.get("type") or "").lower()
+        why = _REASON_BY_TYPE.get(email_type, "")
+        goal = _GOAL_BY_TYPE.get(email_type) or _ACTION_GOAL.get(
+            ctx.plan.headline_action, "keep the deal moving"
+        )
+        parts: list[str] = []
+        if ctx.state.get("entry_point") == "email" and trigger.get("sender_email"):
+            sender_label = trigger.get("sender_name") or trigger["sender_email"]
+            parts.append(
+                f"You are the sales rep replying TO {sender_label} "
+                f"({trigger['sender_email']}). "
+                "The inbound sender is your recipient — names they use to greet "
+                "you (e.g. in the first line of their email) are NOT people "
+                "you should email."
+            )
+        else:
+            parts.append(f"Email the contact about {deal.opportunity_name}.")
         if why:
             parts.append(f"Reason: {why}.")
         parts.append(f"Goal: {goal}.")
+        if email_type == "question" and trigger.get("body"):
+            parts.append(
+                "Answer the specific points they raised; do not defer to a "
+                "future email or meeting unless essential."
+            )
         concern = self._top_concern(deal)
         if concern:
             parts.append(f"Be sure to address: {concern}")
