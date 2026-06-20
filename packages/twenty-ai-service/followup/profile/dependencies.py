@@ -315,6 +315,42 @@ class ReaderAgentCRMReader:
         record = records[0]
         return {"id": record.get("id", company_id), "name": record.get("name")}
 
+    async def get_company_by_domain(
+        self, domain: str
+    ) -> Optional[dict[str, Any]]:
+        """Resolve a website domain (``stripe.com``) to a company ``{id, name}``.
+
+        Used as the unknown-sender fallback: a new stakeholder emailing from a
+        known account's domain still resolves to that account's open deals. The
+        reader agent matches on the company's ``domainName`` link field.
+
+        Runs on a domain-scoped session id so concurrent resolutions (the eval
+        runs scenarios in parallel) never share reader state — the fixed
+        ``self._session_id`` would otherwise let simultaneous lookups collide.
+        """
+        import uuid as _uuid
+
+        reader = ReaderAgentCRMReader(
+            session_id=f"{self._session_id}-domain-{_uuid.uuid4().hex[:8]}",
+            model=self._model,
+        )
+        record = await reader._ask_for_record(
+            f"A new contact emailed from the domain '{domain}'. Identify the "
+            f"company associated with that email domain. The most reliable way is "
+            f"to find an existing person whose email address ends with '@{domain}' "
+            f"and return THAT person's company. Return the company's id and name."
+        )
+        if not record:
+            return None
+        # The reader may return the company directly, or a person carrying a
+        # nested ``company``; accept either shape.
+        company = record.get("company") if isinstance(record.get("company"), dict) else None
+        if company and company.get("id"):
+            return {"id": company.get("id"), "name": company.get("name")}
+        if record.get("id") and not record.get("email"):
+            return {"id": record.get("id"), "name": record.get("name")}
+        return None
+
     async def get_open_opportunities_for_company(
         self, company_id: str
     ) -> list[dict[str, Any]]:

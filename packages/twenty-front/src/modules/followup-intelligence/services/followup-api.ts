@@ -84,6 +84,30 @@ export const rejectFollowupAction = async (
   );
 };
 
+export type FollowupStepEdit = {
+  index: number;
+  email_subject?: string | null;
+  email_body?: string | null;
+  title?: string | null;
+  detail?: string | null;
+};
+
+export const editFollowupAction = async (
+  actionId: string,
+  userId: string,
+  steps: FollowupStepEdit[],
+): Promise<FollowupAction> => {
+  const result = await followupRequest<{ action: FollowupAction }>(
+    `/followup/actions/${actionId}/edit`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, steps }),
+    },
+  );
+
+  return result.action;
+};
+
 export const reviseFollowupAction = async (
   actionId: string,
   userId: string,
