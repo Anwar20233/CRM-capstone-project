@@ -14,14 +14,21 @@ split by what the follow-up agent already produced:
   compose. (``send_email`` is an ACTION tool the record-writer agent can't reach
   through its object/operation CRUD discovery anyway.)
 
-* **Record writes → the CRM Write agent, through the orchestrator seam.**
-  ``write_note`` / ``create_task`` / ``update_stage`` (and any future record
-  write) are delegated via ``orchestrator.delegate_write`` — the follow-up agent
-  never calls the writer directly. Each write's free-text content is HIDDEN
-  behind a handle (``_hide`` → a privacy handle the writer carries verbatim); the
-  real target id stays real (a UUID, not PII). The writer unmasks tool args at
-  its execute step, so the writer LLM only ever sees handles, never the content.
-  This is general — every write type the writer handles is managed the same way.
+* **Free-text record writes → the CRM Write agent, through the orchestrator seam.**
+  ``write_note`` / ``create_task`` are delegated via ``orchestrator.delegate_write``
+  — the follow-up agent never calls the writer directly. Each write's free-text
+  content is HIDDEN behind a handle (``_hide`` → a privacy handle the writer
+  carries verbatim); the real target id stays real (a UUID, not PII). The writer
+  unmasks tool args at its execute step, so the writer LLM only ever sees handles,
+  never the content.
+
+* **Opportunity field updates → deterministic, grounded direct write.**
+  ``update_stage`` / ``update_opportunity`` carry a structured change that was
+  resolved against the REAL pipeline at plan time (``validate_opportunity_change``):
+  a concrete ``{field, value}`` (a real stage value, an ISO close date). The
+  executor writes it DIRECTLY via ``update_opportunity`` — no writer LLM to mis-map
+  a date push into a stage edit or pick a stage the workspace does not have. An
+  ungrounded change surfaces its reason instead of silently doing nothing.
 
 The follow-up agent never writes directly; every write runs under ``WRITER_SCOPE``.
 The action completes only if every step does.
@@ -33,6 +40,12 @@ import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
+
+from followup.crm.opportunity_update import (
+    OPP_UPDATE_KINDS,
+    build_update_args,
+    resolve_change,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +113,13 @@ class FollowupActionExecutor:
         completed = 0
         for index, step in active_steps:
             kind = step.get("kind")
-            if kind in _DIRECT_KINDS:
+            if kind in OPP_UPDATE_KINDS:
+                # Opportunity field writes are grounded + structured (a real stage
+                # value / ISO date), so we write them DIRECTLY and deterministically
+                # — no writer LLM to mis-map a date into a stage or pick a stage
+                # that does not exist.
+                status, error = await self._execute_opportunity_update(kind, step, action)
+            elif kind in _DIRECT_KINDS:
                 status, error = await self._execute_direct(kind, step, action)
             else:
                 status, error = await self._execute_via_writer(kind, step, action, index)
@@ -414,28 +433,49 @@ class FollowupActionExecutor:
             f"Do not link it to anything — that is handled separately."
         )
 
-    def _instruction_update_stage(self, step: dict[str, Any], action: Any, pii_map: Any) -> Optional[str]:
-        # The stage direction is an enum target, NOT verbatim content — the writer
-        # must READ it to pick the matching stage value. Hiding it behind a PII
-        # handle (as note/task bodies are) left the writer with an opaque token and
-        # nothing to act on, so it executed no write. Keep it visible and spell out
-        # the field + targeting so the writer updates (never creates) the record.
-        intent = (step.get("intent") or "").strip() or "Advance the deal to the next stage."
-        opp = self._opportunity_id(action)
-        return (
-            f"Update the existing opportunity record with id {opp}. "
-            f"Set its `stage` field to the single allowed stage value that best "
-            f"matches this desired change: \"{intent}\". "
-            f"First read the opportunity's valid `stage` options and choose the "
-            f"closest match (do not invent a value); then update that one record. "
-            f"Do not create a new record and do not change any other field."
-        )
-
     _BUILDERS: dict[str, Any] = {
         "write_note": _instruction_write_note,
         "create_task": _instruction_create_task,
-        "update_stage": _instruction_update_stage,
     }
+
+    # ------------------------------------------------------------------
+    # Path 3 — opportunity field update → deterministic, grounded direct write
+    # ------------------------------------------------------------------
+
+    async def _execute_opportunity_update(
+        self, kind: str, step: dict[str, Any], action: Any
+    ) -> tuple[str, Optional[str]]:
+        """Write a grounded opportunity field change (stage / close date) directly.
+
+        The change was already resolved to a concrete ``{field, value}`` at plan
+        time (``validate_opportunity_change``) and stored in ``task_results``. We
+        trust a ``valid`` change and write it; an invalid one surfaces its reason
+        (never a silent no-op); a missing one (legacy action) is re-grounded here.
+        """
+        payload = action.action_payload or {}
+        change = (payload.get("task_results") or {}).get(kind) or {}
+
+        if not change.get("valid"):
+            if change.get("reason"):
+                # Plan-time grounding already determined this can't be written.
+                return "failed", change["reason"]
+            # Legacy / un-prepped action: ground it now from the step itself.
+            meta_change = (step.get("metadata") or {}).get("change") or {}
+            change = await resolve_change(
+                field=meta_change.get("field"),
+                value=meta_change.get("value"),
+                intent=step.get("intent") or action.reasoning or "",
+            )
+            if not change.get("valid"):
+                return "failed", change.get("reason") or "could not ground the opportunity update"
+
+        args = build_update_args(self._opportunity_id(action), change)
+        try:
+            await self._direct_write("update_opportunity", args)
+            return "completed", None
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("FollowupActionExecutor opportunity update (%s) failed", kind)
+            return "failed", str(exc)
 
 
 # ===========================================================================

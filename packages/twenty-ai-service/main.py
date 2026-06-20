@@ -67,6 +67,11 @@ from followup.api import routes as followup_routes
 
 app.include_router(followup_routes.router)
 
+# Browse + edit the agents' actual source files from the Skills UI.
+from followup.api import agent_files as followup_agent_files
+
+app.include_router(followup_agent_files.router)
+
 
 @app.get("/health")
 def health():

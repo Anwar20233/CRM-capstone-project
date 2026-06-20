@@ -16,12 +16,15 @@ _COLLECTION_DIRS: dict[CollectionName, str] = {
     CollectionName.INDUSTRY_EXAMPLES: "industry_examples",
 }
 
-# Template collections users can teach through the Skills UI: each maps to a
-# skill-name prefix so a company's house-style templates are discovered here
-# (the drafter then writes in that style). Other collections stay file-based.
+# Collections users can teach through the Skills UI: each maps to a skill-name
+# prefix so a company's house-style templates and real product/service offerings
+# are discovered here (the drafter then writes in that style and grounds
+# proposals in them). Other collections stay file-based.
 _COLLECTION_SKILL_PREFIXES: dict[CollectionName, str] = {
     CollectionName.EMAIL_TEMPLATES: skill_store.EMAIL_TEMPLATE_PREFIX,
     CollectionName.PROPOSAL_TEMPLATES: skill_store.PROPOSAL_TEMPLATE_PREFIX,
+    CollectionName.PRODUCT_CATALOG: skill_store.PRODUCT_CATALOG_PREFIX,
+    CollectionName.SERVICE_CATALOG: skill_store.SERVICE_CATALOG_PREFIX,
 }
 
 _DRAFT_TYPE_TO_TEMPLATE: dict[str, str] = {

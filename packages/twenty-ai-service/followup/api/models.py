@@ -109,10 +109,15 @@ _STEP_KIND_LABEL = {
     "create_task": "New task",
     "create_note": "New note",
     "update_stage": "Update deal",
+    "update_opportunity": "Update deal",
     "draft_email": "Email draft",
     "book_meeting": "Calendar booking",
     "escalate": "Review at-risk deal",
 }
+
+# Step kinds that write an opportunity field (stage / close date) — their card
+# detail is the grounded change (or the reason it can't be applied).
+_OPP_UPDATE_KINDS = frozenset({"update_stage", "update_opportunity"})
 
 
 class WorkflowStep(BaseModel):
@@ -233,6 +238,15 @@ class PendingActionResponse(BaseModel):
                     task = task_results.get("create_task") or {}
                     if task.get("title"):
                         ws.title = task["title"]
+                elif kind in _OPP_UPDATE_KINDS:
+                    # Show the grounded change ("Move stage to Proposal") so the rep
+                    # reviews the concrete edit — or the reason it can't be applied,
+                    # never a vague intent that silently does nothing on accept.
+                    change = task_results.get(kind) or {}
+                    if change.get("valid") and change.get("display"):
+                        ws.detail = change["display"]
+                    elif change.get("reason"):
+                        ws.detail = f"⚠ Needs review: {change['reason']}"
                 steps.append(ws)
             return steps
 
@@ -332,6 +346,15 @@ def apply_step_edits(action: PendingAction, edits: list[StepEdit]) -> None:
         else:
             step[field] = value
 
+    def _set_step_change(index: int, value: str) -> None:
+        # Record the rep's edited value as the step's proposed change, keeping any
+        # field the planner already chose (so a close-date edit stays a date).
+        if not isinstance(raw_steps, list) or index >= len(raw_steps):
+            return
+        metadata = raw_steps[index].setdefault("metadata", {})
+        existing = metadata.get("change") or {}
+        metadata["change"] = {"field": existing.get("field"), "value": value}
+
     for edit in edits:
         kind = kind_by_index.get(edit.index)
         if kind is None:
@@ -362,8 +385,17 @@ def apply_step_edits(action: PendingAction, edits: list[StepEdit]) -> None:
             if edit.title is not None:
                 task_results.setdefault("book_meeting", {})["title"] = edit.title
                 _set_step_field(edit.index, "title", edit.title)
+        elif kind in _OPP_UPDATE_KINDS:
+            # The rep retyped the desired change. Stash it as the step's proposed
+            # value AND drop any plan-time validated change, so the executor
+            # re-grounds the edited text against the real pipeline on accept rather
+            # than writing the old (now stale) value.
+            if edit.detail is not None:
+                _set_step_field(edit.index, "intent", edit.detail)
+                _set_step_change(edit.index, edit.detail)
+                task_results.pop(kind, None)
         elif edit.detail is not None:
-            # update_stage and any other intent-driven step.
+            # Any other intent-driven step.
             _set_step_field(edit.index, "intent", edit.detail)
 
     action.action_payload = payload

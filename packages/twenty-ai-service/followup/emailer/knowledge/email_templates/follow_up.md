@@ -19,8 +19,7 @@ End every draft with this exact closing block (keep the rep name placeholder unl
 Best regards,
 [Your Name]
 BeamData
-```
-
+``` 
 ## Placeholders
 Use deal context to replace:
 - Contact name
