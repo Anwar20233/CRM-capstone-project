@@ -64,9 +64,13 @@ _MAX_STEPS = 4
 
 
 def _priority_label(priority: int) -> str:
-    if priority <= 2:
+    # The planner is calibrated to reserve priority 1 for genuine urgency (active
+    # risk, hard deadlines, escalations) and rate normal forward progress 2–3.
+    # Mapping only priority 1 to "high" keeps that meaning intact; collapsing 1–2
+    # into "high" (the old split) made every healthy deal look urgent.
+    if priority <= 1:
         return "high"
-    if priority == 3:
+    if priority <= 3:
         return "medium"
     return "low"
 
@@ -286,6 +290,18 @@ class OrchestratorNextStepAgent:
             )
         if not result.recommended_actions:
             return _fallback_plan(opportunity_id, result.summary_reasoning)
+
+        # A deliberate "nothing to do": the email is purely informational and
+        # needs no follow-up. Emit a no-step plan (no draft, no meeting) so the
+        # rep sees "no action needed" rather than a manufactured task.
+        top = min(result.recommended_actions, key=lambda rec: rec.priority)
+        if (top.action_type or "").lower() == "no_action":
+            return NextStepPlan(
+                steps=[],
+                headline_action="no_action",
+                summary=result.summary_reasoning or top.reasoning or "No follow-up needed.",
+                metadata={"opportunity_id": opportunity_id, "source": "next_step_no_action"},
+            )
 
         steps = _dedupe_by_kind(
             [_step_from_recommendation(rec) for rec in result.recommended_actions]

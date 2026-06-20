@@ -43,7 +43,7 @@ import uuid
 from dataclasses import dataclass
 from typing import Any
 
-from agent.stubs.safety_tools import _lookup_action_tier
+from agent.stubs.safety_tools import _check_conflicts, _lookup_action_tier
 
 
 @dataclass
@@ -59,6 +59,8 @@ class WriteDecision:
     confirmation_token: str | None = None
     # Human-readable reason when ``allowed`` is ``False``.
     reason: str | None = None
+    # Conflict flags raised by _check_conflicts for tier 2+ writes.
+    conflicts: list[dict[str, Any]] | None = None
 
 
 @dataclass
@@ -151,7 +153,33 @@ class WritePolicy:
                 ),
             )
 
-        # ── 4. Tier 1/2 — allowed ──────────────────────────────────────
+        # ── 4. Tier 2 — run conflict check before allowing ─────────────
+        # Converts tool_args to the {field, current_value, proposed_value}
+        # shape _check_conflicts expects. current_value is unknown here (the
+        # write policy has no read access); magnitude/stage-regression rules
+        # won't fire, but past-date checks on date fields will.
+        if tier == 2:
+            proposed_writes = [
+                {"field": k, "current_value": None, "proposed_value": v}
+                for k, v in tool_args.items()
+                if k != "id"
+            ]
+            conflict_result = await _check_conflicts(proposed_writes)
+            conflicts = (conflict_result.get("data") or {}).get("conflicts") or []
+            if conflicts:
+                detail = "; ".join(c.get("detail", c.get("type", "")) for c in conflicts)
+                # Conflicts are data errors (past date, bad value), not risky-but-
+                # intentional writes — block outright with no confirmation path.
+                return WriteDecision(
+                    allowed=False,
+                    tier=tier,
+                    action=action,
+                    tool_args=tool_args,
+                    reason=f"Write blocked — {detail}. Correct the value and retry.",
+                    conflicts=conflicts,
+                )
+
+        # ── 5. Tier 1/2 (no conflicts) — allowed ───────────────────────
         return WriteDecision(
             allowed=True,
             tier=tier,

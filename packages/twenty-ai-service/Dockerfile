@@ -10,13 +10,16 @@ RUN apt-get update \
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY pipelines ./pipelines
-COPY routers ./routers
-COPY main.py ./
+# Copy the whole service (.dockerignore keeps secrets/caches/tests out).
+# main.py imports agent/, followup/, pipelines/, routers/, tracing.py,
+# bridge_client.py — copying everything avoids missing-module crashes.
+COPY . ./
 
 EXPOSE 8001
 
 # HF weights download on first startup; mount a volume on HF_HOME to cache them.
 ENV HF_HOME=/app/.cache/huggingface
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+# Bind IPv6 (::) so Railway's private network can reach this service.
+# Railway internal DNS (*.railway.internal) resolves to IPv6 only.
+CMD ["uvicorn", "main:app", "--host", "::", "--port", "8001"]

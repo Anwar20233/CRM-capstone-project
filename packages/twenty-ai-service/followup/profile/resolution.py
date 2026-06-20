@@ -38,6 +38,19 @@ def _as_uuid(value: object) -> uuid.UUID:
     return value if isinstance(value, uuid.UUID) else uuid.UUID(str(value))
 
 
+def _safe_uuid(value: object) -> Optional[uuid.UUID]:
+    """Parse an id that ORIGINATES FROM THE LLM (a shadow hint), never crashing.
+
+    The extractor sometimes echoes the prompt's placeholder ("shadow_XXX") or
+    invents a non-UUID id; feeding that to ``uuid.UUID`` raises and would kill the
+    whole run. A bad hint simply means "no shadow match".
+    """
+    try:
+        return _as_uuid(value)
+    except (ValueError, TypeError, AttributeError):
+        return None
+
+
 def _fuzzy_name_match(query: Optional[str], candidate: Optional[str]) -> bool:
     """Loose name match tolerant of first-name-only vs full-name mentions."""
     if not query or not candidate:
@@ -174,7 +187,8 @@ async def _match_shadow(
     # not an identity, so we reject the hint unless the names line up.
     hinted = parse_label(person.get("likely_matches_shadow"))
     if hinted is not None and hinted[0] == "shadow":
-        candidate = await deps.shadows.get(_as_uuid(hinted[1]))
+        hinted_uuid = _safe_uuid(hinted[1])
+        candidate = await deps.shadows.get(hinted_uuid) if hinted_uuid else None
         if (
             candidate is not None
             and candidate.status in _ACTIVE_SHADOW_STATUSES

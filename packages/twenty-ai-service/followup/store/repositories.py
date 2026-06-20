@@ -666,6 +666,23 @@ class RunLogRepository:
         async with _acquire(self._executor) as conn:
             return _from_row(FollowupRun, await _upsert(conn, "followup_runs", _to_dict(run)))  # type: ignore[return-value]
 
+    async def get_latest_for_action(
+        self, pending_action_id: uuid.UUID
+    ) -> Optional[FollowupRun]:
+        """The most recent run that produced this pending action.
+
+        Its ``trigger_payload`` holds the original trigger (for email runs, the
+        sender/subject/body) — the only durable copy of the triggering email when
+        no inbound-queue row exists.
+        """
+        async with _acquire(self._executor) as conn:
+            row = await conn.fetchrow(
+                f"SELECT * FROM {SCHEMA}.followup_runs WHERE pending_action_id = $1 "
+                f"ORDER BY started_at DESC NULLS LAST LIMIT 1",
+                pending_action_id,
+            )
+            return _from_row(FollowupRun, row)
+
 
 @dataclass
 class InboundEmail:

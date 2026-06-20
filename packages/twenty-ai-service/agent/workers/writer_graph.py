@@ -30,7 +30,11 @@ from langgraph.prebuilt import ToolNode
 from agent.crm_tools import build_crm_tools
 from agent.stubs.safety_tools import _ACTION_TIER_MAP, build_utility_tools
 from agent.tool_scope import WRITER_SCOPE
-from agent.workers.write_gate import build_write_gate_node
+from agent.workers.write_gate import (
+    build_write_gate_node,
+    conflict_check_node,
+    has_blocking_conflict,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -103,13 +107,26 @@ def _has_tier3_write(message: AIMessage) -> bool:
 
 def _route_after_llm(
     state: dict,
-) -> Literal["write_gate", "tools", "auto_link"]:
+) -> Literal["conflict_check", "auto_link"]:
     last = state["messages"][-1]
     if not isinstance(last, AIMessage) or not last.tool_calls:
         # Terminal — run the deterministic link guard before ending, so a note/
         # task the writer created but forgot to link still gets its target rows.
         return "auto_link"
-    if _has_tier3_write(last):
+    # Every tool-call turn passes through the conflict guard first. It is a
+    # no-op for reads/meta calls and clean writes; it blocks writes with bad
+    # data (e.g. a past close date) before they can reach a gate or the bridge.
+    return "conflict_check"
+
+
+def _route_after_conflict(
+    state: dict,
+) -> Literal["llm", "write_gate", "tools"]:
+    """After the conflict guard: blocked → back to llm; tier-3 → gate; else tools."""
+    if has_blocking_conflict(state):
+        return "llm"
+    last = state["messages"][-1]
+    if isinstance(last, AIMessage) and _has_tier3_write(last):
         return "write_gate"
     return "tools"
 
@@ -228,6 +245,7 @@ def build_writer_graph(
 
     builder = StateGraph(MessagesState)
     builder.add_node("llm", llm_node)
+    builder.add_node("conflict_check", conflict_check_node)
     builder.add_node("write_gate", build_write_gate_node(auto_approve))
     builder.add_node("tools", tool_node)
     builder.add_node("auto_link", auto_link_node)
@@ -236,7 +254,12 @@ def build_writer_graph(
     builder.add_conditional_edges(
         "llm",
         _route_after_llm,
-        {"write_gate": "write_gate", "tools": "tools", "auto_link": "auto_link"},
+        {"conflict_check": "conflict_check", "auto_link": "auto_link"},
+    )
+    builder.add_conditional_edges(
+        "conflict_check",
+        _route_after_conflict,
+        {"llm": "llm", "write_gate": "write_gate", "tools": "tools"},
     )
     builder.add_conditional_edges(
         "write_gate",

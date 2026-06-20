@@ -150,7 +150,11 @@ async def _resolve_from_sender(
     """Email path: anchor on the sender, then derive company and candidate deals."""
     sender = await deps.crm_reader.get_person_by_email(sender_email) if sender_email else None
     if sender is None:
-        return _resolved(None, None, [], [], [], STATUS_UNKNOWN_SENDER)
+        # New stakeholder on a known account: the sender is not (yet) a CRM
+        # contact, but their email DOMAIN may belong to a company we already have
+        # an open deal with. Fall back to domain → company → candidates rather
+        # than halting outright. A genuinely unknown domain still halts.
+        return await _resolve_from_domain(deps, sender_email)
 
     company_id = sender.get("company_id")
     company = await deps.crm_reader.get_company(company_id) if company_id else None
@@ -168,6 +172,54 @@ async def _resolve_from_sender(
     contacts = await deps.crm_reader.get_contacts_for_company(company_id)
     shadows = await _load_shadows(deps, [c.get("id") for c in candidates])
     return _resolved(sender, company, candidates, contacts, shadows, STATUS_OK)
+
+
+async def _resolve_from_domain(
+    deps: PipelineDeps, sender_email: Optional[str]
+) -> dict[str, Any]:
+    """Fallback for a sender with no CRM person: resolve via the email domain.
+
+    Looks up the company that owns the sender's domain and treats its open deals
+    as candidates (sender stays ``None`` — there is no person record). Returns the
+    unknown-sender halt when the domain maps to no company, and the no-opportunity
+    halt when the company has no open deal.
+    """
+    company = await _company_for_domain(deps, sender_email)
+    if company is None:
+        return _resolved(None, None, [], [], [], STATUS_UNKNOWN_SENDER)
+
+    company_id = company.get("id")
+    candidates = (
+        await deps.crm_reader.get_open_opportunities_for_company(company_id)
+        if company_id
+        else []
+    )
+    if not candidates:
+        return _resolved(None, company, [], [], [], STATUS_NO_OPPORTUNITY)
+
+    contacts = await deps.crm_reader.get_contacts_for_company(company_id)
+    shadows = await _load_shadows(deps, [c.get("id") for c in candidates])
+    return _resolved(None, company, candidates, contacts, shadows, STATUS_OK)
+
+
+async def _company_for_domain(
+    deps: PipelineDeps, sender_email: Optional[str]
+) -> Optional[dict[str, Any]]:
+    """Resolve a sender email's domain to a CRM company, if the reader supports it.
+
+    Optional capability: readers without ``get_company_by_domain`` (e.g. the test
+    fake) simply yield no fallback, preserving the strict unknown-sender halt.
+    """
+    domain = (sender_email or "").rsplit("@", 1)[-1].strip().lower()
+    if not domain or "." not in domain:
+        return None
+    getter = getattr(deps.crm_reader, "get_company_by_domain", None)
+    if getter is None:
+        return None
+    try:
+        return await getter(domain)
+    except Exception:  # noqa: BLE001 — a reader hiccup degrades to "no fallback"
+        return None
 
 
 async def _load_shadows(deps: PipelineDeps, opportunity_ids: list[Any]) -> list[Any]:

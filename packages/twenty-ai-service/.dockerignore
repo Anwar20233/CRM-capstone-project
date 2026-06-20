@@ -1,0 +1,13 @@
+# Build context hygiene — keep secrets, caches, and dev cruft out of the image.
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.cache/
+.pytest_cache/
+notebooks/
+docs/
+*.md
+tests/
+.git/

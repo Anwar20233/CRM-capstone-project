@@ -110,8 +110,11 @@ For instructions like "Advance the deal to <STAGE>" or "Move deal to stage <STAG
 
 ## Date Handling
 
-For relative dates (e.g., "next Friday", "in 2 weeks"), call `resolve_date` FIRST.
-Convert to ISO-8601, then proceed with the normal discovery protocol.
+Call `resolve_date` for ANY date that does not include an explicit 4-digit year.
+This includes relative phrases ("next Friday", "in 2 weeks") AND bare month/day
+expressions ("7 July", "July 7th", "end of month"). Convert to ISO-8601 first,
+then proceed. Never guess a year from training data — always let `resolve_date`
+anchor it to today.
 
 ## Scope & Data Rules
 
