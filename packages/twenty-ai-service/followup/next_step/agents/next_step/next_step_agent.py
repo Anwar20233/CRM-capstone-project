@@ -153,7 +153,19 @@ async def _run_llm_plan(
             HumanMessage(
                 content=(
                     "You have read the relevant knowledge. "
-                    "Now produce your structured recommendations."
+                    "Now produce your structured recommendations.\n\n"
+                    "CRITICAL — priority is ABSOLUTE urgency, NOT a ranking. Do "
+                    "not reflexively give your top action priority 1. Calibrate "
+                    "each action on its own:\n"
+                    "- priority 1–2 ONLY for active risk, a competitor displacing "
+                    "you, an escalation, or a hard deadline within days.\n"
+                    "- priority 3 for normal forward progress (a question to "
+                    "answer, a proposal/quote to send, a routine next step).\n"
+                    "- priority 4–5 for positive-momentum or routine-cadence "
+                    "touches with no time pressure.\n"
+                    "A healthy deal moving along well — even one with great news "
+                    "like budget approved or a successful pilot — is priority 3 "
+                    "unless the buyer attached a near-term deadline."
                 )
             )
         )

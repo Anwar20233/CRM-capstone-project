@@ -185,6 +185,11 @@ class PendingActionResponse(BaseModel):
         raw_steps = payload.get("steps")
         # The primary drafted email (column wins over payload copy).
         draft = action.draft_result or payload.get("draft") or {}
+        # Prep-task artifacts: the note body / task title / meeting title that
+        # actually get written on accept (the executor reads these, not the
+        # planner's labels) — projected here so the card shows, and the rep edits,
+        # the real content.
+        task_results = payload.get("task_results") or {}
         calendar = payload.get("calendar") or {}
         chosen_slot = next(
             (s for s in (calendar.get("available_slots") or []) if s.get("available")),
@@ -213,10 +218,21 @@ class PendingActionResponse(BaseModel):
                     ws.email_subject = draft.get("subject")
                     ws.email_body = draft.get("body")
                     draft_attached = True
-                elif kind == "book_meeting" and chosen_slot is not None:
-                    ws.meeting_start = chosen_slot.get("start")
-                    ws.meeting_end = chosen_slot.get("end")
-                    ws.invitees = [recipient] if recipient else []
+                elif kind == "book_meeting":
+                    if chosen_slot is not None:
+                        ws.meeting_start = chosen_slot.get("start")
+                        ws.meeting_end = chosen_slot.get("end")
+                        ws.invitees = [recipient] if recipient else []
+                    meeting = task_results.get("book_meeting") or {}
+                    if meeting.get("title"):
+                        ws.title = meeting["title"]
+                elif kind == "write_note":
+                    note = task_results.get("write_note") or {}
+                    ws.detail = note.get("body") or ws.detail
+                elif kind == "create_task":
+                    task = task_results.get("create_task") or {}
+                    if task.get("title"):
+                        ws.title = task["title"]
                 steps.append(ws)
             return steps
 
@@ -259,6 +275,98 @@ class PendingActionResponse(BaseModel):
                 )
             )
         return steps
+
+
+class StepEdit(BaseModel):
+    """A manual edit the rep made to one workflow step before accepting.
+
+    Only the fields relevant to the step's kind are sent; ``None`` means "leave
+    as authored". ``index`` matches the projected ``WorkflowStep.index``.
+    """
+
+    index: int
+    email_subject: Optional[str] = None  # draft_email
+    email_body: Optional[str] = None  # draft_email
+    title: Optional[str] = None  # create_task / book_meeting
+    detail: Optional[str] = None  # write_note body / update_stage intent
+
+
+class EditActionRequest(BaseModel):
+    """Persist the rep's manual edits to a pending action's steps."""
+
+    user_id: str
+    steps: list[StepEdit] = []
+
+
+class EditActionResult(BaseModel):
+    """The re-projected action after the rep's edits were saved."""
+
+    action: PendingActionResponse
+
+
+def apply_step_edits(action: PendingAction, edits: list[StepEdit]) -> None:
+    """Write the rep's manual edits into the action's payload, in place.
+
+    Each edit is routed to the exact payload location the executor reads on
+    accept (the drafted email, the prep-task note/task/meeting artifacts, or the
+    step's intent), so the edited content is what actually gets written — no LLM
+    re-composition. The action's ``kind`` per index is derived from the same
+    projection the UI saw, so the client can't mis-target a field.
+    """
+    kind_by_index = {step.index: step.kind for step in PendingActionResponse._build_steps(action)}
+
+    payload = action.action_payload or {}
+    raw_steps = payload.get("steps")
+    task_results = payload.setdefault("task_results", {})
+
+    def _set_step_field(index: int, field: str, value: Any) -> None:
+        if not isinstance(raw_steps, list) or index >= len(raw_steps):
+            # Legacy single-step action with no plan list: the executor falls
+            # back to the action's reasoning as the step intent.
+            if field == "intent":
+                action.reasoning = value
+            return
+        step = raw_steps[index]
+        if field == "title":
+            step.setdefault("metadata", {})["title"] = value
+        else:
+            step[field] = value
+
+    for edit in edits:
+        kind = kind_by_index.get(edit.index)
+        if kind is None:
+            continue
+
+        if kind == "draft_email":
+            draft = payload.setdefault("draft", {})
+            if edit.email_subject is not None:
+                draft["subject"] = edit.email_subject
+            if edit.email_body is not None:
+                draft["body"] = edit.email_body
+            # from_db prefers draft_result; the send builder prefers payload["draft"].
+            # Keep both in sync so the edit is what every reader sees.
+            mirror = action.draft_result if action.draft_result is not None else {}
+            if edit.email_subject is not None:
+                mirror["subject"] = edit.email_subject
+            if edit.email_body is not None:
+                mirror["body"] = edit.email_body
+            action.draft_result = {**draft, **mirror}
+        elif kind == "write_note":
+            if edit.detail is not None:
+                task_results.setdefault("write_note", {})["body"] = edit.detail
+        elif kind == "create_task":
+            if edit.title is not None:
+                task_results.setdefault("create_task", {})["title"] = edit.title
+                _set_step_field(edit.index, "title", edit.title)
+        elif kind == "book_meeting":
+            if edit.title is not None:
+                task_results.setdefault("book_meeting", {})["title"] = edit.title
+                _set_step_field(edit.index, "title", edit.title)
+        elif edit.detail is not None:
+            # update_stage and any other intent-driven step.
+            _set_step_field(edit.index, "intent", edit.detail)
+
+    action.action_payload = payload
 
 
 class AcceptResult(BaseModel):
@@ -385,6 +493,10 @@ __all__ = [
     "AcceptRequest",
     "ReviseRequest",
     "RejectRequest",
+    "StepEdit",
+    "EditActionRequest",
+    "EditActionResult",
+    "apply_step_edits",
     "FollowUpRunResult",
     "WorkflowStep",
     "SourceEmail",

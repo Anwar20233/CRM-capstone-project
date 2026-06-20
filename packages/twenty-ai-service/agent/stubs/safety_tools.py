@@ -24,7 +24,9 @@ detection, ``old_value`` capture, and session memory.
 
 from __future__ import annotations
 
-from datetime import date
+import calendar
+import re
+from datetime import date, datetime, timedelta, timezone as _tz
 from typing import Any
 
 from langchain_core.tools import StructuredTool
@@ -162,23 +164,54 @@ _ACTION_TIER_MAP: dict[str, dict[str, Any]] = {
     },
 }
 
-# Hardcoded date resolutions for common relative phrases found in cases_data.json.
-_DATE_MAP: dict[str, str] = {
-    "next friday": "2026-06-12T00:00:00Z",
-    "next monday": "2026-06-15T00:00:00Z",
-    "next tuesday": "2026-06-16T00:00:00Z",
-    "next week": "2026-06-15T00:00:00Z",
-    "in 2 weeks": "2026-06-22T00:00:00Z",
-    "in two weeks": "2026-06-22T00:00:00Z",
-    "tomorrow": "2026-06-09T00:00:00Z",
-    "end of month": "2026-06-30T00:00:00Z",
-    "end of week": "2026-06-12T00:00:00Z",
-    "today": "2026-06-08T00:00:00Z",
+_MONTH_INDEX: dict[str, int] = {
+    "january": 1, "jan": 1, "february": 2, "feb": 2, "march": 3, "mar": 3,
+    "april": 4, "apr": 4, "may": 5, "june": 6, "jun": 6,
+    "july": 7, "jul": 7, "august": 8, "aug": 8, "september": 9, "sep": 9,
+    "october": 10, "oct": 10, "november": 11, "nov": 11, "december": 12, "dec": 12,
 }
 
-# Stub "now" anchor — relative phrases resolve against this date.
-_RESOLUTION_ANCHOR = "2026-06-08"
-_ANCHOR_DATE = date(2026, 6, 8)
+# Matches "7 July", "July 7", "7th July", "July 7th", "7th of July".
+_BARE_DATE_RE = re.compile(
+    r"^(?:(\d{1,2})(?:st|nd|rd|th)?\s+(?:of\s+)?([a-z]+)"
+    r"|([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?)$"
+)
+
+_WEEKDAY_INDEX: dict[str, int] = {
+    "monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+    "friday": 4, "saturday": 5, "sunday": 6,
+}
+
+_WORD_TO_INT: dict[str, int] = {
+    "a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4,
+    "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+}
+
+
+def _next_weekday(from_date: date, target: int) -> date:
+    days_ahead = target - from_date.weekday()
+    if days_ahead <= 0:
+        days_ahead += 7
+    return from_date + timedelta(days=days_ahead)
+
+
+def _parse_n(token: str) -> int | None:
+    try:
+        return int(token)
+    except ValueError:
+        return _WORD_TO_INT.get(token.lower())
+
+
+def _last_day_of_month(d: date) -> date:
+    return date(d.year, d.month, calendar.monthrange(d.year, d.month)[1])
+
+
+def _add_months(d: date, n: int) -> date:
+    month = d.month + n
+    year = d.year + (month - 1) // 12
+    month = (month - 1) % 12 + 1
+    day = min(d.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
 
 # Field-name fragments that mark a date field as future-oriented (a past date
 # on one of these is suspicious — e.g. a close date in the past).
@@ -350,7 +383,7 @@ def _past_date_conflict(field: str, proposed_value: Any) -> dict[str, Any] | Non
     if not _is_future_oriented_field(field):
         return None
     proposed_date = _parse_iso_date(proposed_value)
-    if proposed_date is None or proposed_date >= _ANCHOR_DATE:
+    if proposed_date is None or proposed_date >= date.today():
         return None
     return {
         "field": field,
@@ -374,35 +407,97 @@ def _parse_iso_date(value: Any) -> date | None:
         return None
 
 
-async def _resolve_date(text: str, timezone: str = "Asia/Riyadh") -> dict:
+async def _resolve_date(text: str, timezone: str = "Asia/Riyadh") -> dict:  # noqa: ARG001
     """Resolve a relative date expression to an absolute ISO date.
 
-    Pure deterministic logic (no LLM); uses a hardcoded map and returns an error
-    for unrecognised phrases.  Always returns the original phrase and the
-    resolution anchor so a rep can easily correct a wrong guess.
+    Deterministic arithmetic anchored to today's actual date. Handles the common
+    relative phrases sales reps write: weekday names, week/month offsets, and
+    boundary shorthands. Returns an error for unrecognised phrases.
 
-    *timezone* (default ``Asia/Riyadh``) is accepted for parity with the real
-    resolver; the stub map is timezone-agnostic.
+    *timezone* is accepted for interface parity; the implementation is calendar-
+    arithmetic only and treats dates as wall-clock days (no TZ shift needed).
     """
+    today = date.today()
     normalised = text.strip().lower()
-    result = _DATE_MAP.get(normalised)
+    resolved: date | None = None
 
-    if result is not None:
+    if normalised == "today":
+        resolved = today
+    elif normalised == "tomorrow":
+        resolved = today + timedelta(days=1)
+    elif normalised == "yesterday":
+        resolved = today - timedelta(days=1)
+    elif normalised in ("end of month", "end of the month"):
+        resolved = _last_day_of_month(today)
+    elif normalised in ("end of week", "end of the week"):
+        # Friday is the conventional sales end-of-week.
+        resolved = _next_weekday(today, _WEEKDAY_INDEX["friday"])
+    elif normalised == "next week":
+        resolved = _next_weekday(today, _WEEKDAY_INDEX["monday"])
+    elif normalised == "next month":
+        resolved = _add_months(date(today.year, today.month, 1), 1)
+    elif normalised.startswith("next "):
+        day_name = normalised[5:]
+        if day_name in _WEEKDAY_INDEX:
+            resolved = _next_weekday(today, _WEEKDAY_INDEX[day_name])
+    elif normalised.startswith("in "):
+        parts = normalised[3:].split()
+        # "in N days/weeks/months" or "in N business/working days"
+        if len(parts) == 2:
+            n = _parse_n(parts[0])
+            unit = parts[1].rstrip("s")
+            if n is not None:
+                if unit == "day":
+                    resolved = today + timedelta(days=n)
+                elif unit == "week":
+                    resolved = today + timedelta(weeks=n)
+                elif unit == "month":
+                    resolved = _add_months(today, n)
+        elif len(parts) == 3 and parts[1] in ("business", "working"):
+            n = _parse_n(parts[0])
+            unit = parts[2].rstrip("s")
+            if n is not None and unit == "day":
+                d, count = today, 0
+                while count < n:
+                    d += timedelta(days=1)
+                    if d.weekday() < 5:
+                        count += 1
+                resolved = d
+    else:
+        # Bare month/day without a year: "7 July", "July 7", "7th of July", etc.
+        # Resolve to this year; if that date is already past, use next year.
+        m = _BARE_DATE_RE.match(normalised)
+        if m:
+            day_str, month_str = (m.group(1), m.group(2)) if m.group(1) else (m.group(4), m.group(3))
+            month_num = _MONTH_INDEX.get((month_str or "").lower())
+            try:
+                day_num = int(day_str or 0)
+            except ValueError:
+                day_num = 0
+            if month_num and 1 <= day_num <= 31:
+                try:
+                    candidate = date(today.year, month_num, day_num)
+                    resolved = candidate if candidate >= today else date(today.year + 1, month_num, day_num)
+                except ValueError:
+                    pass  # invalid day for that month → leave resolved as None
+
+    if resolved is None:
         return {
-            "ok": True,
-            "data": {
-                "iso": result,
-                "resolved": result[:10],
-                "original_phrase": text,
-                "resolution_anchor": _RESOLUTION_ANCHOR,
+            "ok": False,
+            "error": {
+                "code": "UNKNOWN_DATE_PHRASE",
+                "message": f"Cannot resolve '{text}' to an absolute date",
             },
         }
 
+    iso = datetime(resolved.year, resolved.month, resolved.day, tzinfo=_tz.utc).isoformat()
     return {
-        "ok": False,
-        "error": {
-            "code": "UNKNOWN_DATE_PHRASE",
-            "message": f"Cannot resolve '{text}' to an absolute date",
+        "ok": True,
+        "data": {
+            "iso": iso,
+            "resolved": str(resolved),
+            "original_phrase": text,
+            "resolution_anchor": str(today),
         },
     }
 

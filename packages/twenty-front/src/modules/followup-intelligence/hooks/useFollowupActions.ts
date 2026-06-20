@@ -4,7 +4,9 @@ import { currentUserState } from '@/auth/states/currentUserState';
 import { FOLLOWUP_ACTIONS_POLL_INTERVAL_MS } from '@/followup-intelligence/constants/followup-polling';
 import {
   acceptFollowupAction,
+  editFollowupAction,
   fetchFollowupActions,
+  type FollowupStepEdit,
   rejectFollowupAction,
   reviseFollowupAction,
 } from '@/followup-intelligence/services/followup-api';
@@ -24,6 +26,10 @@ type UseFollowupActionsResult = {
   ) => Promise<void>;
   rejectAction: (actionId: string) => Promise<void>;
   reviseAction: (actionId: string, instructions: string) => Promise<void>;
+  editAction: (
+    actionId: string,
+    steps: FollowupStepEdit[],
+  ) => Promise<FollowupAction>;
 };
 
 export const useFollowupActions = (
@@ -128,6 +134,29 @@ export const useFollowupActions = (
     }
   };
 
+  const editAction = async (actionId: string, steps: FollowupStepEdit[]) => {
+    setIsMutating(true);
+    try {
+      const updated = await editFollowupAction(actionId, requireUserId(), steps);
+      // Reflect the saved edits immediately without waiting for the next poll.
+      setActions((prev) =>
+        prev.map((action) => (action.id === updated.id ? updated : action)),
+      );
+      enqueueSuccessSnackBar({ message: 'Changes saved.' });
+      return updated;
+    } catch (mutationError) {
+      enqueueErrorSnackBar({
+        message:
+          mutationError instanceof Error
+            ? mutationError.message
+            : 'Failed to save changes.',
+      });
+      throw mutationError;
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
   const reviseAction = async (actionId: string, instructions: string) => {
     setIsMutating(true);
     try {
@@ -157,5 +186,6 @@ export const useFollowupActions = (
     acceptAction,
     rejectAction,
     reviseAction,
+    editAction,
   };
 };

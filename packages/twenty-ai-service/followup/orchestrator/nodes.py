@@ -154,6 +154,18 @@ def build_action_payload(state: FollowUpState) -> dict[str, Any]:
     deal = state.get("deal_context")
     if deal is not None and getattr(deal, "company_id", None):
         payload["company_id"] = deal.company_id
+    # Snapshot the triggering email so the workflow card can show the rep WHY
+    # this exists — even when no inbound-queue row was the source (a direct
+    # /events call). Only the email entry point carries one.
+    trigger = state.get("trigger") or {}
+    if state.get("entry_point") == "email" and (
+        trigger.get("subject") or trigger.get("body")
+    ):
+        payload["source_email"] = {
+            "subject": trigger.get("subject"),
+            "body": trigger.get("body"),
+            "sender_email": trigger.get("sender_email"),
+        }
     return payload
 
 

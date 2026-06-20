@@ -29,6 +29,8 @@ from followup.api.models import (
     ChatRequest,
     ChatResponse,
     DirectFollowUpRequest,
+    EditActionRequest,
+    EditActionResult,
     EmailFetchRequest,
     EmailFetchResult,
     EmailReviewRequest,
@@ -44,6 +46,7 @@ from followup.api.models import (
     ReviseStepRequest,
     ReviseStepResult,
     RiskScoreResponse,
+    apply_step_edits,
     RiskSweepRequest,
     RiskSweepResult,
 )
@@ -224,6 +227,61 @@ async def trigger_risk_sweep(
 # ===========================================================================
 
 
+async def _attach_source_email(
+    deps: OrchestratorDeps, action: Any, response: PendingActionResponse
+) -> None:
+    """Attach the inbound email an email-triggered workflow responds to.
+
+    Best-effort: a missing or bad trigger id never fails the response — the card
+    simply shows no source email.
+    """
+    from followup.api.models import SourceEmail
+    from followup.store.repositories import InboundEmailRepository
+
+    # 1) Prefer the persisted inbound-queue row (the real fetched email).
+    if "email" in (action.trigger_type or "") and action.trigger_id:
+        try:
+            email = await InboundEmailRepository(deps.pipeline.executor).get(
+                uuid.UUID(action.trigger_id)
+            )
+        except Exception:  # noqa: BLE001 — never fail over a bad trigger id
+            email = None
+        if email is not None:
+            response.source_email = SourceEmail(
+                subject=email.subject,
+                body=email.body,
+                sender_email=email.sender_email,
+            )
+            return
+
+    # 2) Fall back to the email snapshot stored on the action at plan time, so
+    # email-triggered workflows still show their source without a queue row.
+    snapshot = (action.action_payload or {}).get("source_email")
+    if isinstance(snapshot, dict) and (snapshot.get("subject") or snapshot.get("body")):
+        response.source_email = SourceEmail(
+            subject=snapshot.get("subject"),
+            body=snapshot.get("body"),
+            sender_email=snapshot.get("sender_email"),
+        )
+        return
+
+    # 3) Last resort — recover the triggering email from the run that produced
+    # this action. ``trigger_payload`` is the only durable copy for actions
+    # created before the snapshot existed (or without an inbound-queue row).
+    if "email" in (action.trigger_type or ""):
+        try:
+            run = await deps.pipeline.runs.get_latest_for_action(action.id)
+        except Exception:  # noqa: BLE001 — never fail the list over run lookup
+            run = None
+        trigger = (run.trigger_payload or {}) if run is not None else {}
+        if trigger.get("subject") or trigger.get("body"):
+            response.source_email = SourceEmail(
+                subject=trigger.get("subject"),
+                body=trigger.get("body"),
+                sender_email=trigger.get("sender_email"),
+            )
+
+
 @router.get("/actions", response_model=list[PendingActionResponse])
 async def list_actions(
     opportunity_id: str,
@@ -231,30 +289,44 @@ async def list_actions(
     deps: OrchestratorDeps = Depends(get_deps),
 ) -> list[PendingActionResponse]:
     """List pending actions for an opportunity (opportunity tab)."""
-    from followup.api.models import SourceEmail
-    from followup.store.repositories import InboundEmailRepository
-
     actions = await deps.pipeline.pending_actions.list_pending(
         uuid.UUID(opportunity_id), status=status
     )
     responses = [PendingActionResponse.from_db(a) for a in actions]
 
-    # Attach the inbound email each email-triggered workflow responds to.
-    inbound_repo = InboundEmailRepository(deps.pipeline.executor)
     for action, response in zip(actions, responses):
-        if "email" in (action.trigger_type or "") and action.trigger_id:
-            try:
-                email = await inbound_repo.get(uuid.UUID(action.trigger_id))
-            except Exception:  # noqa: BLE001 — never fail the list over a bad trigger id
-                email = None
-            if email is not None:
-                response.source_email = SourceEmail(
-                    subject=email.subject,
-                    body=email.body,
-                    sender_email=email.sender_email,
-                )
+        await _attach_source_email(deps, action, response)
 
     return responses
+
+
+@router.post("/actions/{action_id}/edit", response_model=EditActionResult)
+async def edit_action(
+    action_id: str,
+    request: EditActionRequest,
+    deps: OrchestratorDeps = Depends(get_deps),
+) -> EditActionResult:
+    """Persist the rep's manual edits to a pending action's steps.
+
+    Writes the edited content into the payload the executor reads on accept, so
+    the edited text is exactly what gets written — no LLM re-composition. Returns
+    the re-projected action so the card reflects the saved edits immediately.
+    """
+    action = await deps.pipeline.pending_actions.get(uuid.UUID(action_id))
+    if action is None:
+        raise HTTPException(status_code=404, detail="Action not found")
+    if action.status != "pending":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Action is '{action.status}', not 'pending'",
+        )
+
+    apply_step_edits(action, request.steps)
+    saved = await deps.pipeline.pending_actions.save(action)
+
+    response = PendingActionResponse.from_db(saved)
+    await _attach_source_email(deps, saved, response)
+    return EditActionResult(action=response)
 
 
 @router.post("/actions/{action_id}/accept", response_model=AcceptResult)
