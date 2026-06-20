@@ -486,18 +486,7 @@ async def _get_pipeline_stages() -> dict:
     """
     ident = _identity(_get_pipeline_stages._scope)  # type: ignore[attr-defined]
 
-    result = await forward(
-        "execute",
-        _exec(
-            "get_field_metadata",
-            {"objectNameSingular": "opportunity", "fieldName": "stage"},
-            ident,
-        ),
-    )
-
-    ok, data = _extract(result, "pipeline_stages")
-    if not ok:
-        # Fallback to a known-good static list so the writer can still proceed.
+    def _fallback() -> dict:
         return _ok({
             "source": "fallback_static",
             "stages": [
@@ -511,7 +500,42 @@ async def _get_pipeline_stages() -> dict:
             ],
         })
 
-    options = data.get("options", []) if isinstance(data, dict) else []
+    obj_result = await forward(
+        "execute",
+        _exec("get_object_metadata", {"limit": 100}, ident),
+    )
+    ok_obj, objects = _extract(obj_result, "object_metadata")
+    opp_id = None
+    if ok_obj and isinstance(objects, list):
+        for obj in objects:
+            if obj.get("nameSingular") == "opportunity":
+                opp_id = obj.get("id")
+                break
+
+    if not opp_id:
+        return _fallback()
+
+    fields_result = await forward(
+        "execute",
+        _exec(
+            "get_field_metadata",
+            {"objectMetadataId": opp_id, "limit": 100},
+            ident,
+        ),
+    )
+    ok_fields, fields = _extract(fields_result, "field_metadata")
+    if not ok_fields or not isinstance(fields, list):
+        return _fallback()
+
+    options = None
+    for f in fields:
+        if f.get("name") == "stage":
+            options = f.get("options")
+            break
+
+    if not isinstance(options, list):
+        return _fallback()
+
     return _ok({"source": "metadata", "stages": options})
 
 

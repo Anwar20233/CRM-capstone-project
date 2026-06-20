@@ -3,6 +3,11 @@ import { useMutation, useQuery } from '@apollo/client/react';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 
+import {
+  type AgentFile,
+  fetchAgentFileContent,
+  saveAgentFileContent,
+} from '@/followup-intelligence/services/agent-files-api';
 import { SaveAndCancelButtons } from '@/settings/components/SaveAndCancelButtons/SaveAndCancelButtons';
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
@@ -20,6 +25,7 @@ import {
   FindManySkillsDocument,
   UpdateSkillDocument,
 } from '~/generated-metadata/graphql';
+import { AgentFileEditor } from '~/pages/skills/components/AgentFileEditor';
 import { FollowupSkillFormFields } from '~/pages/skills/components/FollowupSkillFormFields';
 import { FollowupSkillsList } from '~/pages/skills/components/FollowupSkillsList';
 import { FOLLOWUP_SKILL_TABS } from '~/pages/skills/constants/FollowupSkillTabs';
@@ -39,7 +45,8 @@ const DELETE_SKILL_MODAL_ID = 'delete-followup-skill-modal';
 type View =
   | { mode: 'list' }
   | { mode: 'create'; kind: FollowupSkillKind }
-  | { mode: 'edit'; skill: EditableSkill };
+  | { mode: 'edit'; skill: EditableSkill }
+  | { mode: 'edit-file'; file: AgentFile; original: string };
 
 export const SkillsPage = () => {
   const { t } = useLingui();
@@ -88,6 +95,16 @@ export const SkillsPage = () => {
     setView({ mode: 'edit', skill });
   };
 
+  const enterEditFile = async (file: AgentFile) => {
+    try {
+      const { content: fileContent } = await fetchAgentFileContent(file.path);
+      setContent(fileContent);
+      setView({ mode: 'edit-file', file, original: fileContent });
+    } catch (error) {
+      enqueueErrorSnackBar({ message: (error as Error).message });
+    }
+  };
+
   const apiName =
     view.mode === 'create'
       ? `${view.kind.prefix}${slugifySkillKey(label) || '…'}`
@@ -96,9 +113,11 @@ export const SkillsPage = () => {
         : '';
 
   const canSave =
-    label.trim().length > 0 &&
-    content.trim().length > 0 &&
-    (view.mode === 'create' ? slugifySkillKey(label).length > 0 : true) &&
+    (view.mode === 'edit-file'
+      ? content !== view.original && content.length > 0
+      : label.trim().length > 0 &&
+        content.trim().length > 0 &&
+        (view.mode === 'create' ? slugifySkillKey(label).length > 0 : true)) &&
     !isSubmitting;
 
   const reportError = (error: unknown) =>
@@ -112,6 +131,12 @@ export const SkillsPage = () => {
     }
     setIsSubmitting(true);
     try {
+      if (view.mode === 'edit-file') {
+        await saveAgentFileContent(view.file.path, content);
+        enqueueSuccessSnackBar({ message: t`File saved` });
+        setView({ ...view, original: content });
+        return;
+      }
       const shared = {
         label: label.trim(),
         description: description.trim() || undefined,
@@ -186,7 +211,9 @@ export const SkillsPage = () => {
       ? t`New ${view.kind.label}`
       : view.mode === 'edit'
         ? view.skill.label
-        : t`Skills`;
+        : view.mode === 'edit-file'
+          ? view.file.title
+          : t`Skills`;
 
   return (
     <SubMenuTopBarContainer
@@ -205,7 +232,9 @@ export const SkillsPage = () => {
       links={[{ children: t`Skills` }]}
     >
       <SettingsPageContainer>
-        {isForm ? (
+        {view.mode === 'edit-file' ? (
+          <AgentFileEditor content={content} onContentChange={setContent} />
+        ) : isForm ? (
           <FollowupSkillFormFields
             label={label}
             description={description}
@@ -234,6 +263,7 @@ export const SkillsPage = () => {
               skills={skills}
               onCreate={enterCreate}
               onEdit={enterEdit}
+              onEditFile={enterEditFile}
             />
           </>
         )}

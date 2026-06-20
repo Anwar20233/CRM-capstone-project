@@ -384,26 +384,73 @@ def test_to_utc_iso_treats_naive_time_as_rep_local() -> None:
     assert _to_utc_iso("2026-06-23T13:00:00", "Not/AZone") == "2026-06-23T13:00:00+00:00"
 
 
-def test_update_stage_instruction_is_explicit_and_unmasked() -> None:
-    # Regression: the stage direction must stay readable (not hidden behind a PII
-    # handle) and name the field, or the writer makes no CRM write.
+@pytest.mark.asyncio
+async def test_opportunity_update_writes_grounded_change_directly() -> None:
+    # A stage change validated at plan time is written DIRECTLY (no writer LLM):
+    # the exact field+value reaches the bridge as an update_opportunity call.
     from followup.api.execution import FollowupActionExecutor
 
     executor = FollowupActionExecutor()
+    writes: list[tuple[str, dict]] = []
+
+    async def _fake_direct_write(tool: str, args: dict) -> dict:
+        writes.append((tool, args))
+        return {"id": str(OPPORTUNITY_ID)}
+
+    executor._direct_write = _fake_direct_write  # type: ignore[assignment]
     action = SimpleNamespace(
         opportunity_id=OPPORTUNITY_ID,
-        action_payload={},
+        action_payload={
+            "task_results": {
+                "update_stage": {"field": "stage", "value": "PROPOSAL", "valid": True}
+            }
+        },
+        reasoning="",
     )
-    instruction = executor._instruction_update_stage(
-        {"kind": "update_stage", "intent": "Advance to Proposal"},
-        action,
-        object(),  # pii_map is unused for stage
+
+    status, error = await executor._execute_opportunity_update(
+        "update_stage", {"kind": "update_stage", "intent": "Advance to Proposal"}, action
     )
-    assert instruction is not None
-    assert "Advance to Proposal" in instruction  # the direction is visible
-    assert "stage" in instruction
-    assert str(OPPORTUNITY_ID) in instruction
-    assert "content" not in instruction and "note00" not in instruction  # no handle
+    assert status == "completed"
+    assert error is None
+    assert writes == [("update_opportunity", {"id": str(OPPORTUNITY_ID), "stage": "PROPOSAL"})]
+
+
+@pytest.mark.asyncio
+async def test_opportunity_update_invalid_change_fails_with_reason_not_silently() -> None:
+    # An ungrounded stage (one the pipeline does not have) must FAIL with a reason
+    # and write nothing — never the old silent no-op.
+    from followup.api.execution import FollowupActionExecutor
+
+    executor = FollowupActionExecutor()
+    called: list[str] = []
+
+    async def _fake_direct_write(tool: str, args: dict) -> dict:
+        called.append(tool)
+        return {}
+
+    executor._direct_write = _fake_direct_write  # type: ignore[assignment]
+    action = SimpleNamespace(
+        opportunity_id=OPPORTUNITY_ID,
+        action_payload={
+            "task_results": {
+                "update_stage": {
+                    "field": "stage",
+                    "value": "Negotiation",
+                    "valid": False,
+                    "reason": "'Negotiation' is not a valid stage. Valid stages: New (NEW)",
+                }
+            }
+        },
+        reasoning="",
+    )
+
+    status, error = await executor._execute_opportunity_update(
+        "update_stage", {"kind": "update_stage", "intent": "move to Negotiation"}, action
+    )
+    assert status == "failed"
+    assert "Negotiation" in error
+    assert called == []  # nothing was written
 
 
 def test_meeting_brief_states_slot_duration() -> None:
