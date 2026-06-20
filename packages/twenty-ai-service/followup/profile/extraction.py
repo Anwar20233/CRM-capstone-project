@@ -301,7 +301,9 @@ async def _resolve_and_extract(
             **base,
         )
 
-    chosen_id = _select_opportunity(state.get("opportunity_choice"), candidates)
+    chosen_id = _select_opportunity(
+        state.get("opportunity_choice"), candidates, sender_id=sender.get("id")
+    )
     if chosen_id is None:
         return FollowupExtractionOutcome(
             status=STATUS_AMBIGUOUS,
@@ -341,18 +343,30 @@ async def _resolve_and_extract(
 
 
 def _select_opportunity(
-    choice_label: Any, candidates: list[dict[str, Any]]
+    choice_label: Any,
+    candidates: list[dict[str, Any]],
+    *,
+    sender_id: Optional[str] = None,
 ) -> Optional[str]:
     """Resolve the extractor's deal choice to a candidate id.
 
-    Honour an explicit, valid choice; fall back to the sole candidate; otherwise
-    abstain (``None``) so the run halts rather than guessing.
+    Honour an explicit, valid choice; fall back to the sole candidate. When the
+    LLM abstains on a multi-deal company, do NOT halt — pick a deterministic best
+    candidate: the deal this sender is the point of contact for (the strongest
+    ownership signal), else the first candidate. Only a genuinely empty candidate
+    list yields ``None`` (the caller turns that into the no-deal halt).
     """
     candidate_ids = {str(c.get("id")) for c in candidates}
     parsed = parse_label(choice_label)
     if parsed is not None and parsed[0] == "crm" and parsed[1] in candidate_ids:
         return parsed[1]
     if len(candidates) == 1:
+        return str(candidates[0].get("id"))
+    if sender_id:
+        for candidate in candidates:
+            if str(candidate.get("point_of_contact_id") or "") == str(sender_id):
+                return str(candidate.get("id"))
+    if candidates:
         return str(candidates[0].get("id"))
     return None
 

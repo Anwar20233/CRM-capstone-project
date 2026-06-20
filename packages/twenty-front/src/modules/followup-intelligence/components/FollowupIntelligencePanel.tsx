@@ -59,8 +59,15 @@ export const FollowupIntelligencePanel = () => {
   const targetRecord = useTargetRecord();
   const opportunityId = targetRecord.id;
 
-  const { actions, loading, error, isMutating, acceptAction, rejectAction } =
-    useFollowupActions(opportunityId);
+  const {
+    actions,
+    loading,
+    error,
+    isMutating,
+    acceptAction,
+    rejectAction,
+    editAction,
+  } = useFollowupActions(opportunityId);
 
   const { risk, loading: riskLoading } = useFollowupRisk(opportunityId);
 
@@ -94,6 +101,7 @@ export const FollowupIntelligencePanel = () => {
             isMutating={isMutating}
             onAccept={acceptAction}
             onReject={rejectAction}
+            onEdit={editAction}
           />
         ))}
       </StyledWorkflows>

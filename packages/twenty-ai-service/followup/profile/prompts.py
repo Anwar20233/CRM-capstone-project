@@ -160,6 +160,7 @@ opportunity id — do NOT attach it to a similarly-titled existing contact or sh
 - If someone is mentioned by first name only with no role, email, or other \
 identifier, put them in unknown_persons.
 - Only set likely_matches_shadow when the NAMES refer to the same person (e.g. \
-"Dave" → shadow "David Park"); a matching role alone is not enough.
+a first-name-only mention matching a known shadow's full name); a matching role \
+alone is not enough.
 - Confidence: 0.9+ for direct statements, 0.6-0.8 for inferred, below 0.6 for \
 speculation."""
