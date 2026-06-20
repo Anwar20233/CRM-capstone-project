@@ -59,7 +59,13 @@ def is_task_allowed(task_name: str, scope: FollowupTaskScope) -> bool:
 FOLLOWUP_SCOPE = FollowupTaskScope(
     name="followup",
     allowed_tasks=frozenset(
-        {"check_calendar", "draft_email", "write_note", "create_task"}
+        {
+            "check_calendar",
+            "draft_email",
+            "write_note",
+            "create_task",
+            "validate_opportunity_change",
+        }
     ),
 )
 
@@ -415,6 +421,35 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
         }
         return {"task_results": {"write_note": payload}}
 
+    async def _validate_opportunity_change(ctx: TaskContext) -> dict[str, Any]:
+        # Ground every opportunity-update step in the plan against the REAL
+        # pipeline BEFORE the rep reviews it: resolve the proposed {field, value}
+        # to a concrete, writable change (a real stage value, an ISO close date),
+        # or mark it invalid with a reason. The executor reads task_results[kind]
+        # on accept and writes it deterministically — no LLM guessing, and an
+        # ungrounded change surfaces a reason instead of silently doing nothing.
+        from followup.crm.opportunity_update import (
+            OPP_UPDATE_KINDS,
+            resolve_change,
+        )
+
+        deal = ctx.deal_context
+        results: dict[str, Any] = {}
+        for step in ctx.plan.steps:
+            if step.kind not in OPP_UPDATE_KINDS:
+                continue
+            change_meta = (step.metadata or {}).get("change") or {}
+            resolved = await resolve_change(
+                field=change_meta.get("field"),
+                value=change_meta.get("value"),
+                intent=step.intent or "",
+                current_stage=deal.deal_stage,
+                current_close_date=deal.close_date,
+            )
+            # Keyed by the step kind the executor will look up on accept.
+            results[step.kind] = resolved
+        return {"task_results": results} if results else {}
+
     async def _create_task(ctx: TaskContext) -> dict[str, Any]:
         # Same deferred-write shape as _write_note, but the task TITLE is authored
         # by the follow-up agent's own task LLM (a separate prompt from notes).
@@ -488,6 +523,22 @@ def build_default_task_registry(deps: "OrchestratorDeps") -> FollowupTaskRegistr
             ),
             input_schema={"title": "str"},
             handler=_create_task,
+        )
+    )
+    registry.register(
+        FollowupTaskSpec(
+            name="validate_opportunity_change",
+            role="Grounds a proposed opportunity update (stage / close date) against the real pipeline.",
+            when_to_use="When the next step is update_opportunity / update_stage.",
+            instructions=(
+                "Resolve the proposed field + value to a concrete, writable change: "
+                "a real pipeline stage value, or an ISO close date. If it cannot be "
+                "grounded, mark it invalid with a reason — never write a value the "
+                "pipeline does not have. This is a deferred write — only the "
+                "validated change is shaped here; the update happens after the rep accepts."
+            ),
+            input_schema={"field": "str", "value": "str"},
+            handler=_validate_opportunity_change,
         )
     )
     return registry

@@ -194,6 +194,13 @@ def _to_recommended_actions(
     actions: list[RecommendedAction] = []
     for item in llm_output.actions:
         instruction = _ensure_opportunity_id(item.orchestrator_instruction, opp_id)
+        params: dict[str, str] = {"opportunity_id": opp_id}
+        # Carry the structured field change through so the orchestrator writes the
+        # exact field+value (a date push stays a date push; a stage stays a stage)
+        # instead of re-parsing the free-text instruction.
+        if item.field_update is not None:
+            params["field"] = item.field_update.field
+            params["value"] = item.field_update.value
         actions.append(
             RecommendedAction(
                 action_type=item.action_type,
@@ -206,7 +213,7 @@ def _to_recommended_actions(
                 orchestrator_action=OrchestratorAction(
                     tool=item.orchestrator_tool,
                     instruction=instruction,
-                    params={"opportunity_id": opp_id},
+                    params=params,
                 ),
             )
         )
@@ -223,6 +230,7 @@ async def run_next_step_agent(
     event: FollowUpEvent,
     *,
     trigger_context: str | None = None,
+    pipeline_stages: list[dict[str, Any]] | None = None,
     model: str | None = None,
 ) -> NextStepAgentResult:
     """Run the Next Step Intelligence Agent for the given deal context and trigger.
@@ -260,7 +268,7 @@ async def run_next_step_agent(
     # the ones it deems relevant (DB skills from the Skills tab + bundled defaults).
     planning_catalog = planner_catalog_text()
     context_msg = build_deal_context_message(
-        context, trigger_context, bant, engagement, planning_catalog
+        context, trigger_context, bant, engagement, planning_catalog, pipeline_stages
     )
 
     messages: list = [

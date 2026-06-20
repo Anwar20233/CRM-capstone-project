@@ -39,6 +39,9 @@ PLANNER_PREFIX = "followup-planner-"
 PLAYBOOK_PREFIX = "followup-playbook-"
 EMAIL_TEMPLATE_PREFIX = "followup-email-template-"
 PROPOSAL_TEMPLATE_PREFIX = "followup-proposal-template-"
+# Emailer catalogs the drafter retrieves to ground proposals in real offerings.
+PRODUCT_CATALOG_PREFIX = "followup-product-catalog-"
+SERVICE_CATALOG_PREFIX = "followup-service-catalog-"
 BANT_SKILL_NAME = "followup-bant"
 BEST_PRACTICES_SKILL_NAME = "followup-best-practices"
 
@@ -65,6 +68,14 @@ def proposal_template_skill_name(key: str) -> str:
     return f"{PROPOSAL_TEMPLATE_PREFIX}{key.strip().lower()}"
 
 
+def product_catalog_skill_name(key: str) -> str:
+    return f"{PRODUCT_CATALOG_PREFIX}{key.strip().lower()}"
+
+
+def service_catalog_skill_name(key: str) -> str:
+    return f"{SERVICE_CATALOG_PREFIX}{key.strip().lower()}"
+
+
 @dataclass(frozen=True)
 class SkillRow:
     name: str
@@ -75,7 +86,13 @@ class SkillRow:
     @property
     def key(self) -> str:
         """The trailing segment after the category prefix (e.g. ``discovery``)."""
-        for prefix in (PLAYBOOK_PREFIX, EMAIL_TEMPLATE_PREFIX, PROPOSAL_TEMPLATE_PREFIX):
+        for prefix in (
+            PLAYBOOK_PREFIX,
+            EMAIL_TEMPLATE_PREFIX,
+            PROPOSAL_TEMPLATE_PREFIX,
+            PRODUCT_CATALOG_PREFIX,
+            SERVICE_CATALOG_PREFIX,
+        ):
             if self.name.startswith(prefix):
                 return self.name[len(prefix):]
         return self.name

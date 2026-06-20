@@ -87,6 +87,12 @@ or a meeting just to have something to do.
   items, engagement metrics, contacts, BANT signals, profile facts).
 - orchestrator_tool must be one of: create_task, schedule_meeting, send_email,
   update_opportunity, log_activity, create_reminder.
+- When orchestrator_tool is update_opportunity you MUST also set field_update:
+  {field, value}. field is 'stage' or 'closeDate'. For 'stage', value MUST be one
+  of the exact pipeline stage values listed in the context (never invent one); for
+  'closeDate', value is an ISO date (YYYY-MM-DD). Only stage and closeDate may be
+  changed — do not propose updating any other opportunity field. Omit field_update
+  for every other tool.
 - orchestrator_instruction must reference the opportunity id (and any relevant company/person ids) and describe
   exactly what to execute if the rep accepts this action. IMPORTANT: When instructing to create a task or note, you MUST explicitly ask the orchestrator to link it to the relevant opportunity, company, or person IDs (e.g. "Create task and link to opportunity <opportunity_id> and company <company_id> using the target tools").
 - priority 1 (highest) to 5 (lowest). Avoid ties unless genuinely equal urgency.
@@ -100,6 +106,7 @@ def build_deal_context_message(
     bant: BANTSignals,
     engagement: EngagementSignals,
     planning_skills_catalog: str | None = None,
+    pipeline_stages: list[dict] | None = None,
 ) -> str:
     """Compact, structured deal context for the planner's initial message.
 
@@ -122,6 +129,23 @@ def build_deal_context_message(
         industry = f" (industry: {context.company.industry})" if context.company.industry else ""
         opp_lines.append(f"company: {context.company.name}{industry}")
     sections.append("## Opportunity\n" + "\n".join(opp_lines))
+
+    # Ground any stage change against the REAL pipeline: the planner may ONLY
+    # advance to a stage value listed here. Without this the planner invents
+    # stages that do not exist in the workspace.
+    if pipeline_stages:
+        stage_lines = [
+            f"- {s.get('label') or s.get('value')} (value: {s.get('value')})"
+            for s in sorted(pipeline_stages, key=lambda s: s.get("position", 0))
+            if s.get("value")
+        ]
+        if stage_lines:
+            sections.append(
+                "## Pipeline stages (the ONLY valid stage values)\n"
+                "If you recommend update_opportunity with field 'stage', its value "
+                "MUST be one of these exact values — never invent a stage name:\n"
+                + "\n".join(stage_lines)
+            )
 
     if context.contacts:
         contact_lines = [
