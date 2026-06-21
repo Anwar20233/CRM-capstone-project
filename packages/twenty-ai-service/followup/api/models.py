@@ -29,6 +29,11 @@ class FollowUpEventRequest(BaseModel):
     body: str
     opportunity_id: Optional[str] = None  # email path RESOLVES the deal via extraction
     owner_user_id: Optional[str] = None  # lets check_calendar read the rep's calendar
+    # Meeting slots the sender requested in the email (ISO-8601 starts). When the
+    # caller has already parsed them, pass them so check_calendar honours the
+    # requested windows instead of free-picking the rep's next open slot.
+    proposed_times: Optional[list[str]] = None
+    duration_minutes: Optional[int] = None  # requested meeting length; defaults to 30
     urgency: str = "medium"
 
 
