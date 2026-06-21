@@ -7,6 +7,7 @@ import { FileEntity } from 'src/engine/core-modules/file/entities/file.entity';
 import { FileModule } from 'src/engine/core-modules/file/file.module';
 import { JwtModule } from 'src/engine/core-modules/jwt/jwt.module';
 import { SecureHttpClientModule } from 'src/engine/core-modules/secure-http-client/secure-http-client.module';
+import { BookCalendarEventTool } from 'src/engine/core-modules/tool/tools/calendar-tool/book-calendar-event-tool';
 import { CodeInterpreterTool } from 'src/engine/core-modules/tool/tools/code-interpreter-tool/code-interpreter-tool';
 import { DraftEmailTool } from 'src/engine/core-modules/tool/tools/email-tool/draft-email-tool';
 import { EmailComposerService } from 'src/engine/core-modules/tool/tools/email-tool/email-composer.service';
@@ -19,6 +20,7 @@ import { ConnectedAccountEntity } from 'src/engine/metadata-modules/connected-ac
 import { NavigationMenuItemModule } from 'src/engine/metadata-modules/navigation-menu-item/navigation-menu-item.module';
 import { ObjectMetadataModule } from 'src/engine/metadata-modules/object-metadata/object-metadata.module';
 import { ViewModule } from 'src/engine/metadata-modules/view/view.module';
+import { OAuth2ClientManagerModule } from 'src/modules/connected-account/oauth2-client-manager/oauth2-client-manager.module';
 import { MessagingImportManagerModule } from 'src/modules/messaging/message-import-manager/messaging-import-manager.module';
 import { MessagingSendManagerModule } from 'src/modules/messaging/message-outbound-manager/messaging-send-manager.module';
 
@@ -36,6 +38,7 @@ import { MessagingSendManagerModule } from 'src/modules/messaging/message-outbou
     ViewModule,
     NavigationMenuItemModule,
     WorkspaceManyOrAllFlatEntityMapsCacheModule,
+    OAuth2ClientManagerModule,
   ],
   providers: [
     HttpTool,
@@ -45,6 +48,7 @@ import { MessagingSendManagerModule } from 'src/modules/messaging/message-outbou
     SearchHelpCenterTool,
     CodeInterpreterTool,
     NavigateAppTool,
+    BookCalendarEventTool,
   ],
   exports: [
     HttpTool,
@@ -54,6 +58,7 @@ import { MessagingSendManagerModule } from 'src/modules/messaging/message-outbou
     SearchHelpCenterTool,
     CodeInterpreterTool,
     NavigateAppTool,
+    BookCalendarEventTool,
   ],
 })
 export class ToolModule {}

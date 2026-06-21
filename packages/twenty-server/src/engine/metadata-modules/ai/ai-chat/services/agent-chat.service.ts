@@ -266,10 +266,7 @@ export class AgentChatService {
       .orderBy('part.createdAt', 'DESC')
       .getOne();
 
-    const data = part?.toolInput as
-      | { status?: string }
-      | null
-      | undefined;
+    const data = part?.toolInput as { status?: string } | null | undefined;
 
     if (!part || !data || data.status !== 'pending') {
       return;
@@ -583,6 +580,39 @@ export class AgentChatService {
         },
       ],
     });
+  }
+
+  // Persist a title produced elsewhere (the Python orchestrator names threads
+  // when the Node side has no AI provider configured). Guards on the thread
+  // still being untitled so a late title can't clobber a user-set one.
+  async persistGeneratedTitle({
+    threadId,
+    title,
+  }: {
+    threadId: string;
+    title: string;
+  }): Promise<void> {
+    const trimmed = title.trim();
+
+    if (!trimmed) {
+      return;
+    }
+
+    const thread = await this.threadRepository.findOne({
+      where: { id: threadId },
+    });
+
+    if (!thread || thread.title) {
+      return;
+    }
+
+    await this.threadRepository.update(threadId, { title: trimmed });
+
+    await this.broadcastThreadUpdated(
+      { ...thread, title: trimmed },
+      ['title'],
+      thread.userWorkspaceId,
+    );
   }
 
   async generateTitleIfNeeded({

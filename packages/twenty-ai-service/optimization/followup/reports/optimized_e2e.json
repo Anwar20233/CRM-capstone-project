@@ -1,0 +1,1887 @@
+{
+  "models_loaded": true,
+  "summary": {
+    "total": 32,
+    "passed": 13,
+    "pii_leaks": 2,
+    "llm_calls": 704
+  },
+  "scenarios": [
+    {
+      "name": "acknowledgement_no_reply_needed",
+      "passed": false,
+      "seconds": 86.63,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['no_action']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=False expected=False"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "architecture_review_before_vp_pitch",
+      "passed": true,
+      "seconds": 198.4,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['check_calendar', 'draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "calendar",
+          "passed": true,
+          "soft": false,
+          "detail": "calendar_present=True slots=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "benchmark_results_disputed",
+      "passed": false,
+      "seconds": 147.4,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=close_deal \u2208 ['escalate', 'follow_up_call', 'schedule_meeting', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "budget_formally_approved",
+      "passed": true,
+      "seconds": 228.59,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "champion_leaving_internal_transfer",
+      "passed": true,
+      "seconds": 175.19,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['check_in', 'escalate', 'follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "competitor_active_in_evaluation",
+      "passed": true,
+      "seconds": 276.35,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['escalate', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "demo_request_for_executive_review",
+      "passed": false,
+      "seconds": 121.62,
+      "llm_calls": 20,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['check_calendar', 'draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "calendar",
+          "passed": true,
+          "soft": false,
+          "detail": "calendar_present=True slots=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [
+        {
+          "type": "person",
+          "value": "person004,\n\n",
+          "score": 0.85
+        }
+      ],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "executive_sponsor_surfaces_late",
+      "passed": false,
+      "seconds": 250.19,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=close_deal \u2208 ['follow_up_call', 'schedule_meeting', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "feature_gap_threatens_shortlist",
+      "passed": true,
+      "seconds": 487.0,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['escalate', 'follow_up_call', 'schedule_meeting', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "finance_deadline_creates_urgency",
+      "passed": true,
+      "seconds": 233.98,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "historied_account_timeline_slip",
+      "passed": true,
+      "seconds": 361.85,
+      "llm_calls": 19,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['escalate', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "legal_redlines_stall_signature",
+      "passed": true,
+      "seconds": 208.7,
+      "llm_calls": 20,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['close_deal', 'follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "calendar_soft",
+          "passed": true,
+          "soft": true,
+          "detail": "calendar_present=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "long_term_contact_procurement_rhythm",
+      "passed": false,
+      "seconds": 350.95,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['check_in', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "meeting_request_with_specific_slots",
+      "passed": true,
+      "seconds": 257.78,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['check_calendar', 'draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "calendar",
+          "passed": true,
+          "soft": false,
+          "detail": "calendar_present=True slots=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "misaddressed_greeting_wrong_rep",
+      "passed": true,
+      "seconds": 191.74,
+      "llm_calls": 20,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['check_in', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=medium \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "new_security_owner_joins_late",
+      "passed": false,
+      "seconds": 186.9,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=close_deal \u2208 ['follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [
+        {
+          "type": "person",
+          "value": "Nadia",
+          "score": 0.85
+        }
+      ],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "one_line_pricing_question",
+      "passed": false,
+      "seconds": 155.06,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "out_of_office_will_resume",
+      "passed": false,
+      "seconds": 1121.76,
+      "llm_calls": 18,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=check_in \u2208 ['check_in', 'no_action']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=True expected=False"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "pilot_results_exceed_target",
+      "passed": false,
+      "seconds": 368.57,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "poc_positive_one_open_item",
+      "passed": false,
+      "seconds": 297.29,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "pricing_above_approved_budget",
+      "passed": false,
+      "seconds": 162.32,
+      "llm_calls": 20,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['escalate', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "procurement_takes_over_commercial_thread",
+      "passed": true,
+      "seconds": 121.0,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=medium \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "reference_check_from_past_win",
+      "passed": false,
+      "seconds": 146.35,
+      "llm_calls": 19,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['follow_up_call', 'schedule_meeting', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "calendar_soft",
+          "passed": true,
+          "soft": true,
+          "detail": "calendar_present=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "renewal_expansion_existing_usage",
+      "passed": false,
+      "seconds": 96.7,
+      "llm_calls": 20,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "security_cleared_proceed_commercial",
+      "passed": false,
+      "seconds": 210.4,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=close_deal \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "security_questionnaire_delay",
+      "passed": false,
+      "seconds": 329.01,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "support_escalation_threatens_eval",
+      "passed": false,
+      "seconds": 238.25,
+      "llm_calls": 23,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=check_in \u2208 ['escalate', 'follow_up_call']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=medium \u2208 ['high']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "technical_blocker_stalls_project",
+      "passed": false,
+      "seconds": 185.6,
+      "llm_calls": 23,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=check_in \u2208 ['escalate', 'follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=medium \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "calendar_soft",
+          "passed": false,
+          "soft": true,
+          "detail": "calendar_present=False"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "technical_signoff_complete",
+      "passed": false,
+      "seconds": 216.31,
+      "llm_calls": 26,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['check_in', 'close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "unknown_sender_no_crm_record",
+      "passed": true,
+      "seconds": 95.11,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "halts_cleanly",
+          "passed": true,
+          "soft": false,
+          "detail": "status=failed"
+        },
+        {
+          "name": "halt_path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "vague_checkin_no_deal_signal",
+      "passed": false,
+      "seconds": 171.42,
+      "llm_calls": 20,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=schedule_meeting \u2208 ['check_in', 'follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "verbal_yes_pending_legal_only",
+      "passed": true,
+      "seconds": 194.17,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=medium \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    }
+  ]
+}

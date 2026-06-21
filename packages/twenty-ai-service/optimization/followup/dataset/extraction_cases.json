@@ -1,0 +1,125 @@
+[
+  {
+    "id": "ex_single_concern",
+    "split": "train",
+    "category": "single_deal_concern",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "amy", "name": "Amy Chen", "role": "Data Lead"},
+      "contacts": [{"id": "amy", "name": "Amy Chen", "role": "Data Lead", "company": "Initech", "email": "amy@initech.test"}],
+      "company": {"id": "initech", "name": "Initech"},
+      "opportunities": [{"id": "opp-init", "name": "Initech — Analytics Rollout", "stage": "Qualification"}],
+      "shadows": []
+    },
+    "source_text": "Hi — before we go further, we need confirmation that data can be pinned to the EU region. Data residency is a hard requirement from our compliance team or we can't proceed. Thanks, Amy",
+    "gold": {"opportunity_id": "opp-init", "must_find": ["residency", "EU"]}
+  },
+  {
+    "id": "ex_single_budget",
+    "split": "train",
+    "category": "single_deal_budget",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "sarah", "name": "Sarah Connor", "role": "Procurement"},
+      "contacts": [{"id": "sarah", "name": "Sarah Connor", "role": "Procurement", "company": "Cyberdyne", "email": "sarah@cyberdyne.test"}],
+      "company": {"id": "cyberdyne", "name": "Cyberdyne"},
+      "opportunities": [{"id": "opp-cyber", "name": "Cyberdyne — Q3 Rollout", "stage": "Negotiation"}],
+      "shadows": []
+    },
+    "source_text": "Our budget cycle closes Thursday EOD. We have allocation approved for this quarter but lose it if the signed order isn't finalized by then. Please send what you need to close it out.",
+    "gold": {"opportunity_id": "opp-cyber", "must_find": ["budget", "deadline"]}
+  },
+  {
+    "id": "ex_competitor",
+    "split": "train",
+    "category": "single_deal_competitor",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "alice", "name": "Alice Wong", "role": "CISO"},
+      "contacts": [{"id": "alice", "name": "Alice Wong", "role": "CISO", "company": "Umbrella", "email": "alice@umbrella.test"}],
+      "company": {"id": "umbrella", "name": "Umbrella Corp"},
+      "opportunities": [{"id": "opp-umbrella", "name": "Umbrella — Security Platform", "stage": "Proposal"}],
+      "shadows": []
+    },
+    "source_text": "Heads up — leadership is leaning toward CompetitorX on price. If you can address the cost gap this week we can still make the case for you, but the decision meeting is Friday.",
+    "gold": {"opportunity_id": "opp-umbrella", "must_find": ["competitorx", "price"]}
+  },
+  {
+    "id": "ex_new_person",
+    "split": "train",
+    "category": "new_person_discovery",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "john", "name": "John Park", "role": "Director of Eng"},
+      "contacts": [{"id": "john", "name": "John Park", "role": "Director of Eng", "company": "Northwind", "email": "john@northwind.test"}],
+      "company": {"id": "northwind", "name": "Northwind"},
+      "opportunities": [{"id": "opp-north", "name": "Northwind — Platform Integration", "stage": "Proposal"}],
+      "shadows": []
+    },
+    "source_text": "Looping in our VP of Engineering, David Kim, who will own the final sign-off on the rollout plan. David wants to review the security posture before we commit.",
+    "gold": {"opportunity_id": "opp-north", "must_find": ["security"], "expect_unknown_person": "David Kim"}
+  },
+  {
+    "id": "ex_ambiguous_abstain",
+    "split": "val",
+    "category": "ambiguous_multi_deal",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "pat", "name": "Pat Lee", "role": "Procurement"},
+      "contacts": [{"id": "pat", "name": "Pat Lee", "role": "Procurement", "company": "Globex", "email": "pat@globex.test"}],
+      "company": {"id": "globex", "name": "Globex"},
+      "opportunities": [
+        {"id": "opp-globex-a", "name": "Globex — Platform License", "stage": "Proposal"},
+        {"id": "opp-globex-b", "name": "Globex — Services Engagement", "stage": "Negotiation"}
+      ],
+      "shadows": []
+    },
+    "source_text": "Quick one — can you resend the latest paperwork? We want to keep things moving on our end. Thanks.",
+    "gold": {"expect_abstain": true}
+  },
+  {
+    "id": "ex_single_sentiment",
+    "split": "val",
+    "category": "single_deal_sentiment",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "gavin", "name": "Gavin Belson", "role": "VP Product"},
+      "contacts": [{"id": "gavin", "name": "Gavin Belson", "role": "VP Product", "company": "Hooli", "email": "gavin@hooli.test"}],
+      "company": {"id": "hooli", "name": "Hooli"},
+      "opportunities": [{"id": "opp-hooli", "name": "Hooli — Pilot Expansion", "stage": "Proposal"}],
+      "shadows": []
+    },
+    "source_text": "The pilot results look strong and the team is genuinely impressed with the platform. We're keen to talk expansion across two more business units next quarter.",
+    "gold": {"opportunity_id": "opp-hooli", "must_find": ["expansion"]}
+  },
+  {
+    "id": "ex_single_deadline",
+    "split": "test",
+    "category": "single_deal_deadline",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "lucius", "name": "Lucius Fox", "role": "CTO"},
+      "contacts": [{"id": "lucius", "name": "Lucius Fox", "role": "CTO", "company": "Wayne", "email": "lucius@wayne.test"}],
+      "company": {"id": "wayne", "name": "Wayne Enterprises"},
+      "opportunities": [{"id": "opp-wayne", "name": "Wayne — Infra Modernization", "stage": "Discovery"}],
+      "shadows": []
+    },
+    "source_text": "We need the pilot scoped before our board review on the 30th — that's a firm internal deadline. Can you get the timeline over this week?",
+    "gold": {"opportunity_id": "opp-wayne", "must_find": ["deadline"]}
+  },
+  {
+    "id": "ex_new_person_firstname",
+    "split": "test",
+    "category": "new_person_firstname",
+    "source_type": "email",
+    "entities": {
+      "sender": {"id": "priya", "name": "Priya Shah", "role": "VP Operations"},
+      "contacts": [{"id": "priya", "name": "Priya Shah", "role": "VP Operations", "company": "Globex", "email": "priya@globex.test"}],
+      "company": {"id": "globex", "name": "Globex"},
+      "opportunities": [{"id": "opp-globex", "name": "Globex — Renewal + Expansion", "stage": "Proposal"}],
+      "shadows": []
+    },
+    "source_text": "I'll need to bring Marcus into the next conversation — he runs our security review and has concerns about SSO support that we must resolve before signing.",
+    "gold": {"opportunity_id": "opp-globex", "must_find": ["sso"], "expect_unknown_person": "Marcus"}
+  }
+]

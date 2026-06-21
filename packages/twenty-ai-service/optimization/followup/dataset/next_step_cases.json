@@ -1,0 +1,736 @@
+[
+  {
+    "id": "ns_cold_silence",
+    "split": "train",
+    "category": "at_risk",
+    "event_type": "activity_logged",
+    "context": {
+      "opportunity": {
+        "id": "opp-cold",
+        "name": "Northwind — Platform Integration",
+        "stage": "Proposal",
+        "amount": 80000.0,
+        "close_date": "2026-07-20T00:00:00Z",
+        "company_id": "opp-cold-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-cold-co",
+        "name": "Northwind",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-john",
+          "name": "John Park",
+          "role": "Director of Eng",
+          "is_decision_maker": true
+        }
+      ],
+      "timeline": [
+        {
+          "type": "email",
+          "title": "Proposal sent",
+          "summary": "Sent pricing + rollout plan, no reply.",
+          "occurred_at": "2026-05-16T00:00:00Z"
+        },
+        {
+          "type": "email",
+          "title": "Check-in",
+          "summary": "Nudged for feedback, silence.",
+          "occurred_at": "2026-06-02T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 18,
+        "activity_count_14d": 0,
+        "activity_count_prior_14d": 3,
+        "has_future_meeting": false
+      },
+      "active_facts": [],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Re: rollout plan\n\n(no inbound — proactive sweep: the buyer has gone silent for 18 days after we sent the proposal.)",
+    "gold": {
+      "tools": [
+        "send_email",
+        "create_task",
+        "schedule_meeting"
+      ],
+      "urgency": [
+        "high",
+        "medium"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_question_only",
+    "split": "train",
+    "category": "inbound_question",
+    "event_type": "email_sent",
+    "context": {
+      "opportunity": {
+        "id": "opp-q",
+        "name": "Initech — Analytics Rollout",
+        "stage": "Qualification",
+        "amount": 80000.0,
+        "close_date": "2026-07-20T00:00:00Z",
+        "company_id": "opp-q-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-q-co",
+        "name": "Initech",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-amy",
+          "name": "Amy Chen",
+          "role": "Data Lead",
+          "is_decision_maker": false
+        }
+      ],
+      "timeline": [
+        {
+          "type": "email",
+          "title": "Demo follow-up",
+          "summary": "Walked through analytics module.",
+          "occurred_at": "2026-06-18T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 0,
+        "activity_count_14d": 4,
+        "activity_count_prior_14d": 2,
+        "has_future_meeting": false
+      },
+      "active_facts": [],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Quick question on data residency\n\nHi — before we go further, can you confirm whether data can be pinned to the EU region? That's the one open item from our side. Thanks, Amy",
+    "gold": {
+      "tools": [
+        "send_email"
+      ],
+      "urgency": [
+        "medium",
+        "low"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_positive_momentum",
+    "split": "train",
+    "category": "positive_momentum",
+    "event_type": "meeting_completed",
+    "context": {
+      "opportunity": {
+        "id": "opp-pos",
+        "name": "Hooli — Pilot Expansion",
+        "stage": "Proposal",
+        "amount": 80000.0,
+        "close_date": "2026-07-20T00:00:00Z",
+        "company_id": "opp-pos-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-pos-co",
+        "name": "Hooli",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-gav",
+          "name": "Gavin Belson",
+          "role": "VP Product",
+          "is_decision_maker": true
+        }
+      ],
+      "timeline": [
+        {
+          "type": "meeting",
+          "title": "Pilot review",
+          "summary": "Pilot exceeded targets, team happy.",
+          "occurred_at": "2026-06-19T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 1,
+        "activity_count_14d": 6,
+        "activity_count_prior_14d": 4,
+        "has_future_meeting": true
+      },
+      "active_facts": [],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Pilot went great\n\nJust wanted to say the pilot results look strong — the team is impressed. We'll loop back internally on next steps. No action needed from you right now.",
+    "gold": {
+      "tools": [
+        "send_email",
+        "log_activity",
+        "create_task"
+      ],
+      "urgency": [
+        "low",
+        "medium"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_fyi_no_action",
+    "split": "val",
+    "category": "no_action",
+    "event_type": "email_sent",
+    "context": {
+      "opportunity": {
+        "id": "opp-fyi",
+        "name": "Stark — Renewal",
+        "stage": "Negotiation",
+        "amount": 80000.0,
+        "close_date": "2026-07-20T00:00:00Z",
+        "company_id": "opp-fyi-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-fyi-co",
+        "name": "Stark Industries",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-pep",
+          "name": "Pepper Potts",
+          "role": "COO",
+          "is_decision_maker": true
+        }
+      ],
+      "timeline": [
+        {
+          "type": "email",
+          "title": "Contract sent",
+          "summary": "Sent redlines for legal review.",
+          "occurred_at": "2026-06-17T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 0,
+        "activity_count_14d": 5,
+        "activity_count_prior_14d": 5,
+        "has_future_meeting": true
+      },
+      "active_facts": [],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Out of office\n\nI'm out until Monday with limited email access. No need to reply — I'll pick this back up when I'm back. — Pepper",
+    "gold": {
+      "tools": [
+        "log_activity"
+      ],
+      "urgency": [
+        "low"
+      ],
+      "expect_no_action": true
+    }
+  },
+  {
+    "id": "ns_competitor_pressure",
+    "split": "train",
+    "category": "competitor",
+    "event_type": "email_sent",
+    "context": {
+      "opportunity": {
+        "id": "opp-comp",
+        "name": "Umbrella — Security Platform",
+        "stage": "Proposal",
+        "amount": 80000.0,
+        "close_date": "2026-07-20T00:00:00Z",
+        "company_id": "opp-comp-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-comp-co",
+        "name": "Umbrella Corp",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-al",
+          "name": "Alice Wong",
+          "role": "CISO",
+          "is_decision_maker": true
+        }
+      ],
+      "timeline": [
+        {
+          "type": "email",
+          "title": "Eval update",
+          "summary": "Buyer comparing two vendors.",
+          "occurred_at": "2026-06-16T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 1,
+        "activity_count_14d": 7,
+        "activity_count_prior_14d": 5,
+        "has_future_meeting": false
+      },
+      "active_facts": [
+        {
+          "fact_id": "f-comp",
+          "category": "risk",
+          "fact_key": "competitor",
+          "value": "Evaluating CompetitorX in parallel; price-sensitive.",
+          "confidence": 0.9
+        }
+      ],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Re: final evaluation\n\nHeads up — leadership is leaning toward CompetitorX on price. If you can address the cost gap this week we can still make the case for you, but the decision meeting is Friday.",
+    "gold": {
+      "tools": [
+        "send_email",
+        "schedule_meeting",
+        "create_task"
+      ],
+      "urgency": [
+        "high"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_meeting_request",
+    "split": "train",
+    "category": "meeting_request",
+    "event_type": "email_sent",
+    "context": {
+      "opportunity": {
+        "id": "opp-mtg",
+        "name": "Wayne — Infra Modernization",
+        "stage": "Qualification",
+        "amount": 80000.0,
+        "close_date": "2026-07-20T00:00:00Z",
+        "company_id": "opp-mtg-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-mtg-co",
+        "name": "Wayne Enterprises",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-luc",
+          "name": "Lucius Fox",
+          "role": "CTO",
+          "is_decision_maker": true
+        }
+      ],
+      "timeline": [
+        {
+          "type": "email",
+          "title": "Intro",
+          "summary": "Initial scoping email exchange.",
+          "occurred_at": "2026-06-15T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 1,
+        "activity_count_14d": 3,
+        "activity_count_prior_14d": 1,
+        "has_future_meeting": false
+      },
+      "active_facts": [],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Let's set up a working session\n\nCan we get 45 minutes next week to walk through the architecture? Tuesday or Wednesday afternoon both work on my end.",
+    "gold": {
+      "tools": [
+        "schedule_meeting"
+      ],
+      "urgency": [
+        "medium",
+        "high"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_deadline_soon",
+    "split": "val",
+    "category": "deadline",
+    "event_type": "email_sent",
+    "context": {
+      "opportunity": {
+        "id": "opp-deadline",
+        "name": "Cyberdyne — Q3 Rollout",
+        "stage": "Negotiation",
+        "amount": 80000.0,
+        "close_date": "2026-06-25T00:00:00Z",
+        "company_id": "opp-deadline-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-deadline-co",
+        "name": "Cyberdyne",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-sar",
+          "name": "Sarah Connor",
+          "role": "Procurement",
+          "is_decision_maker": true
+        }
+      ],
+      "timeline": [
+        {
+          "type": "email",
+          "title": "Quote",
+          "summary": "Sent final quote awaiting PO.",
+          "occurred_at": "2026-06-18T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 0,
+        "activity_count_14d": 6,
+        "activity_count_prior_14d": 4,
+        "has_future_meeting": false
+      },
+      "active_facts": [],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Need the signed order by Thursday\n\nOur budget cycle closes Thursday EOD. If we don't have the paperwork finalized by then we lose the allocation this quarter. What do you need from me to get this over the line?",
+    "gold": {
+      "tools": [
+        "send_email",
+        "create_task",
+        "schedule_meeting"
+      ],
+      "urgency": [
+        "high"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_routine_checkin",
+    "split": "test",
+    "category": "routine",
+    "event_type": "activity_logged",
+    "context": {
+      "opportunity": {
+        "id": "opp-routine",
+        "name": "Soylent — Expansion",
+        "stage": "Discovery",
+        "amount": 80000.0,
+        "close_date": "2026-07-20T00:00:00Z",
+        "company_id": "opp-routine-co",
+        "owner_id": null,
+        "updated_at": null
+      },
+      "company": {
+        "id": "opp-routine-co",
+        "name": "Soylent Corp",
+        "industry": "Software"
+      },
+      "contacts": [
+        {
+          "id": "c-joe",
+          "name": "Joe Roan",
+          "role": "Ops Manager",
+          "is_decision_maker": false
+        }
+      ],
+      "timeline": [
+        {
+          "type": "note",
+          "title": "Discovery call",
+          "summary": "Mapped current workflow.",
+          "occurred_at": "2026-06-13T00:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [],
+        "stage_sla_days": {}
+      },
+      "engagement": {
+        "days_since_last_activity": 7,
+        "activity_count_14d": 2,
+        "activity_count_prior_14d": 2,
+        "has_future_meeting": false
+      },
+      "active_facts": [],
+      "loaded_at": "2026-06-20T00:00:00Z"
+    },
+    "trigger": "Subject: Re: discovery follow-up\n\nThanks for the call last week — useful overview. We're still early in our planning; circle back in a couple weeks?",
+    "gold": {
+      "tools": [
+        "send_email",
+        "create_task",
+        "create_reminder",
+        "log_activity"
+      ],
+      "urgency": [
+        "low",
+        "medium"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_fixture_discovery_authority",
+    "split": "train",
+    "category": "qualification_gap",
+    "event_type": "opportunity_stage_changed",
+    "context": {
+      "opportunity": {
+        "id": "opp-1001",
+        "name": "Acme Corp - Platform Expansion",
+        "stage": "Discovery",
+        "amount": null,
+        "close_date": null,
+        "company_id": "company-1",
+        "owner_id": "user-1",
+        "updated_at": "2026-06-10T09:00:00Z"
+      },
+      "company": {
+        "id": "company-1",
+        "name": "Acme Corp",
+        "industry": "Manufacturing"
+      },
+      "contacts": [
+        {
+          "id": "contact-1",
+          "name": "Jordan Lee",
+          "role": "Operations Manager",
+          "is_decision_maker": false
+        }
+      ],
+      "timeline": [
+        {
+          "type": "note",
+          "title": "Intro call notes",
+          "summary": "Jordan described pain with manual inventory reconciliation taking 10+ hours/week.",
+          "occurred_at": "2026-05-28T15:00:00Z"
+        },
+        {
+          "type": "task",
+          "title": "Send intro deck",
+          "summary": "Sent overview deck after intro call.",
+          "occurred_at": "2026-05-29T10:00:00Z"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "task-1",
+          "title": "Schedule discovery call with operations team",
+          "status": "open",
+          "due_at": "2026-06-05T17:00:00Z",
+          "is_overdue": true
+        }
+      ],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [
+          "Discovery",
+          "Proposal",
+          "Negotiation",
+          "Closed Won",
+          "Closed Lost"
+        ],
+        "stage_sla_days": {
+          "Discovery": 14,
+          "Proposal": 21,
+          "Negotiation": 14
+        }
+      },
+      "engagement": {
+        "days_since_last_activity": 9,
+        "activity_count_14d": 2,
+        "activity_count_prior_14d": 5,
+        "has_future_meeting": false
+      },
+      "active_facts": [
+        {
+          "fact_id": "fact-1",
+          "category": "deal_progression",
+          "fact_key": "bant_budget_status",
+          "value": "missing - no budget range discussed yet",
+          "confidence": 0.8
+        }
+      ],
+      "loaded_at": "2026-06-15T08:00:00Z"
+    },
+    "trigger": "Subject: Re: next steps\n\nSounds good — what would you need from us to move forward? Happy to pull in whoever should be involved.",
+    "gold": {
+      "tools": [
+        "schedule_meeting",
+        "send_email",
+        "create_task"
+      ],
+      "urgency": [
+        "medium",
+        "high"
+      ],
+      "expect_no_action": false
+    }
+  },
+  {
+    "id": "ns_fixture_proposal_advance",
+    "split": "test",
+    "category": "proposal_advance",
+    "event_type": "opportunity_stage_changed",
+    "context": {
+      "opportunity": {
+        "id": "opp-2002",
+        "name": "Globex Inc - Renewal + Expansion",
+        "stage": "Proposal",
+        "amount": 84000,
+        "close_date": "2026-07-31T00:00:00Z",
+        "company_id": "company-2",
+        "owner_id": "user-2",
+        "updated_at": "2026-06-12T12:00:00Z"
+      },
+      "company": {
+        "id": "company-2",
+        "name": "Globex Inc",
+        "industry": "Logistics"
+      },
+      "contacts": [
+        {
+          "id": "contact-2",
+          "name": "Priya Shah",
+          "role": "VP Operations",
+          "is_decision_maker": true
+        },
+        {
+          "id": "contact-3",
+          "name": "Sam Torres",
+          "role": "IT Lead",
+          "is_decision_maker": false
+        }
+      ],
+      "timeline": [
+        {
+          "type": "meeting",
+          "title": "Discovery wrap-up call",
+          "summary": "Confirmed budget range of $75k-$90k and Q3 go-live target.",
+          "occurred_at": "2026-06-08T16:00:00Z"
+        },
+        {
+          "type": "note",
+          "title": "Stage moved to Proposal",
+          "summary": "Opportunity stage changed from Discovery to Proposal.",
+          "occurred_at": "2026-06-12T12:00:00Z"
+        }
+      ],
+      "tasks": [],
+      "meetings": [],
+      "pipeline_meta": {
+        "stages": [
+          "Discovery",
+          "Proposal",
+          "Negotiation",
+          "Closed Won",
+          "Closed Lost"
+        ],
+        "stage_sla_days": {
+          "Discovery": 14,
+          "Proposal": 21,
+          "Negotiation": 14
+        }
+      },
+      "engagement": {
+        "days_since_last_activity": 3,
+        "activity_count_14d": 4,
+        "activity_count_prior_14d": 3,
+        "has_future_meeting": false
+      },
+      "active_facts": [
+        {
+          "fact_id": "fact-2",
+          "category": "deal_progression",
+          "fact_key": "bant_budget_status",
+          "value": "confirmed - $75k-$90k range",
+          "confidence": 0.9
+        },
+        {
+          "fact_id": "fact-3",
+          "category": "relationship_context",
+          "fact_key": "primary_champion",
+          "value": "Priya Shah (VP Operations, decision maker)",
+          "confidence": 0.9
+        }
+      ],
+      "loaded_at": "2026-06-15T08:00:00Z"
+    },
+    "trigger": "Subject: Re: proposal\n\nProposal looks solid. A couple of line items we want to confirm — can you send a short summary we can take to finance?",
+    "gold": {
+      "tools": [
+        "send_email",
+        "schedule_meeting"
+      ],
+      "urgency": [
+        "medium",
+        "high"
+      ],
+      "expect_no_action": false
+    }
+  }
+]
