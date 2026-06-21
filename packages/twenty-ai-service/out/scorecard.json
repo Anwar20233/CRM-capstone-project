@@ -1,0 +1,43 @@
+{
+  "overall_reliability_pct": 96.5,
+  "fully_correct": {
+    "passed": 46,
+    "total": 60
+  },
+  "capabilities": {
+    "task_completion": {
+      "label": "Completes the request",
+      "pct": 96.7,
+      "measured_on": "88/91 checks",
+      "advisories": 0
+    },
+    "tool_use": {
+      "label": "Uses the right tools",
+      "pct": 98.8,
+      "measured_on": "83/84 checks",
+      "advisories": 0
+    },
+    "safe_handling": {
+      "label": "Handles problems safely",
+      "pct": 100.0,
+      "measured_on": "7/7 checks",
+      "advisories": 0
+    },
+    "data_privacy": {
+      "label": "Protects personal data",
+      "pct": 99.9,
+      "measured_on": "691/692 AI calls with no exposed personal data  (1 exposed in 692 AI calls)",
+      "advisories": 0
+    },
+    "grounding": {
+      "label": "Stays grounded & accurate",
+      "pct": 87.1,
+      "measured_on": "101/116 checks",
+      "advisories": 20
+    }
+  },
+  "by_component": {
+    "Chat orchestrator": 94.1,
+    "Follow-up agent": 97.1
+  }
+}

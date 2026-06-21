@@ -123,6 +123,12 @@ async def trigger_email_event(
     }
     if request.owner_user_id:
         trigger["owner_user_id"] = request.owner_user_id
+    # Requested meeting slots, if the caller parsed them out of the email — lets
+    # check_calendar verify the sender's actual windows rather than free-picking.
+    if request.proposed_times:
+        trigger["proposed_times"] = request.proposed_times
+    if request.duration_minutes:
+        trigger["duration_minutes"] = request.duration_minutes
 
     return await _run_followup_pipeline(
         deps=deps,

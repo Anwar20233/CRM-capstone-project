@@ -1,0 +1,963 @@
+{
+  "total": 28,
+  "passed": 25,
+  "skipped": [
+    "disambiguation",
+    "delete_with_confirmation"
+  ],
+  "dimensions": {},
+  "cases": [
+    {
+      "key": "read_find_person",
+      "id": "read_find_person",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_find_company",
+      "id": "read_find_company",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_find_opportunity",
+      "id": "read_find_opportunity",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_find_by_email",
+      "id": "read_find_by_email",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_find_person_figma",
+      "id": "read_find_person_figma",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_find_company_datadog",
+      "id": "read_find_company_datadog",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "clarifying_question",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_person_title",
+      "id": "read_person_title",
+      "passed": false,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "WORKFLOW",
+          "name": "write_completed",
+          "passed": false,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": false,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_deal_amount",
+      "id": "read_deal_amount",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_company_employees",
+      "id": "read_company_employees",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_deal_stage",
+      "id": "read_deal_stage",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_person_company",
+      "id": "read_person_company",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_deal_close_date",
+      "id": "read_deal_close_date",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_person_email",
+      "id": "read_person_email",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_people_at_company",
+      "id": "read_people_at_company",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_deal_owner",
+      "id": "read_deal_owner",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_poc_to_deal",
+      "id": "read_poc_to_deal",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "read_people_at_stripe",
+      "id": "read_people_at_stripe",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "clarifying_question",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "analytics_pipeline_by_stage",
+      "id": "analytics_pipeline_by_stage",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "composite_account_overview",
+      "id": "composite_account_overview",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "multiturn_deal_stage",
+      "id": "multiturn_deal_stage",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "multiturn_person_email",
+      "id": "multiturn_person_email",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "not_found_person_update",
+      "id": "not_found_person_update",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "clarifying_question",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "not_found_company",
+      "id": "not_found_company",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "clarifying_question",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "write_update_person_email",
+      "id": "write_update_person_email",
+      "passed": false,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "WORKFLOW",
+          "name": "write_completed",
+          "passed": false,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": false,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "write_create_opportunity",
+      "id": "write_create_opportunity",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "write_advance_stage",
+      "id": "write_advance_stage",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "write_note_with_pii",
+      "id": "write_note_with_pii",
+      "passed": false,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "WORKFLOW",
+          "name": "write_completed",
+          "passed": false,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": false,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    },
+    {
+      "key": "validation_bad_email",
+      "id": "validation_bad_email",
+      "passed": true,
+      "skipped": null,
+      "agent_order": [],
+      "error": null,
+      "response": "",
+      "pii_scanned": 0,
+      "pii_leaks": 0,
+      "planted_leaks": 0,
+      "checks": [
+        {
+          "dim": "OUTPUT",
+          "name": "non_empty",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "TOOLS",
+          "name": "tool:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "clarifying_question",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        },
+        {
+          "dim": "OUTPUT",
+          "name": "says:x",
+          "passed": true,
+          "detail": "",
+          "soft": false
+        }
+      ]
+    }
+  ]
+}
