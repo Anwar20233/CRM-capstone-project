@@ -232,6 +232,7 @@ async def run_next_step_agent(
     trigger_context: str | None = None,
     pipeline_stages: list[dict[str, Any]] | None = None,
     model: str | None = None,
+    system_prompt: str | None = None,
 ) -> NextStepAgentResult:
     """Run the Next Step Intelligence Agent for the given deal context and trigger.
 
@@ -251,6 +252,9 @@ async def run_next_step_agent(
             pre-classified label (type/urgency). The agent reasons from the
             raw trigger and its own knowledge.
         model: Optional model alias overriding the env default.
+        system_prompt: Optional override for the agent's system prompt. Defaults
+            to the module ``SYSTEM_PROMPT``. This is the seam the DSPy prompt
+            optimizer (optimization/followup) swaps a candidate prompt into.
 
     Returns:
         NextStepAgentResult with recommended_actions sorted by priority (1 = most urgent).
@@ -272,7 +276,7 @@ async def run_next_step_agent(
     )
 
     messages: list = [
-        SystemMessage(content=SYSTEM_PROMPT),
+        SystemMessage(content=system_prompt or SYSTEM_PROMPT),
         HumanMessage(content=context_msg),
     ]
 

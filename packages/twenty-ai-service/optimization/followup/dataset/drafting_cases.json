@@ -1,0 +1,122 @@
+[
+  {
+    "id": "dr_followup_question",
+    "split": "train",
+    "category": "follow_up_email",
+    "draft_type": "follow_up_email",
+    "template_key": "follow_up.md",
+    "deal": {
+      "opportunity": {"id": "opp-init", "stage": "Qualification", "amount": 60000},
+      "company": {"name": "Initech", "industry": "Software"},
+      "contact": {"name": "Amy Chen", "email": "amy@initech.test", "title": "Data Lead"},
+      "recent_meetings": [{"id": "m1", "title": "Analytics demo", "summary": "Walked through the analytics module; EU data residency raised as the open question.", "attendees": ["Amy Chen"]}],
+      "recent_notes": []
+    },
+    "gold": {"must_include": ["data residency", "EU"]}
+  },
+  {
+    "id": "dr_meeting_recap",
+    "split": "train",
+    "category": "meeting_recap_email",
+    "draft_type": "meeting_recap_email",
+    "template_key": "meeting_recap.md",
+    "deal": {
+      "opportunity": {"id": "opp-wayne", "stage": "Discovery", "amount": 120000},
+      "company": {"name": "Wayne Enterprises", "industry": "Manufacturing"},
+      "contact": {"name": "Lucius Fox", "email": "lucius@wayne.test", "title": "CTO"},
+      "recent_meetings": [{"id": "m2", "title": "Architecture working session", "summary": "Reviewed the infra modernization plan; agreed to scope a pilot and share a timeline.", "attendees": ["Lucius Fox"]}],
+      "recent_notes": []
+    },
+    "gold": {"must_include": ["pilot", "timeline"]}
+  },
+  {
+    "id": "dr_reengagement_cold",
+    "split": "train",
+    "category": "re_engagement_email",
+    "draft_type": "re_engagement_email",
+    "template_key": "re_engagement.md",
+    "deal": {
+      "opportunity": {"id": "opp-north", "stage": "Proposal", "amount": 90000},
+      "company": {"name": "Northwind", "industry": "Logistics"},
+      "contact": {"name": "John Park", "email": "john@northwind.test", "title": "Director of Eng"},
+      "recent_meetings": [],
+      "recent_notes": [{"id": "n1", "title": "Status", "body": "Proposal sent 5 weeks ago; no reply to two follow-ups."}]
+    },
+    "gold": {"must_include": ["proposal"]}
+  },
+  {
+    "id": "dr_proposal_delivery",
+    "split": "train",
+    "category": "proposal_delivery_email",
+    "draft_type": "proposal_delivery_email",
+    "template_key": "follow_up.md",
+    "deal": {
+      "opportunity": {"id": "opp-globex", "stage": "Proposal", "amount": 150000},
+      "company": {"name": "Globex", "industry": "Software"},
+      "contact": {"name": "Priya Shah", "email": "priya@globex.test", "title": "VP Operations"},
+      "recent_meetings": [{"id": "m3", "title": "Pricing review", "summary": "Confirmed scope; finance wants a one-page summary.", "attendees": ["Priya Shah"]}],
+      "recent_notes": []
+    },
+    "gold": {"must_include": ["summary"]}
+  },
+  {
+    "id": "dr_reminder",
+    "split": "val",
+    "category": "reminder_email",
+    "draft_type": "reminder_email",
+    "template_key": "follow_up.md",
+    "deal": {
+      "opportunity": {"id": "opp-cyber", "stage": "Negotiation", "amount": 200000},
+      "company": {"name": "Cyberdyne", "industry": "Robotics"},
+      "contact": {"name": "Sarah Connor", "email": "sarah@cyberdyne.test", "title": "Procurement"},
+      "recent_meetings": [],
+      "recent_notes": [{"id": "n2", "title": "Deadline", "body": "Budget cycle closes Thursday; awaiting signed order."}]
+    },
+    "gold": {"must_include": ["Thursday"]}
+  },
+  {
+    "id": "dr_followup_pilot",
+    "split": "val",
+    "category": "follow_up_email",
+    "draft_type": "follow_up_email",
+    "template_key": "follow_up.md",
+    "deal": {
+      "opportunity": {"id": "opp-hooli", "stage": "Proposal", "amount": 110000},
+      "company": {"name": "Hooli", "industry": "Software"},
+      "contact": {"name": "Gavin Belson", "email": "gavin@hooli.test", "title": "VP Product"},
+      "recent_meetings": [{"id": "m4", "title": "Pilot review", "summary": "Pilot exceeded targets; discuss expansion next steps.", "attendees": ["Gavin Belson"]}],
+      "recent_notes": []
+    },
+    "gold": {"must_include": ["pilot", "expansion"]}
+  },
+  {
+    "id": "dr_meeting_recap_security",
+    "split": "test",
+    "category": "meeting_recap_email",
+    "draft_type": "meeting_recap_email",
+    "template_key": "meeting_recap.md",
+    "deal": {
+      "opportunity": {"id": "opp-umbrella", "stage": "Proposal", "amount": 180000},
+      "company": {"name": "Umbrella Corp", "industry": "Security"},
+      "contact": {"name": "Alice Wong", "email": "alice@umbrella.test", "title": "CISO"},
+      "recent_meetings": [{"id": "m5", "title": "Security review", "summary": "Cleared SOC2 questions; next step is a final proposal addressing the cost gap.", "attendees": ["Alice Wong"]}],
+      "recent_notes": []
+    },
+    "gold": {"must_include": ["proposal", "cost"]}
+  },
+  {
+    "id": "dr_followup_routine",
+    "split": "test",
+    "category": "follow_up_email",
+    "draft_type": "follow_up_email",
+    "template_key": "follow_up.md",
+    "deal": {
+      "opportunity": {"id": "opp-soylent", "stage": "Discovery", "amount": 45000},
+      "company": {"name": "Soylent Corp", "industry": "Food"},
+      "contact": {"name": "Joe Roan", "email": "joe@soylent.test", "title": "Ops Manager"},
+      "recent_meetings": [{"id": "m6", "title": "Discovery call", "summary": "Mapped the current workflow; rep is early in planning, wants to reconnect in two weeks.", "attendees": ["Joe Roan"]}],
+      "recent_notes": []
+    },
+    "gold": {"must_include": ["two weeks"]}
+  }
+]

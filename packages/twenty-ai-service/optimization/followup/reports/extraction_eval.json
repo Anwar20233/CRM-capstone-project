@@ -1,0 +1,54 @@
+{
+  "agent": "extraction",
+  "label": "extraction-GEPA",
+  "split": "test",
+  "model": null,
+  "timestamp": "2026-06-20T17:39:57.619997+00:00",
+  "n": 2,
+  "aggregate": 1.0,
+  "by_category": {
+    "new_person_firstname": {
+      "mean": 1.0,
+      "n": 1
+    },
+    "single_deal_deadline": {
+      "mean": 1.0,
+      "n": 1
+    }
+  },
+  "by_signal": {
+    "deal_choice": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "fact_recall": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "unknown_person": {
+      "mean": 1.0,
+      "n": 1
+    },
+    "valid_json": {
+      "mean": 1.0,
+      "n": 2
+    }
+  },
+  "prompt_chars": 2635,
+  "per_example": [
+    {
+      "id": "ex_single_deadline",
+      "category": "single_deal_deadline",
+      "score": 1.0,
+      "error": null,
+      "notes": []
+    },
+    {
+      "id": "ex_new_person_firstname",
+      "category": "new_person_firstname",
+      "score": 1.0,
+      "error": null,
+      "notes": []
+    }
+  ]
+}

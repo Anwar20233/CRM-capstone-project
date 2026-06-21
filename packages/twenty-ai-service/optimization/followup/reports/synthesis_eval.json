@@ -1,0 +1,56 @@
+{
+  "agent": "synthesis",
+  "label": "synthesis-GEPA",
+  "split": "test",
+  "model": null,
+  "timestamp": "2026-06-20T17:41:30.327353+00:00",
+  "n": 1,
+  "aggregate": 0.15,
+  "by_category": {
+    "deadline_pressure": {
+      "mean": 0.15,
+      "n": 1
+    }
+  },
+  "by_signal": {
+    "length_ok": {
+      "mean": 0.0,
+      "n": 1
+    },
+    "must_mention": {
+      "mean": 0.0,
+      "n": 1
+    },
+    "names_present": {
+      "mean": 0.0,
+      "n": 1
+    },
+    "no_id_leak": {
+      "mean": 1.0,
+      "n": 1
+    },
+    "non_empty": {
+      "mean": 0.0,
+      "n": 1
+    },
+    "risk_mentioned": {
+      "mean": 0.0,
+      "n": 1
+    }
+  },
+  "prompt_chars": 1574,
+  "per_example": [
+    {
+      "id": "sy_deadline",
+      "category": "deadline_pressure",
+      "score": 0.15,
+      "error": "APIConnectionError: Connection error.",
+      "notes": [
+        "Rollout errored: APIConnectionError: Connection error.",
+        "Did not reference contact(s) by name: ['Sarah Connor']. Always name the people on the deal.",
+        "Omitted key signal(s): ['thursday']. The briefing must surface risks, concerns, competitors, and deadlines.",
+        "A risk score was provided but the briefing never puts it in context."
+      ]
+    }
+  ]
+}

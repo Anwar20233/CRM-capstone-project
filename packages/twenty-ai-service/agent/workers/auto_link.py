@@ -32,9 +32,51 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+_UUID_RE = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+
+# Type keyword (as it appears in an orchestrator instruction) → target FK field.
+# Used to classify a UUID by the nearest preceding keyword, so "link note <id> to
+# person <id>" attributes the second id to a person and ignores the note id.
+_TYPE_KEYWORD_FIELD: tuple[tuple[str, str], ...] = (
+    ("opportunit", "targetOpportunityId"),
+    ("deal", "targetOpportunityId"),
+    ("compan", "targetCompanyId"),
+    ("account", "targetCompanyId"),
+    ("organi", "targetCompanyId"),
+    ("person", "targetPersonId"),
+    ("people", "targetPersonId"),
+    ("contact", "targetPersonId"),
+)
+
+
+def _typed_ids_in_instruction(instruction: str) -> list[tuple[str, str]]:
+    """Parse ``"<type> … <uuid>"`` references → ``[(target_field, record_id)]``.
+
+    The orchestrator follows id-first discipline and writes targets explicitly as
+    "link the note to person <uuid>" / "to the opportunity <uuid>". An entity the
+    READER surfaced (not resolved from the user's message) has no handle in the
+    pii_map, so this is the only signal the guard has for it. Each UUID is
+    classified by the NEAREST preceding type keyword within a short window; a UUID
+    with no type keyword in front of it (e.g. the note/task id itself) is ignored.
+    """
+    if not instruction:
+        return []
+    targets: list[tuple[str, str]] = []
+    for match in re.finditer(_UUID_RE, instruction):
+        prefix = instruction[max(0, match.start() - 40): match.start()].lower()
+        best: tuple[int, str] | None = None
+        for keyword, field in _TYPE_KEYWORD_FIELD:
+            idx = prefix.rfind(keyword)
+            if idx >= 0 and (best is None or idx > best[0]):
+                best = (idx, field)
+        if best is not None:
+            targets.append((best[1], match.group(0)))
+    return targets
 
 
 # Resolved-handle entity type → the flat foreign-key field the create_*_target
@@ -89,22 +131,47 @@ def _intended_targets(instruction: str, pii_map: Any) -> list[tuple[str, str]]:
     we link exactly what the orchestrator referenced — not every entity resolved
     earlier in the session.
     """
-    if not instruction or pii_map is None:
+    if not instruction:
         return []
+    instruction_lower = instruction.lower()
     targets: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for handle in getattr(pii_map, "handles", []):
+    for handle in getattr(pii_map, "handles", []) if pii_map is not None else []:
         if not getattr(handle, "is_resolved", False):
             continue
         field = _TARGET_ID_FIELD.get(handle.entity_type)
         if field is None:
             continue
-        if handle.name not in instruction:
+        # Match the entity the instruction references, in ANY form the orchestrator
+        # might use — it is nondeterministic about which it picks:
+        #   • the masking token (``person001``),
+        #   • the real UUID (``…person 8897…`` — id-first discipline),
+        #   • the human display name (``Gabriel Robinson``) or a surface alias.
+        # Matching the token alone (the old behaviour) silently linked nothing when
+        # the orchestrator passed the id or the plain name.
+        record_id = str(handle.record_id)
+        canonical = (getattr(handle, "canonical", "") or "").lower()
+        surfaces = getattr(handle, "surfaces", None) or ()
+        matched = (
+            handle.name in instruction
+            or record_id in instruction
+            or (canonical and canonical in instruction_lower)
+            or any(surface and surface in instruction_lower for surface in surfaces)
+        )
+        if not matched:
             continue
-        if handle.record_id in seen:
+        if record_id in seen:
             continue
-        seen.add(handle.record_id)
-        targets.append((field, str(handle.record_id)))
+        seen.add(record_id)
+        targets.append((field, record_id))
+    # Also honor typed ids the orchestrator wrote straight into the instruction
+    # ("…to person <uuid>"). This is the only signal for an entity the READER
+    # surfaced, which never enters the pii_map. Dedup against handle matches.
+    for field, record_id in _typed_ids_in_instruction(instruction):
+        if record_id in seen:
+            continue
+        seen.add(record_id)
+        targets.append((field, record_id))
     return targets
 
 

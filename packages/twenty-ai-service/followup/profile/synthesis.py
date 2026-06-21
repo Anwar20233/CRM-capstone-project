@@ -38,8 +38,13 @@ async def synthesize_profile(
     relationships: list[ProfileRelationship],
     risk_score: float | None,
     chat_llm,  # deps.get_chat_llm()
+    system_prompt: str | None = None,
 ) -> str:
-    """Synthesize a natural-language deal briefing from the loaded graph."""
+    """Synthesize a natural-language deal briefing from the loaded graph.
+
+    ``system_prompt`` overrides ``_SYSTEM_PROMPT`` — the seam the DSPy prompt
+    optimizer (optimization/followup) swaps a candidate prompt into.
+    """
     prompt = _build_prompt(
         deal=deal,
         company=company,
@@ -56,7 +61,10 @@ async def synthesize_profile(
         shadows=shadows,
     )
     response = await chat_llm.ainvoke(
-        [SystemMessage(content=_SYSTEM_PROMPT), HumanMessage(content=masker.mask(prompt))]
+        [
+            SystemMessage(content=system_prompt or _SYSTEM_PROMPT),
+            HumanMessage(content=masker.mask(prompt)),
+        ]
     )
     return masker.unmask((response.content or "")).strip()
 
