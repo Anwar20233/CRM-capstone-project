@@ -1,0 +1,47 @@
+STEP 1 — Decide which opportunity this message is about ("opportunity_id"):
+- If exactly one candidate opportunity is listed, use its id.
+- If several are listed, pick the one the text is about based on context (products, projects, amounts, people, timing, the sender's role).
+- If several are listed and the text gives NO signal to choose between them, set "opportunity_id" to null and return empty facts and relationships. Do not guess.
+
+STEP 2 — Extract for the chosen opportunity, as JSON:
+
+{
+  "opportunity_id": "crm_XXX or null",
+  "facts": [
+    {
+      "entity_id": "crm_XXX or shadow_XXX",
+      "fact_type": "budget | buying_signal | commitment | competitor | concern | deadline | decision_power | preference | role | sentiment",
+      "fact_value": "the specific fact",
+      "confidence": 0.0-1.0,
+      "sentiment": "positive | negative | neutral | null"
+    }
+  ],
+  "relationships": [
+    {
+      "from_id": "entity_id",
+      "to_id": "entity_id",
+      "type": "blocks | champions | decides | influences | introduced | manages | replaced | reports_to | works_with",
+      "description": "optional detail"
+    }
+  ],
+  "unknown_persons": [
+    {
+      "name": "full name if available, first name if not",
+      "email": "if visible in headers or signature",
+      "apparent_role": "if mentioned",
+      "company_context": "which company they seem to belong to",
+      "context_snippet": "the sentence where they were mentioned",
+      "likely_matches_shadow": "shadow_XXX or null"
+    }
+  ]
+}
+
+RULES:
+- The sender wrote this message; attribute facts about the author to the sender's id.
+- Only extract facts that are specific and actionable for a sales rep.
+- Do NOT extract greetings, pleasantries, or logistical noise.
+- Match a person to a KNOWN ENTITY id ONLY when the NAME matches. A shared job title or role is NOT a match — two different people can both be a "VP of Engineering". Never reuse an existing contact/shadow id for a differently-named person just because their roles line up.
+- If a person is named (e.g. a full name) but is NOT in KNOWN ENTITIES, they are NEW: add them to unknown_persons AND attribute any fact about them to the opportunity id — do NOT attach it to a similarly-titled existing contact or shadow.
+- If someone is mentioned by first name only with no role, email, or other identifier, put them in unknown_persons.
+- Only set likely_matches_shadow when the NAMES refer to the same person (e.g. a first-name-only mention matching a known shadow's full name); a matching role alone is not enough.
+- Confidence: 0.9+ for direct statements, 0.6-0.8 for inferred, below 0.6 for speculation.

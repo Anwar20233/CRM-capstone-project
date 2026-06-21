@@ -492,8 +492,16 @@ async def run_followup_chat(
     history: Optional[list[dict[str, str]]] = None,
     model: Optional[str] = None,
     tz_name: Optional[str] = None,
+    system_prompt: Optional[str] = None,
+    on_tool_call: Optional[Callable[[str, dict[str, Any]], None]] = None,
 ) -> FollowupChatResult:
-    """Run one conversational turn and return the reply + refreshed actions."""
+    """Run one conversational turn and return the reply + refreshed actions.
+
+    ``system_prompt`` overrides ``_SYSTEM_PROMPT`` and ``on_tool_call(name, args)``
+    fires for each tool the model invokes — the seams the DSPy prompt optimizer
+    (optimization/followup) uses to swap a candidate prompt in and observe tool
+    selection.
+    """
     tools = _ChatTools(
         deps=deps,
         accept_graph=accept_graph,
@@ -517,7 +525,7 @@ async def run_followup_chat(
     messages: list = [
         SystemMessage(
             content=(
-                f"{_SYSTEM_PROMPT}\n\nIt is currently {today} in the rep's timezone "
+                f"{system_prompt or _SYSTEM_PROMPT}\n\nIt is currently {today} in the rep's timezone "
                 f"({tz_label}). Interpret every date/time the rep mentions as local "
                 f"to {tz_label}, and emit it as a naive ISO-8601 wall-clock time with "
                 f"NO timezone offset (e.g. 2026-06-23T13:00:00 for 1pm). The system "
@@ -549,6 +557,8 @@ async def run_followup_chat(
             break
 
         for call in tool_calls:
+            if on_tool_call is not None:
+                on_tool_call(call["name"], call.get("args") or {})
             try:
                 result = await tools.dispatch(call["name"], call.get("args") or {})
             except Exception as exc:  # noqa: BLE001

@@ -41,6 +41,10 @@ MODEL_REGISTRY: dict[str, ModelSpec] = {
     ),
     "gpt-4o": ModelSpec("openai/gpt-4o", "OpenAI GPT-4o"),
     "gpt-4o-mini": ModelSpec("openai/gpt-4o-mini", "OpenAI GPT-4o mini"),
+    # GPT-5.4 family — the faster "mini" is the follow-up runtime default after
+    # prompt optimization; the full model is the GEPA reflection/proposer LM.
+    "gpt-5.4": ModelSpec("openai/gpt-5.4", "OpenAI GPT-5.4"),
+    "gpt-5.4-mini": ModelSpec("openai/gpt-5.4-mini", "OpenAI GPT-5.4 mini"),
     # Free OpenRouter tier — handy for burning-credit-free smoke tests.
     "gemma-free": ModelSpec("google/gemma-4-31b-it:free", "Google Gemma 4 31B (free)"),
 }

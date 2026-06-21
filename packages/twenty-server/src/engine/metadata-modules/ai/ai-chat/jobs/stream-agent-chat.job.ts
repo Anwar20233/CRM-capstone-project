@@ -183,19 +183,27 @@ export class StreamAgentChatJob {
 
     userMessagePromise.catch(() => {});
 
-    const titlePromise = data.hasTitle
-      ? Promise.resolve(null)
-      : this.agentChatService
-          .generateTitleIfNeeded({
-            threadId: data.threadId,
-            messageContent: data.lastUserMessageText,
-            workspaceId: data.workspaceId,
-          })
-          .catch(() => null);
+    const useExternalOrchestrator = this.twentyConfigService.get(
+      'AI_AGENT_USE_EXTERNAL_ORCHESTRATOR',
+    );
+
+    // The built-in Node agent names threads with its own fast model. The
+    // external path can't — the Node side has no AI provider configured — so it
+    // asks the Python orchestrator for the title instead (see onTitle below).
+    const titlePromise =
+      data.hasTitle || useExternalOrchestrator
+        ? Promise.resolve(null)
+        : this.agentChatService
+            .generateTitleIfNeeded({
+              threadId: data.threadId,
+              messageContent: data.lastUserMessageText,
+              workspaceId: data.workspaceId,
+            })
+            .catch(() => null);
 
     // Route through the external Python orchestrator (with its human-in-the-loop
     // write-approval flow) when enabled; otherwise use the built-in Node agent.
-    if (this.twentyConfigService.get('AI_AGENT_USE_EXTERNAL_ORCHESTRATOR')) {
+    if (useExternalOrchestrator) {
       await this.buildAndPublishExternalAgentStream({
         data,
         userMessagePromise,
@@ -235,7 +243,10 @@ export class StreamAgentChatJob {
 
     // Populated as the stream runs; read after the UI stream drains to decide
     // what to persist (a single text part, or the pending approval card).
-    let result: OrchestratorResult = { type: 'response', response: '' };
+    // Reassigned inside the async execute callback below; the cast keeps the
+    // outer-scope type the full union (not narrowed to the 'response' literal)
+    // so the interrupt branch is still reachable after the stream drains.
+    let result = { type: 'response', response: '' } as OrchestratorResult;
 
     const uiStream = createUIMessageStream<ExtendedUIMessage>({
       execute: async ({ writer }) => {
@@ -277,6 +288,28 @@ export class StreamAgentChatJob {
             }
             writer.write({ type: 'text-delta', id: textId, delta });
           },
+          // The Python orchestrator names the thread on its first turn; surface
+          // the title to the client live and persist it for the sidebar.
+          onTitle: (title: string) => {
+            const trimmed = title.trim();
+
+            if (trimmed.length === 0) {
+              return;
+            }
+
+            writer.write({
+              type: 'data-thread-title' as const,
+              id: `thread-title-${data.threadId}`,
+              data: { title: trimmed },
+            });
+
+            void this.agentChatService
+              .persistGeneratedTitle({
+                threadId: data.threadId,
+                title: trimmed,
+              })
+              .catch(() => {});
+          },
         };
 
         result = isResume
@@ -290,6 +323,7 @@ export class StreamAgentChatJob {
               data.lastUserMessageText,
               handlers,
               getFollowupChatContext(data),
+              !data.hasTitle,
             );
 
         if (result.type === 'interrupt') {

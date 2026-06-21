@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import re
 from typing import Any, AsyncIterator, Optional
 
@@ -35,8 +36,12 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from agent.llm_client import get_chat_model
+from agent.models import FOLLOWUP_SUBAGENT_MODEL_ALIAS
 from agent.orchestrator import Orchestrator
 from agent.workers.writer_worker import WriterWorker
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/agent", tags=["agent"])
 
@@ -105,6 +110,12 @@ class ChatRequest(BaseModel):
     # The rep's IANA timezone (e.g. "America/New_York") so clock times they type
     # ("1pm") are interpreted as local and converted to UTC before booking.
     timezone: Optional[str] = Field(default=None)
+    # Set by the platform on the first turn of a thread (one with no title yet).
+    # When True we generate a concise thread title from the message and emit it
+    # as a {"kind": "title"} stream event so the chat sidebar stops showing
+    # "New chat". The LLM lives here, not on the Node side, so this is what
+    # actually names threads in this deployment.
+    generate_title: bool = Field(default=False)
 
 
 class ResumeRequest(BaseModel):
@@ -249,6 +260,57 @@ def _to_stage(event: dict[str, Any]) -> str | None:
     return None
 
 
+# Short, deterministic title from the first message — the fallback when the LLM
+# is unavailable or returns junk, so a thread is never left as "New chat".
+def _fallback_title(message: str) -> str:
+    cleaned = " ".join(message.split())
+    if len(cleaned) <= 50:
+        return cleaned
+    return cleaned[:50].rstrip() + "…"
+
+
+async def _generate_title(message: str) -> str:
+    """Name a chat thread from its opening message using a small, fast model.
+
+    Runs concurrently with the answer so it adds no perceptible latency, and
+    always returns a usable title — falling back to a trimmed first message if
+    the model is unavailable or misbehaves.
+    """
+    prompt = (
+        "Generate a concise, descriptive title (4-6 words, at most 60 "
+        "characters) for a chat thread based on the user's first message. "
+        "Capture the main topic or intent. Return ONLY the title — no quotes, "
+        "no punctuation at the end, no preamble.\n\n"
+        f'Message: "{message.strip()}"'
+    )
+    try:
+        model = get_chat_model(FOLLOWUP_SUBAGENT_MODEL_ALIAS)
+        response = await model.ainvoke(prompt)
+        raw = getattr(response, "content", "") or ""
+        title = raw.strip().strip("\"'").strip()
+        # Hard-cap so a chatty model can't blow past the column/UI width.
+        if len(title) > 60:
+            title = title[:60].rstrip() + "…"
+        return title or _fallback_title(message)
+    except Exception as error:  # noqa: BLE001 — never fail a turn over a title
+        logger.warning("Title generation failed, using fallback: %s", error)
+        return _fallback_title(message)
+
+
+# Concurrently-running title task → a single {"kind": "title"} event (or nothing
+# when title generation wasn't requested). Awaited at the tail of a stream so it
+# never delays the answer tokens.
+async def _drain_title_task(task: "asyncio.Task[str] | None") -> AsyncIterator[str]:
+    if task is None:
+        return
+    try:
+        title = await task
+    except Exception:  # noqa: BLE001 — a missing title must not break the stream
+        return
+    if title:
+        yield _ndjson({"kind": "title", "text": title})
+
+
 async def _stream_final_response(result: dict[str, Any]) -> AsyncIterator[str]:
     """Emit the terminal NDJSON events for a finished worker result."""
     if result.get("type") == "interrupt":
@@ -268,12 +330,22 @@ async def chat_stream(body: ChatRequest) -> StreamingResponse:
         # type the reply out so the platform chat renders it like any answer.
         async def generate_followup() -> AsyncIterator[str]:
             yield _ndjson({"kind": "stage", "text": "Reviewing the deal…"})
+            # Name the thread concurrently with the answer (first turn only).
+            title_task = (
+                asyncio.create_task(_generate_title(body.message))
+                if body.generate_title
+                else None
+            )
             try:
                 reply = await _handle_followup_chat(body)
             except Exception as error:  # noqa: BLE001 — surface, never crash the stream
+                if title_task is not None:
+                    title_task.cancel()
                 yield _ndjson({"kind": "error", "message": str(error)})
                 yield _ndjson({"kind": "done"})
                 return
+            async for event in _drain_title_task(title_task):
+                yield event
             async for event in _stream_final_response({"response": reply}):
                 yield event
 
@@ -303,6 +375,12 @@ async def chat_stream(body: ChatRequest) -> StreamingResponse:
     async def generate() -> AsyncIterator[str]:
         # Immediate feedback before the first (loop-blocking) LLM call returns.
         yield _ndjson({"kind": "stage", "text": "Thinking…"})
+        # Name the thread concurrently with the answer (first turn only).
+        title_task = (
+            asyncio.create_task(_generate_title(body.message))
+            if body.generate_title
+            else None
+        )
         task = asyncio.create_task(run())
         try:
             while True:
@@ -313,9 +391,13 @@ async def chat_stream(body: ChatRequest) -> StreamingResponse:
                 if kind in ("stage", "error"):
                     yield _ndjson(item)
                 elif kind == "result":
+                    async for event in _drain_title_task(title_task):
+                        yield event
                     async for event in _stream_final_response(item["result"]):
                         yield event
         finally:
+            if title_task is not None and not title_task.done():
+                title_task.cancel()
             await task
 
     return StreamingResponse(generate(), media_type="application/x-ndjson")

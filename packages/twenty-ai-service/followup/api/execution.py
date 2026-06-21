@@ -196,12 +196,25 @@ class FollowupActionExecutor:
         # next-step step.intent only as a legacy fallback.
         meeting = (payload.get("task_results") or {}).get("book_meeting") or {}
         title = meeting.get("title") or step.get("intent") or "Follow-up Meeting"
+        # The contact must be an attendee so the created Google event syncs back
+        # into Twenty linked to their CRM record (sync matches attendee emails to
+        # people). Prefer any attendees the agent resolved; else the draft's
+        # recipient (the contact we're following up with).
+        draft = payload.get("draft") or action.draft_result or {}
+        attendees = [
+            email
+            for email in (meeting.get("attendees") or [draft.get("recipient_email")])
+            if email
+        ]
         args = {
             "title": title[:120],
             "startsAt": chosen.get("start"),
             "endsAt": chosen.get("end"),
+            "attendees": attendees,
         }
-        return "create_calendar_event", args
+        # Real Google Calendar write (Twenty's calendar is import-only, so a local
+        # CRUD row would never reach Google nor render); the event syncs back in.
+        return "book_calendar_event", args
 
     _DIRECT_BUILDERS: dict[str, Any] = {
         "draft_email": _direct_draft_email,

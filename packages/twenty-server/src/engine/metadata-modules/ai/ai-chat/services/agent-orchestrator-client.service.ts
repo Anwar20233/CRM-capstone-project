@@ -23,6 +23,10 @@ export type OrchestratorResult =
 export type OrchestratorStreamHandlers = {
   onStage?: (text: string) => void;
   onToken?: (text: string) => void;
+  // Fired once with the thread title the orchestrator generated for the first
+  // turn (when `generateTitle` was requested). The LLM that names threads lives
+  // in the Python service, so this is the title source for the external path.
+  onTitle?: (text: string) => void;
 };
 
 // When the chat is opened on an opportunity record page, we scope the turn to
@@ -39,6 +43,7 @@ export type FollowupChatContext = {
 type OrchestratorStreamEvent =
   | { kind: 'stage'; text: string }
   | { kind: 'token'; text: string }
+  | { kind: 'title'; text: string }
   | { kind: 'interrupt'; interrupt: OrchestratorInterrupt }
   | { kind: 'error'; message: string }
   | { kind: 'done' };
@@ -86,12 +91,14 @@ export class AgentOrchestratorClientService {
     message: string,
     handlers: OrchestratorStreamHandlers,
     followupContext?: FollowupChatContext,
+    generateTitle = false,
   ): Promise<OrchestratorResult> {
     return this.postStream(
       '/agent/chat/stream',
       {
         session_id: sessionId,
         message,
+        generate_title: generateTitle,
         ...this.followupBody(followupContext),
       },
       handlers,
@@ -154,6 +161,9 @@ export class AgentOrchestratorClientService {
         case 'token':
           collectedText += event.text;
           handlers.onToken?.(event.text);
+          break;
+        case 'title':
+          handlers.onTitle?.(event.text);
           break;
         case 'interrupt':
           interrupt = event.interrupt;

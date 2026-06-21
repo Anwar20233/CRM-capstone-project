@@ -1,0 +1,102 @@
+[
+  {
+    "id": "sy_at_risk_competitor",
+    "split": "train",
+    "category": "at_risk_competitor",
+    "deal": {"name": "Umbrella — Security Platform", "stage": "Proposal", "value": 180000},
+    "company": {"name": "Umbrella Corp"},
+    "contacts": [
+      {"crm_id": "alice", "name": "Alice Wong", "role": "CISO", "email": "alice@umbrella.test", "is_decision_maker": true,
+       "facts": [{"fact_type": "concern", "fact_value": "Worried about the cost gap vs CompetitorX", "sentiment": "negative"}]}
+    ],
+    "shadows": [],
+    "facts": [
+      {"fact_type": "competitor", "fact_value": "Evaluating CompetitorX on price", "sentiment": "negative"},
+      {"fact_type": "deadline", "fact_value": "Decision meeting on Friday", "sentiment": "neutral"}
+    ],
+    "relationships": [],
+    "risk_score": 0.78,
+    "gold": {"contact_names": ["Alice Wong"], "must_mention": ["competitorx", "cost"], "expect_risk": true}
+  },
+  {
+    "id": "sy_healthy_pilot",
+    "split": "train",
+    "category": "positive_momentum",
+    "deal": {"name": "Hooli — Pilot Expansion", "stage": "Proposal", "value": 110000},
+    "company": {"name": "Hooli"},
+    "contacts": [
+      {"crm_id": "gavin", "name": "Gavin Belson", "role": "VP Product", "email": "gavin@hooli.test", "is_decision_maker": true,
+       "facts": [{"fact_type": "sentiment", "fact_value": "Very impressed with pilot results", "sentiment": "positive"}]}
+    ],
+    "shadows": [],
+    "facts": [{"fact_type": "deal_progression", "fact_value": "Keen to expand to two more business units", "sentiment": "positive"}],
+    "relationships": [],
+    "risk_score": 0.15,
+    "gold": {"contact_names": ["Gavin Belson"], "must_mention": ["expand"], "expect_risk": true}
+  },
+  {
+    "id": "sy_multi_contact",
+    "split": "train",
+    "category": "multi_contact",
+    "deal": {"name": "Globex — Renewal + Expansion", "stage": "Proposal", "value": 150000},
+    "company": {"name": "Globex"},
+    "contacts": [
+      {"crm_id": "priya", "name": "Priya Shah", "role": "VP Operations", "email": "priya@globex.test", "is_decision_maker": true,
+       "facts": [{"fact_type": "budget", "fact_value": "Has budget approved for renewal", "sentiment": "positive"}]},
+      {"crm_id": "sam", "name": "Sam Torres", "role": "IT Lead", "email": "sam@globex.test", "is_decision_maker": false,
+       "facts": [{"fact_type": "concern", "fact_value": "Concerned about SSO support", "sentiment": "negative"}]}
+    ],
+    "shadows": [{"id": "marcus", "name": "Marcus", "title_or_role": "Security reviewer", "mention_count": 2}],
+    "facts": [],
+    "relationships": [{"relationship_type": "reports_to", "description": "Sam reports to Priya"}],
+    "risk_score": 0.4,
+    "gold": {"contact_names": ["Priya Shah", "Sam Torres"], "must_mention": ["sso"], "expect_risk": true}
+  },
+  {
+    "id": "sy_cold_silence",
+    "split": "val",
+    "category": "at_risk_silence",
+    "deal": {"name": "Northwind — Platform Integration", "stage": "Proposal", "value": 90000},
+    "company": {"name": "Northwind"},
+    "contacts": [
+      {"crm_id": "john", "name": "John Park", "role": "Director of Eng", "email": "john@northwind.test", "is_decision_maker": true,
+       "facts": [{"fact_type": "communication_behavior", "fact_value": "Went silent for 18 days after the proposal", "sentiment": "negative"}]}
+    ],
+    "shadows": [{"id": "david", "name": "David Kim", "title_or_role": "VP of Engineering", "mention_count": 1}],
+    "facts": [{"fact_type": "concern", "fact_value": "No response to two follow-ups", "sentiment": "negative"}],
+    "relationships": [],
+    "risk_score": 0.7,
+    "gold": {"contact_names": ["John Park"], "must_mention": ["silent"], "expect_risk": true}
+  },
+  {
+    "id": "sy_early_stage",
+    "split": "val",
+    "category": "early_stage_sparse",
+    "deal": {"name": "Soylent — Expansion", "stage": "Discovery", "value": 45000},
+    "company": {"name": "Soylent Corp"},
+    "contacts": [
+      {"crm_id": "joe", "name": "Joe Roan", "role": "Ops Manager", "email": "joe@soylent.test", "is_decision_maker": false, "facts": []}
+    ],
+    "shadows": [],
+    "facts": [],
+    "relationships": [],
+    "risk_score": null,
+    "gold": {"contact_names": ["Joe Roan"], "must_mention": [], "expect_risk": false}
+  },
+  {
+    "id": "sy_deadline",
+    "split": "test",
+    "category": "deadline_pressure",
+    "deal": {"name": "Cyberdyne — Q3 Rollout", "stage": "Negotiation", "value": 200000},
+    "company": {"name": "Cyberdyne"},
+    "contacts": [
+      {"crm_id": "sarah", "name": "Sarah Connor", "role": "Procurement", "email": "sarah@cyberdyne.test", "is_decision_maker": true,
+       "facts": [{"fact_type": "budget", "fact_value": "Allocation lost if not signed by Thursday", "sentiment": "neutral"}]}
+    ],
+    "shadows": [],
+    "facts": [{"fact_type": "deadline", "fact_value": "Budget cycle closes Thursday EOD", "sentiment": "neutral"}],
+    "relationships": [],
+    "risk_score": 0.55,
+    "gold": {"contact_names": ["Sarah Connor"], "must_mention": ["thursday"], "expect_risk": true}
+  }
+]

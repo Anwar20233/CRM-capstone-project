@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ch_health_question",
+    "split": "train",
+    "category": "deal_question",
+    "message": "Is this deal at risk? What's the latest on the health of the opportunity?",
+    "gold": {
+      "required_tools": ["GetOpportunityHealth"],
+      "forbidden_tools": ["CreateFollowup", "AcceptAction", "RejectAction", "ReplanFollowup", "ReviseStep"]
+    }
+  },
+  {
+    "id": "ch_draft_email",
+    "split": "train",
+    "category": "create_draft",
+    "message": "Draft a follow-up email to them addressing the EU data residency question they raised.",
+    "gold": {
+      "required_tools": ["CreateFollowup"],
+      "forbidden_tools": ["AcceptAction", "ReplanFollowup"]
+    }
+  },
+  {
+    "id": "ch_schedule_meeting",
+    "split": "train",
+    "category": "create_meeting",
+    "message": "Set up a 30-minute call with them next Tuesday at 2pm.",
+    "gold": {
+      "required_tools": ["CreateFollowup"],
+      "forbidden_tools": ["ReviseStep", "AcceptAction", "RejectAction"]
+    }
+  },
+  {
+    "id": "ch_reword_email",
+    "split": "train",
+    "category": "revise_step",
+    "message": "Reword the drafted email to be more concise and less formal.",
+    "gold": {
+      "required_tools": ["ListPendingActions"],
+      "forbidden_tools": ["CreateFollowup", "ReplanFollowup", "AcceptAction"]
+    }
+  },
+  {
+    "id": "ch_replan_workflow",
+    "split": "val",
+    "category": "replan",
+    "message": "Scrap the current plan — instead, just send a short email and also add a note summarizing where we are.",
+    "gold": {
+      "required_tools": ["ListPendingActions"],
+      "forbidden_tools": ["AcceptAction", "RejectAction"]
+    }
+  },
+  {
+    "id": "ch_list_steps",
+    "split": "val",
+    "category": "read_only",
+    "message": "What follow-up steps have you suggested for this opportunity?",
+    "gold": {
+      "required_tools": ["ListPendingActions"],
+      "forbidden_tools": ["AcceptAction", "RejectAction", "CreateFollowup", "ReplanFollowup"]
+    }
+  },
+  {
+    "id": "ch_ambiguous",
+    "split": "test",
+    "category": "clarify",
+    "message": "Hey — can you help me with this one?",
+    "gold": {
+      "required_tools": [],
+      "forbidden_tools": ["AcceptAction", "RejectAction", "CreateFollowup", "ReplanFollowup", "ReviseStep"]
+    }
+  },
+  {
+    "id": "ch_health_then_nothing",
+    "split": "test",
+    "category": "deal_question",
+    "message": "Who are the main contacts and what are their concerns?",
+    "gold": {
+      "required_tools": ["GetOpportunityHealth"],
+      "forbidden_tools": ["CreateFollowup", "AcceptAction", "RejectAction"]
+    }
+  }
+]

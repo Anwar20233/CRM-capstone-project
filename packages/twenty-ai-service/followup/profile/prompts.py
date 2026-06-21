@@ -92,21 +92,14 @@ def render_known_entities(
     return "\n".join(lines)
 
 
-def build_extraction_prompt(
-    source_type: str, source_text: str, known_entities_block: str
-) -> str:
-    """Build the extraction prompt: select the deal, then extract for it."""
-    return f"""\
-You are analyzing a {source_type} related to an active sales opportunity.
-
-{known_entities_block}
-
-SOURCE TEXT:
-\"\"\"
-{source_text}
-\"\"\"
-
-STEP 1 — Decide which opportunity this {source_type} is about ("opportunity_id"):
+# The static extraction instructions (decision rules + JSON schema + mining
+# rules). Hoisted to a module constant so the DSPy prompt optimizer
+# (optimization/followup) can swap a candidate in via ``system_prompt`` without
+# touching the dynamic header / known-entities / source-text assembly. Phrased in
+# terms of "this message" so it needs no ``.format`` substitution — a GEPA
+# candidate with stray braces can't break rendering.
+EXTRACTION_INSTRUCTIONS = f"""\
+STEP 1 — Decide which opportunity this message is about ("opportunity_id"):
 - If exactly one candidate opportunity is listed, use its id.
 - If several are listed, pick the one the text is about based on context \
 (products, projects, amounts, people, timing, the sender's role).
@@ -147,7 +140,7 @@ STEP 2 — Extract for the chosen opportunity, as JSON:
 }}
 
 RULES:
-- The sender wrote this {source_type}; attribute facts about the author to the sender's id.
+- The sender wrote this message; attribute facts about the author to the sender's id.
 - Only extract facts that are specific and actionable for a sales rep.
 - Do NOT extract greetings, pleasantries, or logistical noise.
 - Match a person to a KNOWN ENTITY id ONLY when the NAME matches. A shared job \
@@ -164,3 +157,24 @@ a first-name-only mention matching a known shadow's full name); a matching role 
 alone is not enough.
 - Confidence: 0.9+ for direct statements, 0.6-0.8 for inferred, below 0.6 for \
 speculation."""
+
+
+def build_extraction_prompt(
+    source_type: str,
+    source_text: str,
+    known_entities_block: str,
+    system_prompt: str | None = None,
+) -> str:
+    """Build the extraction prompt: select the deal, then extract for it."""
+    instructions = system_prompt or EXTRACTION_INSTRUCTIONS
+    return f"""\
+You are analyzing a {source_type} related to an active sales opportunity.
+
+{known_entities_block}
+
+SOURCE TEXT:
+\"\"\"
+{source_text}
+\"\"\"
+
+{instructions}"""

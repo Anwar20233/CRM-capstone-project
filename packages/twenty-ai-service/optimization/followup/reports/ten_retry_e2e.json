@@ -1,0 +1,595 @@
+{
+  "models_loaded": true,
+  "summary": {
+    "total": 10,
+    "passed": 0,
+    "pii_leaks": 0,
+    "llm_calls": 0
+  },
+  "scenarios": [
+    {
+      "name": "acknowledgement_no_reply_needed",
+      "passed": false,
+      "seconds": 4.15,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['no_action']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=False expected=False"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "benchmark_results_disputed",
+      "passed": false,
+      "seconds": 4.14,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['escalate', 'follow_up_call', 'schedule_meeting', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "executive_sponsor_surfaces_late",
+      "passed": false,
+      "seconds": 4.14,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['follow_up_call', 'schedule_meeting', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "long_term_contact_procurement_rhythm",
+      "passed": false,
+      "seconds": 4.14,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['check_in', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "new_security_owner_joins_late",
+      "passed": false,
+      "seconds": 4.14,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "poc_positive_one_open_item",
+      "passed": false,
+      "seconds": 1.53,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "pricing_above_approved_budget",
+      "passed": false,
+      "seconds": 1.53,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['escalate', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "security_questionnaire_delay",
+      "passed": false,
+      "seconds": 1.53,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "support_escalation_threatens_eval",
+      "passed": false,
+      "seconds": 1.53,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['escalate', 'follow_up_call']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['high']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['high']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    },
+    {
+      "name": "technical_blocker_stalls_project",
+      "passed": false,
+      "seconds": 1.53,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": false,
+          "soft": false,
+          "detail": "status=failed error=extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+        },
+        {
+          "name": "path",
+          "passed": false,
+          "soft": false,
+          "detail": "trace=extract"
+        },
+        {
+          "name": "tool_calls",
+          "passed": false,
+          "soft": false,
+          "detail": "ran=[] required=['draft_email'] MISSING=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['escalate', 'follow_up_call', 'schedule_meeting']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": false,
+          "soft": false,
+          "detail": "draft_present=False expected=True"
+        },
+        {
+          "name": "calendar_soft",
+          "passed": false,
+          "soft": true,
+          "detail": "calendar_present=False"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=None \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": false,
+          "soft": false,
+          "detail": "pending=no"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": "extract: Error code: 401 - {'error': {'message': 'Incorrect API key provided: sk-or-v1*************************************************************c554. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'code': 'invalid_api_key', 'param': None}, 'status': 401}"
+    }
+  ]
+}
