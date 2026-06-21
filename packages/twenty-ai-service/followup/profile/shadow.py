@@ -162,6 +162,13 @@ async def check_and_auto_promote(deps: PipelineDeps, shadow_id: str) -> bool:
     if not await _should_promote(deps, shadow):
         return False
 
+    # Twenty rejects a person without a primary email, so a shadow that has met a
+    # promotion trigger on title/mentions alone (no email yet) cannot be persisted
+    # as a real contact. Keep it as a shadow until an address surfaces rather than
+    # crashing the extraction run on the bridge's NOT-NULL email rejection.
+    if not shadow.email_address:
+        return False
+
     contact = await deps.crm_orchestrator.create_contact(
         name=shadow.name,
         email=shadow.email_address,
