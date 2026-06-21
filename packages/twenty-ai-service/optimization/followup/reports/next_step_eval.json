@@ -1,0 +1,60 @@
+{
+  "agent": "next_step",
+  "label": "next_step-GEPA",
+  "split": "test",
+  "model": null,
+  "timestamp": "2026-06-20T18:17:12.008555+00:00",
+  "n": 2,
+  "aggregate": 0.875,
+  "by_category": {
+    "proposal_advance": {
+      "mean": 1.0,
+      "n": 1
+    },
+    "routine": {
+      "mean": 0.75,
+      "n": 1
+    }
+  },
+  "by_signal": {
+    "grounded": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "no_action": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "tool_match": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "urgency_match": {
+      "mean": 0.5,
+      "n": 2
+    },
+    "valid_schema": {
+      "mean": 1.0,
+      "n": 2
+    }
+  },
+  "prompt_chars": 5221,
+  "per_example": [
+    {
+      "id": "ns_routine_checkin",
+      "category": "routine",
+      "score": 0.75,
+      "error": null,
+      "notes": [
+        "Headline urgency was 'high' (priority 2); expected ['low', 'medium']. Priority is ABSOLUTE urgency, not a ranking: 1–2 only for active risk / hard deadline within days, 3 for normal progress, 4–5 for routine/positive-momentum touches."
+      ]
+    },
+    {
+      "id": "ns_fixture_proposal_advance",
+      "category": "proposal_advance",
+      "score": 1.0,
+      "error": null,
+      "notes": []
+    }
+  ]
+}

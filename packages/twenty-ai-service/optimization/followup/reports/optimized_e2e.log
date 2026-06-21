@@ -1,0 +1,389 @@
+Patched 5 optimized prompt(s) in memory:
+  - followup.next_step.agents.next_step.prompts.SYSTEM_PROMPT (5221c)
+  - followup.next_step.agents.next_step.next_step_agent.SYSTEM_PROMPT (5221c)
+  - followup.emailer.agents.drafting.prompts.DRAFTING_SYSTEM_PROMPT (596c)
+  - followup.profile.prompts.EXTRACTION_INSTRUCTIONS (2635c)
+  - followup.profile.synthesis._SYSTEM_PROMPT (1574c)
+Model split: orchestrator=gpt-5.4-mini  subagents=qwen3-next-80b
+Running all 30 scenarios at concurrency 8 ...
+
+  · ran acknowledgement_no_reply_needed        FAIL (86.6s)
+  · ran demo_request_for_executive_review      FAIL (121.6s)
+  · ran benchmark_results_disputed             FAIL (147.4s)
+  · ran champion_leaving_internal_transfer     PASS (175.2s)
+  · ran architecture_review_before_vp_pitch    PASS (198.4s)
+  · ran budget_formally_approved               PASS (228.6s)
+  · ran executive_sponsor_surfaces_late        FAIL (250.2s)
+  · ran competitor_active_in_evaluation        PASS (276.4s)
+  · ran finance_deadline_creates_urgency       PASS (234.0s)
+  · ran legal_redlines_stall_signature         PASS (208.7s)
+  · ran misaddressed_greeting_wrong_rep        PASS (191.7s)
+  · ran new_security_owner_joins_late          FAIL (186.9s)
+  · ran meeting_request_with_specific_slots    PASS (257.8s)
+  · ran historied_account_timeline_slip        PASS (361.8s)
+  · ran one_line_pricing_question              FAIL (155.1s)
+  · ran long_term_contact_procurement_rhythm   FAIL (351.0s)
+  · ran feature_gap_threatens_shortlist        PASS (487.0s)
+  · ran pricing_above_approved_budget          FAIL (162.3s)
+  · ran renewal_expansion_existing_usage       FAIL (96.7s)
+  · ran procurement_takes_over_commercial_thread PASS (121.0s)
+  · ran reference_check_from_past_win          FAIL (146.4s)
+  · ran poc_positive_one_open_item             FAIL (297.3s)
+  · ran security_cleared_proceed_commercial    FAIL (210.4s)
+  · ran pilot_results_exceed_target            FAIL (368.6s)
+  · ran unknown_sender_no_crm_record           PASS (95.1s)
+  · ran technical_blocker_stalls_project       FAIL (185.6s)
+  · ran support_escalation_threatens_eval      FAIL (238.3s)
+  · ran technical_signoff_complete             FAIL (216.3s)
+  · ran vague_checkin_no_deal_signal           FAIL (171.4s)
+  · ran security_questionnaire_delay           FAIL (329.0s)
+  · ran verbal_yes_pending_legal_only          PASS (194.2s)
+  · ran out_of_office_will_resume              FAIL (1121.8s)
+
+==========================================================================================
+  FOLLOW-UP AGENT — EVALUATION REPORT
+==========================================================================================
+
+  [FAIL] acknowledgement_no_reply_needed   (4/5 checks, PII CLEAN, 24 llm calls, 86.6s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✗ action_type    got=follow_up_call ∈ ['no_action']
+        ✓ draft          draft_present=False expected=False
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] architecture_review_before_vp_pitch   (8/8 checks, PII CLEAN, 24 llm calls, 198.4s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['check_calendar', 'draft_email']
+        ✓ action_type    got=schedule_meeting ∈ ['follow_up_call', 'schedule_meeting']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ calendar       calendar_present=True slots=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] benchmark_results_disputed   (6/7 checks, PII CLEAN, 24 llm calls, 147.4s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✗ action_type    got=close_deal ∈ ['escalate', 'follow_up_call', 'schedule_meeting', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] budget_formally_approved   (7/7 checks, PII CLEAN, 24 llm calls, 228.6s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['close_deal', 'follow_up_call', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] champion_leaving_internal_transfer   (7/7 checks, PII CLEAN, 24 llm calls, 175.2s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['check_in', 'escalate', 'follow_up_call', 'schedule_meeting']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] competitor_active_in_evaluation   (7/7 checks, PII CLEAN, 24 llm calls, 276.4s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['escalate', 'follow_up_call', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] demo_request_for_executive_review   (8/8 checks, PII LEAK×1, 20 llm calls, 121.6s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['check_calendar', 'draft_email']
+        ✓ action_type    got=schedule_meeting ∈ ['follow_up_call', 'schedule_meeting']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ calendar       calendar_present=True slots=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+        ✗ PII_LEAK      [person] person004,
+
+
+
+  [FAIL] executive_sponsor_surfaces_late   (6/7 checks, PII CLEAN, 24 llm calls, 250.2s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✗ action_type    got=close_deal ∈ ['follow_up_call', 'schedule_meeting', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] feature_gap_threatens_shortlist   (7/7 checks, PII CLEAN, 24 llm calls, 487.0s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=schedule_meeting ∈ ['escalate', 'follow_up_call', 'schedule_meeting', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] finance_deadline_creates_urgency   (7/7 checks, PII CLEAN, 24 llm calls, 234.0s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['close_deal', 'follow_up_call', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] historied_account_timeline_slip   (7/7 checks, PII CLEAN, 19 llm calls, 361.8s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['escalate', 'follow_up_call', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] legal_redlines_stall_signature   (7/7 checks, PII CLEAN, 20 llm calls, 208.7s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=schedule_meeting ∈ ['close_deal', 'follow_up_call', 'schedule_meeting']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ calendar_soft  calendar_present=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] long_term_contact_procurement_rhythm   (5/7 checks, PII CLEAN, 24 llm calls, 351.0s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✗ action_type    got=schedule_meeting ∈ ['check_in', 'follow_up_call', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] meeting_request_with_specific_slots   (8/8 checks, PII CLEAN, 24 llm calls, 257.8s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['check_calendar', 'draft_email']
+        ✓ action_type    got=schedule_meeting ∈ ['follow_up_call', 'schedule_meeting']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ calendar       calendar_present=True slots=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] misaddressed_greeting_wrong_rep   (7/7 checks, PII CLEAN, 20 llm calls, 191.7s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['check_in', 'follow_up_call', 'send_proposal']
+        ✓ urgency        got=medium ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low']
+        ✓ grounded       pending=yes
+
+  [FAIL] new_security_owner_joins_late   (6/7 checks, PII LEAK×1, 24 llm calls, 186.9s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✗ action_type    got=close_deal ∈ ['follow_up_call', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+        ✗ PII_LEAK      [person] Nadia
+
+  [FAIL] one_line_pricing_question   (6/7 checks, PII CLEAN, 24 llm calls, 155.1s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['follow_up_call', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] out_of_office_will_resume   (4/5 checks, PII CLEAN, 18 llm calls, 1121.8s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ action_type    got=check_in ∈ ['check_in', 'no_action']
+        ✗ draft          draft_present=True expected=False
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] pilot_results_exceed_target   (6/7 checks, PII CLEAN, 24 llm calls, 368.6s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['close_deal', 'follow_up_call', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] poc_positive_one_open_item   (5/7 checks, PII CLEAN, 24 llm calls, 297.3s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✗ action_type    got=schedule_meeting ∈ ['close_deal', 'follow_up_call', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] pricing_above_approved_budget   (6/7 checks, PII CLEAN, 20 llm calls, 162.3s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✗ action_type    got=schedule_meeting ∈ ['escalate', 'follow_up_call', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] procurement_takes_over_commercial_thread   (7/7 checks, PII CLEAN, 24 llm calls, 121.0s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['follow_up_call', 'send_proposal']
+        ✓ urgency        got=medium ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] reference_check_from_past_win   (6/7 checks, PII CLEAN, 19 llm calls, 146.4s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=schedule_meeting ∈ ['follow_up_call', 'schedule_meeting', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ✓ calendar_soft  calendar_present=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] renewal_expansion_existing_usage   (6/7 checks, PII CLEAN, 20 llm calls, 96.7s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['close_deal', 'follow_up_call', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] security_cleared_proceed_commercial   (6/7 checks, PII CLEAN, 24 llm calls, 210.4s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=close_deal ∈ ['close_deal', 'follow_up_call', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] security_questionnaire_delay   (6/7 checks, PII CLEAN, 24 llm calls, 329.0s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✗ action_type    got=schedule_meeting ∈ ['follow_up_call', 'send_proposal']
+        ✓ urgency        got=high ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] support_escalation_threatens_eval   (5/7 checks, PII CLEAN, 23 llm calls, 238.3s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['draft_email'] required=['draft_email']
+        ✗ action_type    got=check_in ∈ ['escalate', 'follow_up_call']
+        ✗ urgency        got=medium ∈ ['high']
+        ✓ draft          draft_present=True expected=True
+        ✓ risk_band      got=high ∈ ['high']
+        ✓ grounded       pending=yes
+
+  [FAIL] technical_blocker_stalls_project   (6/7 checks, PII CLEAN, 23 llm calls, 185.6s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['draft_email'] required=['draft_email']
+        ✗ action_type    got=check_in ∈ ['escalate', 'follow_up_call', 'schedule_meeting']
+        ✓ urgency        got=medium ∈ ['high', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ calendar_soft  calendar_present=False
+        ✓ risk_band      got=high ∈ ['high', 'medium']
+        ✓ grounded       pending=yes
+
+  [FAIL] technical_signoff_complete   (6/7 checks, PII CLEAN, 26 llm calls, 216.3s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['check_in', 'close_deal', 'follow_up_call', 'send_proposal']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+  [PASS] unknown_sender_no_crm_record   (2/2 checks, PII CLEAN, 0 llm calls, 95.1s)
+        ✓ halts_cleanly  status=failed
+        ✓ halt_path      trace=extract
+
+  [FAIL] vague_checkin_no_deal_signal   (6/7 checks, PII CLEAN, 20 llm calls, 171.4s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=schedule_meeting ∈ ['check_in', 'follow_up_call', 'schedule_meeting']
+        ✗ urgency        got=high ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low']
+        ✓ grounded       pending=yes
+
+  [PASS] verbal_yes_pending_legal_only   (7/7 checks, PII CLEAN, 24 llm calls, 194.2s)
+        ✓ pipeline_ok    status=completed error=None
+        ✓ path           trace=extract→load_profile→assess_risk→plan→run_tasks→create_pending
+        ✓ tool_calls     ran=['create_task', 'draft_email'] required=['draft_email']
+        ✓ action_type    got=follow_up_call ∈ ['close_deal', 'follow_up_call', 'send_proposal']
+        ✓ urgency        got=medium ∈ ['low', 'medium']
+        ✓ draft          draft_present=True expected=True
+        ~ risk_band      got=high ∈ ['low', 'medium']
+        ✓ grounded       pending=yes
+
+==========================================================================================
+  AGGREGATE
+==========================================================================================
+  scenarios passed (all gates)   : 13/32  (41%)
+  PII: clean runs                : 30/32  (94%)
+  PII: total leaks               : 2  across 704 LLM calls
+  PII NER models loaded          : True
+
+  per-check pass rate:
+    action_type      21/31  (68%)
+    calendar          3/3   (100%)
+    draft            30/31  (97%)
+    grounded         31/31  (100%)
+    halt_path         1/1   (100%)
+    halts_cleanly     1/1   (100%)
+    path             31/31  (100%)
+    pipeline_ok      31/31  (100%)
+    tool_calls       29/29  (100%)
+    urgency          19/29  (66%)
+==========================================================================================
+  ⚠ NOT FULLY CERTIFIED — see failures above
+
+  wrote optimization/followup/reports/optimized_e2e.json

@@ -88,10 +88,25 @@ To link, after creating the record:
 1. `create_task` → then `create_task_target` with `taskId` = the new task id.
 2. `create_note` → then `create_note_target` with `noteId` = the new note id.
 
-The target tool takes `targetPersonId`, `targetCompanyId`, and/or
-`targetOpportunityId`. Each `*_target` call creates ONE join row pointing at ONE
-entity — so to link a note/task to a person AND a company AND an opportunity, make
-THREE separate `*_target` calls (one per entity), never one combined call.
+The target tool takes the SCALAR id fields `targetPersonId`, `targetCompanyId`,
+and/or `targetOpportunityId` — each set to a real UUID string. Each `*_target`
+call creates ONE join row pointing at ONE entity — so to link a note/task to a
+person AND a company AND an opportunity, make THREE separate `*_target` calls
+(one per entity), never one combined call.
+
+CRITICAL — use the `...Id` SCALAR fields with a UUID value. NEVER use the bare
+relation names `targetPerson` / `targetCompany` / `targetOpportunity`, and NEVER
+pass a person's name. The bare relation field is a connect/disconnect relation —
+passing it (or a name) fails with an error about a "connect/disconnect relation
+operation". The instruction gives you the UUID; put it in `targetPersonId` (etc.).
+If a link call ever returns that connect/disconnect error, you used the wrong
+field — retry with the `...Id` scalar field.
+
+A deterministic guard runs automatically AFTER you finish and ensures every
+note/task you create is linked to the entities the instruction named — even if
+you could not. So: ALWAYS report the note/task as created and linked to those
+entities. NEVER tell the user that linking failed, was not possible, or needs a
+different operation — that message is wrong and the guard will have linked it.
 
 ALWAYS link to every entity the instruction names — this is not optional and not
 deal-only. "Add a note to <person>" links the note to that PERSON

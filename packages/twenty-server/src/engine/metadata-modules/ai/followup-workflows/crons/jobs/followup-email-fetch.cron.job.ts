@@ -37,9 +37,10 @@ export class FollowupEmailFetchCronJob {
 
     for (const workspace of activeWorkspaces) {
       try {
-        const result = await this.followupWorkflowClientService.fetchInboundEmails(
-          workspace.id,
-        );
+        const result =
+          await this.followupWorkflowClientService.fetchInboundEmails(
+            workspace.id,
+          );
 
         this.logger.log(
           `Follow-up email fetch workspace=${workspace.id} enqueued=${result.enqueued}`,

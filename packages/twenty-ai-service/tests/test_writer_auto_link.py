@@ -82,6 +82,59 @@ class TestReconcileTargets:
         assert args == {"noteId": "note-1", "targetPersonId": "p-1"}
 
     @pytest.mark.asyncio
+    async def test_links_when_instruction_uses_record_id(self, monkeypatch):
+        # The chat orchestrator follows id-first discipline: its writer
+        # instruction carries the entity's real UUID ("note linked to person
+        # 8897…"), NOT the handle token/name. The guard must still fire.
+        calls = _patch_bridge(monkeypatch)
+        m = _resolved_map(("person", "8897-uuid", "John Park"))
+        messages = _created_note_messages("Create a note linked to person 8897-uuid.")
+
+        linked = await auto_link.reconcile_targets(messages, m)
+
+        assert len(linked) == 1
+        assert calls[0] == ("create_note_target",
+                            {"noteId": "note-1", "targetPersonId": "8897-uuid"})
+
+    @pytest.mark.asyncio
+    async def test_links_typed_id_for_reader_surfaced_entity(self, monkeypatch):
+        # An entity the READER surfaced (not resolved from the user's message) has
+        # NO handle in the pii_map. The guard must still link it from the typed id
+        # the orchestrator wrote into the instruction ("…to person <uuid>").
+        calls = _patch_bridge(monkeypatch)
+        m = EntityHandleMap()  # empty — nothing resolved at message time
+        messages = _created_note_messages(
+            "Create a note target linking the note to person "
+            "20202020-b225-4b3d-a89c-7f6c30df998a."
+        )
+
+        linked = await auto_link.reconcile_targets(messages, m)
+
+        assert len(linked) == 1
+        assert calls[0] == ("create_note_target",
+                            {"noteId": "note-1",
+                             "targetPersonId": "20202020-b225-4b3d-a89c-7f6c30df998a"})
+
+    @pytest.mark.asyncio
+    async def test_links_task_via_same_path(self, monkeypatch):
+        # Tasks share the exact same guard as notes (create_task → create_task_target).
+        calls = _patch_bridge(monkeypatch)
+        m = _resolved_map(("person", "p-1", "John Park"))
+        messages = [
+            HumanMessage(content="Create a task to call John Park."),
+            AIMessage(content="", tool_calls=[{"id": "c1", "name": "execute_tool",
+                      "args": {"tool": "create_task", "tool_args": {"title": "Call"}}}]),
+            ToolMessage(content='{"ok": true, "data": {"result": {"id": "task-1"}}}',
+                        tool_call_id="c1"),
+        ]
+
+        linked = await auto_link.reconcile_targets(messages, m)
+
+        assert len(linked) == 1
+        assert calls[0] == ("create_task_target",
+                            {"taskId": "task-1", "targetPersonId": "p-1"})
+
+    @pytest.mark.asyncio
     async def test_ignores_entities_not_named_in_instruction(self, monkeypatch):
         calls = _patch_bridge(monkeypatch)
         # Two resolved entities, but only the person is named in the instruction.

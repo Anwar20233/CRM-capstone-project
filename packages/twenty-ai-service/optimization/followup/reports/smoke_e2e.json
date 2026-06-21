@@ -1,0 +1,158 @@
+{
+  "models_loaded": true,
+  "summary": {
+    "total": 3,
+    "passed": 1,
+    "pii_leaks": 1,
+    "llm_calls": 48
+  },
+  "scenarios": [
+    {
+      "name": "historied_account_timeline_slip",
+      "passed": false,
+      "seconds": 65.46,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['check_calendar', 'create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['escalate', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": true,
+          "soft": false,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": true,
+          "soft": true,
+          "detail": "got=high \u2208 ['high', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [
+        {
+          "type": "person",
+          "value": "Sarah",
+          "score": 0.85
+        }
+      ],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "pilot_results_exceed_target",
+      "passed": false,
+      "seconds": 155.1,
+      "llm_calls": 24,
+      "checks": [
+        {
+          "name": "pipeline_ok",
+          "passed": true,
+          "soft": false,
+          "detail": "status=completed error=None"
+        },
+        {
+          "name": "path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract\u2192load_profile\u2192assess_risk\u2192plan\u2192run_tasks\u2192create_pending"
+        },
+        {
+          "name": "tool_calls",
+          "passed": true,
+          "soft": false,
+          "detail": "ran=['create_task', 'draft_email'] required=['draft_email']"
+        },
+        {
+          "name": "action_type",
+          "passed": true,
+          "soft": false,
+          "detail": "got=follow_up_call \u2208 ['close_deal', 'follow_up_call', 'send_proposal']"
+        },
+        {
+          "name": "urgency",
+          "passed": false,
+          "soft": false,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "draft",
+          "passed": true,
+          "soft": false,
+          "detail": "draft_present=True expected=True"
+        },
+        {
+          "name": "risk_band",
+          "passed": false,
+          "soft": true,
+          "detail": "got=high \u2208 ['low', 'medium']"
+        },
+        {
+          "name": "grounded",
+          "passed": true,
+          "soft": false,
+          "detail": "pending=yes"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    },
+    {
+      "name": "unknown_sender_no_crm_record",
+      "passed": true,
+      "seconds": 28.76,
+      "llm_calls": 0,
+      "checks": [
+        {
+          "name": "halts_cleanly",
+          "passed": true,
+          "soft": false,
+          "detail": "status=failed"
+        },
+        {
+          "name": "halt_path",
+          "passed": true,
+          "soft": false,
+          "detail": "trace=extract"
+        }
+      ],
+      "pii_leaks": [],
+      "planted_leaks": [],
+      "error": null
+    }
+  ]
+}

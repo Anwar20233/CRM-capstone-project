@@ -11,6 +11,7 @@ import { ToolCategory } from 'twenty-shared/ai';
 import { type ToolDescriptor } from 'src/engine/core-modules/tool-provider/types/tool-descriptor.type';
 import { type ToolIndexEntry } from 'src/engine/core-modules/tool-provider/types/tool-index-entry.type';
 import { CodeInterpreterService } from 'src/engine/core-modules/code-interpreter/code-interpreter.service';
+import { BookCalendarEventTool } from 'src/engine/core-modules/tool/tools/calendar-tool/book-calendar-event-tool';
 import { CodeInterpreterTool } from 'src/engine/core-modules/tool/tools/code-interpreter-tool/code-interpreter-tool';
 import { DraftEmailTool } from 'src/engine/core-modules/tool/tools/email-tool/draft-email-tool';
 import { SendEmailTool } from 'src/engine/core-modules/tool/tools/email-tool/send-email-tool';
@@ -34,6 +35,7 @@ export class ActionToolProvider implements ToolProvider {
     private readonly searchHelpCenterTool: SearchHelpCenterTool,
     private readonly codeInterpreterTool: CodeInterpreterTool,
     private readonly navigateAppTool: NavigateAppTool,
+    private readonly bookCalendarEventTool: BookCalendarEventTool,
     private readonly codeInterpreterService: CodeInterpreterService,
     private readonly permissionsService: PermissionsService,
   ) {
@@ -41,6 +43,7 @@ export class ActionToolProvider implements ToolProvider {
       ['http_request', this.httpTool],
       ['send_email', this.sendEmailTool],
       ['draft_email', this.draftEmailTool],
+      ['book_calendar_event', this.bookCalendarEventTool],
       ['search_help_center', this.searchHelpCenterTool],
       ['code_interpreter', this.codeInterpreterTool],
       ['navigate_app', this.navigateAppTool],
@@ -84,6 +87,15 @@ export class ActionToolProvider implements ToolProvider {
         this.buildDescriptor(
           'draft_email',
           this.draftEmailTool,
+          includeSchemas,
+        ),
+      );
+      // Outbound calendar write rides on the same outbound permission as email
+      // (both require a connected account); avoids a separate permission flag.
+      descriptors.push(
+        this.buildDescriptor(
+          'book_calendar_event',
+          this.bookCalendarEventTool,
           includeSchemas,
         ),
       );
