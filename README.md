@@ -1,7 +1,5 @@
 <p align="center">
-  <a href="https://upload.wikimedia.org/wikipedia/commons/5/52/Macaca_nigra_self-portrait.jpg">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Macaca_nigra_self-portrait.jpg" width="100px" alt="Twenty logo" />
-  </a>
+  
 </p>
 
 <h2 align="center" >The #1 Open-Source CRM</h2>
