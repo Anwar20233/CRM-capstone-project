@@ -1,0 +1,21 @@
+{
+  "name": "list_dashboards",
+  "description": "List all dashboards in the workspace. Use get_dashboard to retrieve full layout structure.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "limit": {
+        "description": "Maximum number of dashboards to return (default: 20, max: 100)",
+        "default": 20,
+        "type": "number",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required": [
+      "limit"
+    ],
+    "additionalProperties": false
+  }
+}

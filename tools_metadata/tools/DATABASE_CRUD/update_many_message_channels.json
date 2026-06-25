@@ -1,0 +1,953 @@
+{
+  "name": "update_many_message_channels",
+  "description": "Update multiple Message Channels records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "visibility": {
+            "description": "Visibility",
+            "type": "string",
+            "enum": [
+              "METADATA",
+              "SUBJECT",
+              "SHARE_EVERYTHING"
+            ]
+          },
+          "handle": {
+            "description": "Handle",
+            "type": "string"
+          },
+          "type": {
+            "description": "Channel Type",
+            "type": "string",
+            "enum": [
+              "EMAIL",
+              "SMS",
+              "EMAIL_GROUP"
+            ]
+          },
+          "isContactAutoCreationEnabled": {
+            "description": "Is Contact Auto Creation Enabled",
+            "type": "boolean"
+          },
+          "contactAutoCreationPolicy": {
+            "description": "Automatically create People records when receiving or sending emails",
+            "type": "string",
+            "enum": [
+              "SENT_AND_RECEIVED",
+              "SENT",
+              "NONE"
+            ]
+          },
+          "messageFolderImportPolicy": {
+            "description": "Message folder import policy",
+            "type": "string",
+            "enum": [
+              "ALL_FOLDERS",
+              "SELECTED_FOLDERS"
+            ]
+          },
+          "excludeNonProfessionalEmails": {
+            "description": "Exclude non professional emails",
+            "type": "boolean"
+          },
+          "excludeGroupEmails": {
+            "description": "Exclude group emails",
+            "type": "boolean"
+          },
+          "pendingGroupEmailsAction": {
+            "description": "Pending action for group emails",
+            "type": "string",
+            "enum": [
+              "GROUP_EMAILS_DELETION",
+              "GROUP_EMAILS_IMPORT",
+              "NONE"
+            ]
+          },
+          "isSyncEnabled": {
+            "description": "Is Sync Enabled",
+            "type": "boolean"
+          },
+          "syncCursor": {
+            "description": "Last sync cursor",
+            "type": "string"
+          },
+          "syncedAt": {
+            "description": "Last sync date",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "syncStatus": {
+            "description": "Sync status",
+            "type": "string",
+            "enum": [
+              "ONGOING",
+              "NOT_SYNCED",
+              "ACTIVE",
+              "FAILED_INSUFFICIENT_PERMISSIONS",
+              "FAILED_UNKNOWN"
+            ]
+          },
+          "syncStage": {
+            "description": "Sync stage",
+            "type": "string",
+            "enum": [
+              "MESSAGE_LIST_FETCH_PENDING",
+              "MESSAGE_LIST_FETCH_SCHEDULED",
+              "MESSAGE_LIST_FETCH_ONGOING",
+              "MESSAGES_IMPORT_PENDING",
+              "MESSAGES_IMPORT_SCHEDULED",
+              "MESSAGES_IMPORT_ONGOING",
+              "FAILED",
+              "PENDING_CONFIGURATION"
+            ]
+          },
+          "syncStageStartedAt": {
+            "description": "Sync stage started at",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "throttleFailureCount": {
+            "description": "Throttle Failure Count",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "throttleRetryAfter": {
+            "description": "Throttle Retry After",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "connectedAccountId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "visibility": {
+            "description": "Filter by visibility (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "METADATA",
+                  "SUBJECT",
+                  "SHARE_EVERYTHING"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "METADATA",
+                  "SUBJECT",
+                  "SHARE_EVERYTHING"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "METADATA",
+                    "SUBJECT",
+                    "SHARE_EVERYTHING"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "handle": {
+            "description": "Filter by handle (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "type": {
+            "description": "Filter by type (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "EMAIL",
+                  "SMS",
+                  "EMAIL_GROUP"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "EMAIL",
+                  "SMS",
+                  "EMAIL_GROUP"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "EMAIL",
+                    "SMS",
+                    "EMAIL_GROUP"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "isContactAutoCreationEnabled": {
+            "description": "Filter by isContactAutoCreationEnabled (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "contactAutoCreationPolicy": {
+            "description": "Filter by contactAutoCreationPolicy (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "SENT_AND_RECEIVED",
+                  "SENT",
+                  "NONE"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "SENT_AND_RECEIVED",
+                  "SENT",
+                  "NONE"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "SENT_AND_RECEIVED",
+                    "SENT",
+                    "NONE"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "messageFolderImportPolicy": {
+            "description": "Filter by messageFolderImportPolicy (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "ALL_FOLDERS",
+                  "SELECTED_FOLDERS"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "ALL_FOLDERS",
+                  "SELECTED_FOLDERS"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ALL_FOLDERS",
+                    "SELECTED_FOLDERS"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "excludeNonProfessionalEmails": {
+            "description": "Filter by excludeNonProfessionalEmails (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "excludeGroupEmails": {
+            "description": "Filter by excludeGroupEmails (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "pendingGroupEmailsAction": {
+            "description": "Filter by pendingGroupEmailsAction (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "GROUP_EMAILS_DELETION",
+                  "GROUP_EMAILS_IMPORT",
+                  "NONE"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "GROUP_EMAILS_DELETION",
+                  "GROUP_EMAILS_IMPORT",
+                  "NONE"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "GROUP_EMAILS_DELETION",
+                    "GROUP_EMAILS_IMPORT",
+                    "NONE"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "isSyncEnabled": {
+            "description": "Filter by isSyncEnabled (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "syncCursor": {
+            "description": "Filter by syncCursor (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "syncedAt": {
+            "description": "Filter by syncedAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "syncStatus": {
+            "description": "Filter by syncStatus (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "ONGOING",
+                  "NOT_SYNCED",
+                  "ACTIVE",
+                  "FAILED_INSUFFICIENT_PERMISSIONS",
+                  "FAILED_UNKNOWN"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "ONGOING",
+                  "NOT_SYNCED",
+                  "ACTIVE",
+                  "FAILED_INSUFFICIENT_PERMISSIONS",
+                  "FAILED_UNKNOWN"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ONGOING",
+                    "NOT_SYNCED",
+                    "ACTIVE",
+                    "FAILED_INSUFFICIENT_PERMISSIONS",
+                    "FAILED_UNKNOWN"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "syncStage": {
+            "description": "Filter by syncStage (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "MESSAGE_LIST_FETCH_PENDING",
+                  "MESSAGE_LIST_FETCH_SCHEDULED",
+                  "MESSAGE_LIST_FETCH_ONGOING",
+                  "MESSAGES_IMPORT_PENDING",
+                  "MESSAGES_IMPORT_SCHEDULED",
+                  "MESSAGES_IMPORT_ONGOING",
+                  "FAILED",
+                  "PENDING_CONFIGURATION"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "MESSAGE_LIST_FETCH_PENDING",
+                  "MESSAGE_LIST_FETCH_SCHEDULED",
+                  "MESSAGE_LIST_FETCH_ONGOING",
+                  "MESSAGES_IMPORT_PENDING",
+                  "MESSAGES_IMPORT_SCHEDULED",
+                  "MESSAGES_IMPORT_ONGOING",
+                  "FAILED",
+                  "PENDING_CONFIGURATION"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "MESSAGE_LIST_FETCH_PENDING",
+                    "MESSAGE_LIST_FETCH_SCHEDULED",
+                    "MESSAGE_LIST_FETCH_ONGOING",
+                    "MESSAGES_IMPORT_PENDING",
+                    "MESSAGES_IMPORT_SCHEDULED",
+                    "MESSAGES_IMPORT_ONGOING",
+                    "FAILED",
+                    "PENDING_CONFIGURATION"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "syncStageStartedAt": {
+            "description": "Filter by syncStageStartedAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "throttleFailureCount": {
+            "description": "Filter by throttleFailureCount (number field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "number"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "number"
+              },
+              "gt": {
+                "description": "Greater than",
+                "type": "number"
+              },
+              "gte": {
+                "description": "Greater than or equal",
+                "type": "number"
+              },
+              "lt": {
+                "description": "Less than",
+                "type": "number"
+              },
+              "lte": {
+                "description": "Less than or equal",
+                "type": "number"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "throttleRetryAfter": {
+            "description": "Filter by throttleRetryAfter (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "connectedAccountId": {
+            "description": "Filter by connectedAccountId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

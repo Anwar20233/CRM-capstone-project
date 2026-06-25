@@ -1,0 +1,560 @@
+{
+  "name": "find_message_channels",
+  "description": "Search for Message Channels records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+  "inputSchema": {
+    "type": "object",
+    "required": [
+      "limit",
+      "offset"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "visibility": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "METADATA",
+                  "SUBJECT",
+                  "SHARE_EVERYTHING"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "METADATA",
+                  "SUBJECT",
+                  "SHARE_EVERYTHING"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "METADATA",
+                    "SUBJECT",
+                    "SHARE_EVERYTHING"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "handle": {
+            "$ref": "#/$defs/_f3"
+          },
+          "type": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "EMAIL",
+                  "SMS",
+                  "EMAIL_GROUP"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "EMAIL",
+                  "SMS",
+                  "EMAIL_GROUP"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "EMAIL",
+                    "SMS",
+                    "EMAIL_GROUP"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "isContactAutoCreationEnabled": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "contactAutoCreationPolicy": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "SENT_AND_RECEIVED",
+                  "SENT",
+                  "NONE"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "SENT_AND_RECEIVED",
+                  "SENT",
+                  "NONE"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "SENT_AND_RECEIVED",
+                    "SENT",
+                    "NONE"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "messageFolderImportPolicy": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "ALL_FOLDERS",
+                  "SELECTED_FOLDERS"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "ALL_FOLDERS",
+                  "SELECTED_FOLDERS"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ALL_FOLDERS",
+                    "SELECTED_FOLDERS"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "excludeNonProfessionalEmails": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "excludeGroupEmails": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "pendingGroupEmailsAction": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "GROUP_EMAILS_DELETION",
+                  "GROUP_EMAILS_IMPORT",
+                  "NONE"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "GROUP_EMAILS_DELETION",
+                  "GROUP_EMAILS_IMPORT",
+                  "NONE"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "GROUP_EMAILS_DELETION",
+                    "GROUP_EMAILS_IMPORT",
+                    "NONE"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "isSyncEnabled": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "syncCursor": {
+            "$ref": "#/$defs/_f3"
+          },
+          "syncedAt": {
+            "$ref": "#/$defs/_f8"
+          },
+          "syncStatus": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "ONGOING",
+                  "NOT_SYNCED",
+                  "ACTIVE",
+                  "FAILED_INSUFFICIENT_PERMISSIONS",
+                  "FAILED_UNKNOWN"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "ONGOING",
+                  "NOT_SYNCED",
+                  "ACTIVE",
+                  "FAILED_INSUFFICIENT_PERMISSIONS",
+                  "FAILED_UNKNOWN"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "ONGOING",
+                    "NOT_SYNCED",
+                    "ACTIVE",
+                    "FAILED_INSUFFICIENT_PERMISSIONS",
+                    "FAILED_UNKNOWN"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "syncStage": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "$ref": "#/$defs/_f11"
+              },
+              "neq": {
+                "$ref": "#/$defs/_f11"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/_f11"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "syncStageStartedAt": {
+            "$ref": "#/$defs/_f8"
+          },
+          "throttleFailureCount": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "number"
+              },
+              "neq": {
+                "type": "number"
+              },
+              "gt": {
+                "type": "number"
+              },
+              "gte": {
+                "type": "number"
+              },
+              "lt": {
+                "type": "number"
+              },
+              "lte": {
+                "type": "number"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "throttleRetryAfter": {
+            "$ref": "#/$defs/_f8"
+          },
+          "connectedAccountId": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "neq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f3": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string"
+          },
+          "neq": {
+            "type": "string"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "type": "string"
+          },
+          "ilike": {
+            "type": "string"
+          },
+          "startsWith": {
+            "type": "string"
+          },
+          "endsWith": {
+            "type": "string"
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      },
+      "_f8": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "neq": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gte": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lte": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      },
+      "_f11": {
+        "type": "string",
+        "enum": [
+          "MESSAGE_LIST_FETCH_PENDING",
+          "MESSAGE_LIST_FETCH_SCHEDULED",
+          "MESSAGE_LIST_FETCH_ONGOING",
+          "MESSAGES_IMPORT_PENDING",
+          "MESSAGES_IMPORT_SCHEDULED",
+          "MESSAGES_IMPORT_ONGOING",
+          "FAILED",
+          "PENDING_CONFIGURATION"
+        ]
+      }
+    },
+    "properties": {
+      "limit": {
+        "default": 10,
+        "type": "integer",
+        "maximum": 100
+      },
+      "offset": {
+        "default": 0,
+        "type": "integer",
+        "minimum": 0
+      },
+      "orderBy": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "AscNullsFirst",
+              "AscNullsLast",
+              "DescNullsFirst",
+              "DescNullsLast"
+            ]
+          }
+        }
+      }
+    },
+    "allOf": [
+      {
+        "$ref": "#/$defs/__schema0"
+      }
+    ]
+  }
+}

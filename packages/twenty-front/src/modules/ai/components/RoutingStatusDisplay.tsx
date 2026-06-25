@@ -1,3 +1,4 @@
+import { AgentLoadingIndicator } from '@/ai/components/AgentLoadingIndicator';
 import { RoutingDebugDisplay } from '@/ai/components/RoutingDebugDisplay';
 import { ShimmeringText } from '@/ai/components/ShimmeringText';
 import { styled } from '@linaria/react';
@@ -77,7 +78,7 @@ export const RoutingStatusDisplay = ({
     return (
       <StyledContainer>
         <StyledIconTextContainer>
-          <IconCpu size={theme.icon.size.sm} />
+          <AgentLoadingIndicator />
           <ShimmeringText>
             <StyledDisplayMessage>{data.text}</StyledDisplayMessage>
           </ShimmeringText>

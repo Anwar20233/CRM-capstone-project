@@ -1,0 +1,233 @@
+{
+  "name": "update_many_calendar_event_participants",
+  "description": "Update multiple Calendar event participants records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "handle": {
+            "description": "Handle",
+            "type": "string"
+          },
+          "displayName": {
+            "description": "Display Name",
+            "type": "string"
+          },
+          "isOrganizer": {
+            "description": "Is Organizer",
+            "type": "boolean"
+          },
+          "responseStatus": {
+            "description": "Response Status",
+            "type": "string",
+            "enum": [
+              "NEEDS_ACTION",
+              "DECLINED",
+              "TENTATIVE",
+              "ACCEPTED"
+            ]
+          },
+          "calendarEventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "personId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workspaceMemberId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "$ref": "#/$defs/_f3"
+          },
+          "displayName": {
+            "$ref": "#/$defs/_f3"
+          },
+          "isOrganizer": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "boolean"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "responseStatus": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "enum": [
+                  "NEEDS_ACTION",
+                  "DECLINED",
+                  "TENTATIVE",
+                  "ACCEPTED"
+                ]
+              },
+              "neq": {
+                "type": "string",
+                "enum": [
+                  "NEEDS_ACTION",
+                  "DECLINED",
+                  "TENTATIVE",
+                  "ACCEPTED"
+                ]
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NEEDS_ACTION",
+                    "DECLINED",
+                    "TENTATIVE",
+                    "ACCEPTED"
+                  ]
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "calendarEventId": {
+            "$ref": "#/$defs/_f5"
+          },
+          "personId": {
+            "$ref": "#/$defs/_f5"
+          },
+          "workspaceMemberId": {
+            "$ref": "#/$defs/_f5"
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f3": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string"
+          },
+          "neq": {
+            "type": "string"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "type": "string"
+          },
+          "ilike": {
+            "type": "string"
+          },
+          "startsWith": {
+            "type": "string"
+          },
+          "endsWith": {
+            "type": "string"
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      },
+      "_f5": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "neq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

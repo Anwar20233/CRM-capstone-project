@@ -1,0 +1,50 @@
+{
+  "name": "update_workflow_version_positions",
+  "description": "Update the positions of multiple workflow steps. This is useful for reorganizing the workflow layout.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version",
+        "type": "string",
+        "format": "uuid"
+      },
+      "positions": {
+        "description": "Array of step positions to update",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "Step or trigger ID",
+              "type": "string"
+            },
+            "position": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number"
+                },
+                "y": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "x",
+                "y"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "position"
+          ]
+        }
+      }
+    },
+    "required": [
+      "workflowVersionId",
+      "positions"
+    ]
+  }
+}

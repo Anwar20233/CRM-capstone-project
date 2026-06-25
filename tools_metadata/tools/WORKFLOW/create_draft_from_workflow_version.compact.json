@@ -1,0 +1,23 @@
+{
+  "name": "create_draft_from_workflow_version",
+  "description": "Create a new draft workflow version from an existing one. This allows for iterative workflow development.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workflowId": {
+        "description": "The UUID of the workflow",
+        "type": "string",
+        "format": "uuid"
+      },
+      "workflowVersionIdToCopy": {
+        "description": "The UUID of the workflow version to create a draft from",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "workflowId",
+      "workflowVersionIdToCopy"
+    ]
+  }
+}

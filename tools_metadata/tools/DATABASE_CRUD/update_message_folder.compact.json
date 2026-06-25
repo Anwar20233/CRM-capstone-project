@@ -1,0 +1,69 @@
+{
+  "name": "update_message_folder",
+  "description": "Update an existing Message Folder record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "name": {
+        "description": "Folder name",
+        "type": "string"
+      },
+      "syncCursor": {
+        "description": "Sync Cursor",
+        "type": "string"
+      },
+      "isSentFolder": {
+        "description": "Is Sent Folder",
+        "type": "boolean"
+      },
+      "isSynced": {
+        "description": "Is Synced",
+        "type": "boolean"
+      },
+      "parentFolderId": {
+        "description": "Parent Folder ID",
+        "type": "string"
+      },
+      "externalId": {
+        "description": "External ID",
+        "type": "string"
+      },
+      "pendingSyncAction": {
+        "description": "Pending action for folder sync",
+        "type": "string",
+        "enum": [
+          "FOLDER_DELETION",
+          "NONE"
+        ]
+      },
+      "messageChannelId": {
+        "description": "Message Channel",
+        "type": "string",
+        "format": "uuid"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

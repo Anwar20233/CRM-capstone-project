@@ -2,6 +2,7 @@ import { type PageLayoutWidget } from '@/page-layout/types/PageLayoutWidget';
 import { CalendarWidget } from '@/page-layout/widgets/calendar/components/CalendarWidget';
 import { EmailThreadWidget } from '@/page-layout/widgets/email-thread/components/EmailThreadWidget';
 import { EmailWidget } from '@/page-layout/widgets/emails/components/EmailWidget';
+import { FollowupIntelligenceWidget } from '@/page-layout/widgets/followup-intelligence/components/FollowupIntelligenceWidget';
 import { FieldRichTextWidgetRenderer } from '@/page-layout/widgets/field-rich-text/components/FieldRichTextWidgetRenderer';
 import { FieldWidget } from '@/page-layout/widgets/field/components/FieldWidget';
 import { FieldsWidget } from '@/page-layout/widgets/fields/components/FieldsWidget';
@@ -80,6 +81,14 @@ export const WidgetContentRenderer = ({
 
     case WidgetType.EMAIL_THREAD:
       return <EmailThreadWidget widget={widget} />;
+
+    case WidgetType.VIEW:
+      // Server-seeded widget ids are random UUIDs, so identify the follow-up
+      // widget by its stable title set in the standard page layout config.
+      if (widget.title === 'Follow-Up Intelligence') {
+        return <FollowupIntelligenceWidget widget={widget} />;
+      }
+      return null;
 
     default:
       return null;

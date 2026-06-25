@@ -1,0 +1,349 @@
+{
+  "name": "find_task_targets",
+  "description": "Search for Task Targets records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "limit": {
+        "description": "Maximum number of records to return (default: 10, max: 100). Start small and increase only if needed.",
+        "default": 10,
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 100
+      },
+      "offset": {
+        "description": "Number of records to skip (default: 0)",
+        "default": 0,
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "orderBy": {
+        "description": "Sort records by field(s). CRITICAL for \"top N\", \"largest\", \"smallest\" queries. Each item is an object with exactly ONE property: field name as key, sort direction as value. Example: [{\"employees\": \"DescNullsLast\"}] sorts employees descending. Use \"DescNullsLast\" for top/largest, \"AscNullsFirst\" for bottom/smallest.",
+        "type": "array",
+        "items": {
+          "description": "Object with exactly ONE property: field name as key, OrderByDirection as value. Example: {\"employees\": \"DescNullsLast\"}",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "AscNullsFirst",
+              "AscNullsLast",
+              "DescNullsFirst",
+              "DescNullsLast"
+            ]
+          }
+        }
+      },
+      "targetCompany": {
+        "description": "Filter by targetCompany (string field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "like": {
+            "description": "Case-sensitive pattern match",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "targetOpportunity": {
+        "description": "Filter by targetOpportunity (string field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "like": {
+            "description": "Case-sensitive pattern match",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "targetPerson": {
+        "description": "Filter by targetPerson (string field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "like": {
+            "description": "Case-sensitive pattern match",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "taskId": {
+        "description": "Filter by taskId (relation field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Related record ID equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "neq": {
+            "description": "Related record ID not equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "in": {
+            "description": "Related record ID in array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "or": {
+        "description": "OR condition - matches if ANY of the filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "and": {
+        "description": "AND condition - matches if ALL filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "not": {
+        "description": "NOT condition - matches if the filter does NOT match",
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "required": [
+      "limit",
+      "offset"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "targetCompany": {
+            "description": "Filter by targetCompany (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetOpportunity": {
+            "description": "Filter by targetOpportunity (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "targetPerson": {
+            "description": "Filter by targetPerson (string field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "taskId": {
+            "description": "Filter by taskId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

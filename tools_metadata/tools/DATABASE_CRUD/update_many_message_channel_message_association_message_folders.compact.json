@@ -1,0 +1,106 @@
+{
+  "name": "update_many_message_channel_message_association_message_folders",
+  "description": "Update multiple Message Channel Message Association Message Folders records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "messageFolderId": {
+            "description": "Message Folder",
+            "type": "string",
+            "format": "uuid"
+          },
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "messageChannelMessageAssociationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "messageFolderId": {
+            "$ref": "#/$defs/_f3"
+          },
+          "messageChannelMessageAssociationId": {
+            "$ref": "#/$defs/_f3"
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f3": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "neq": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

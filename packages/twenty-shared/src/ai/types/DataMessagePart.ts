@@ -89,4 +89,14 @@ export type DataMessagePart = {
   'code-execution': CodeExecutionData;
   'thread-title': { title: string };
   compaction: Record<string, never>;
+  // A high-risk write the agent paused on, awaiting the user's approval.
+  // Rendered as an approval card; the user's choice is sent back via the
+  // resumeAgentChatStream mutation, keyed by threadId.
+  'write-confirmation': {
+    threadId: string;
+    action: string;
+    args: Record<string, unknown>;
+    summary: string;
+    status: 'pending' | 'approved' | 'rejected';
+  };
 };

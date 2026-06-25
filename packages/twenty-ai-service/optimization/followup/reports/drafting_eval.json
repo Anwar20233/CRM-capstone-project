@@ -1,0 +1,62 @@
+{
+  "agent": "drafting",
+  "label": "drafting-GEPA",
+  "split": "test",
+  "model": null,
+  "timestamp": "2026-06-20T17:42:21.954403+00:00",
+  "n": 2,
+  "aggregate": 1.0,
+  "by_category": {
+    "follow_up_email": {
+      "mean": 1.0,
+      "n": 1
+    },
+    "meeting_recap_email": {
+      "mean": 1.0,
+      "n": 1
+    }
+  },
+  "by_signal": {
+    "length": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "must_include": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "no_placeholder": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "personalized": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "signoff": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "valid": {
+      "mean": 1.0,
+      "n": 2
+    }
+  },
+  "prompt_chars": 596,
+  "per_example": [
+    {
+      "id": "dr_meeting_recap_security",
+      "category": "meeting_recap_email",
+      "score": 1.0,
+      "error": null,
+      "notes": []
+    },
+    {
+      "id": "dr_followup_routine",
+      "category": "follow_up_email",
+      "score": 1.0,
+      "error": null,
+      "notes": []
+    }
+  ]
+}

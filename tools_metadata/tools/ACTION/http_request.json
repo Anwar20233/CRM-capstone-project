@@ -1,0 +1,44 @@
+{
+  "name": "http_request",
+  "description": "Make an HTTP request to any URL with configurable method, headers, and body.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "url": {
+        "description": "The URL to make the request to (HTTP or HTTPS only)",
+        "type": "string",
+        "format": "uri"
+      },
+      "method": {
+        "description": "The HTTP method to use",
+        "type": "string",
+        "enum": [
+          "GET",
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ]
+      },
+      "headers": {
+        "description": "HTTP headers to include in the request",
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "body": {
+        "description": "Request body for POST, PUT, PATCH requests"
+      }
+    },
+    "required": [
+      "url",
+      "method"
+    ],
+    "additionalProperties": false
+  }
+}

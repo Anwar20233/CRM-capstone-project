@@ -1,0 +1,23 @@
+{
+  "name": "delete_workflow_version_step",
+  "description": "Delete a step from a workflow version. This removes the step and updates the workflow structure.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version containing the step",
+        "type": "string",
+        "format": "uuid"
+      },
+      "stepId": {
+        "description": "The UUID of the step to delete",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "workflowVersionId",
+      "stepId"
+    ]
+  }
+}

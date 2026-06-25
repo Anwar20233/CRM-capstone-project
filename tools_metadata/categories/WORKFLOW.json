@@ -1,0 +1,152 @@
+[
+  {
+    "name": "create_complete_workflow",
+    "description": "Create a complete workflow with trigger, steps, and connections in a single operation.\n\nCRITICAL SCHEMA REQUIREMENTS:\n- Trigger type MUST be one of: DATABASE_EVENT, MANUAL, CRON, WEBHOOK\n- NEVER use \"RECORD_CREATED\" - this is invalid. Use \"DATABASE_EVENT\" instead.\n- Each step MUST include: id (must be a valid UUID), name, type, valid, settings\n- CREATE_RECORD actions MUST have objectName and objectRecord in settings.input\n- objectRecord must contain actual field values, not just field names\n- Use \"trigger\" as stepId for trigger step in stepPositions and edges\n\nCommon mistakes to avoid:\n- Using \"RECORD_CREATED\" instead of \"DATABASE_EVENT\"\n- Missing the \"name\" and \"valid\" fields in steps\n- Missing the \"objectRecord\" field in CREATE_RECORD actions\n- Using \"fieldsToUpdate\" instead of \"objectRecord\" in CREATE_RECORD actions\n- Including CODE steps in this tool \u2014 this tool does NOT create the underlying logic function needed by CODE steps. Instead, create the workflow without CODE steps first, then add CODE steps individually using create_workflow_version_step (which properly creates the logic function), then call update_logic_function_source to define the code.\n\nIMPORTANT: The tool schema provides comprehensive field descriptions, examples, and validation rules. Always refer to the schema for:\n- Field requirements and data types\n- Common object patterns and field structures\n- Proper relationship field formats\n- Variable reference syntax: {{trigger.fieldName}} for trigger data, {{<step-id>.result.fieldName}} for step outputs (step-id is the step's UUID, not its name)\n- Error handling options\n\nThis is the most efficient way for AI to create workflows as it handles all the complexity in one call.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_complete_workflow"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "create_workflow_version_step",
+    "description": "Create a new step in a workflow version. This adds a step to the specified workflow version with the given configuration. If parentStepId is not provided, the step will be appended at the end of the workflow.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_workflow_version_step"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "update_workflow_version_step",
+    "description": "Update an existing step in a workflow version. This modifies the step configuration.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_workflow_version_step"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "update_workflow_version_trigger",
+    "description": "Update the trigger of a workflow version. This modifies the trigger configuration (e.g., changing trigger type, settings, or conditions).",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_workflow_version_trigger"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "delete_workflow_version_step",
+    "description": "Delete a step from a workflow version. This removes the step and updates the workflow structure.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "delete_workflow_version_step"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "create_workflow_version_edge",
+    "description": "Create a connection (edge) between two workflow steps. This defines the flow between steps.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_workflow_version_edge"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "delete_workflow_version_edge",
+    "description": "Delete a connection (edge) between workflow steps.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "delete_workflow_version_edge"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "create_draft_from_workflow_version",
+    "description": "Create a new draft workflow version from an existing one. This allows for iterative workflow development.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "create_draft_from_workflow_version"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "update_workflow_version_positions",
+    "description": "Update the positions of multiple workflow steps. This is useful for reorganizing the workflow layout.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_workflow_version_positions"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "activate_workflow_version",
+    "description": "Activate a workflow version. This makes the workflow version active and available for execution.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "activate_workflow_version"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "deactivate_workflow_version",
+    "description": "Deactivate a workflow version. This makes the workflow version inactive and unavailable for execution.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "deactivate_workflow_version"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "compute_step_output_schema",
+    "description": "Compute the output schema for a workflow step. This determines what data the step produces. The step parameter must be a valid WorkflowTrigger or WorkflowAction with the correct settings structure for its type.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "compute_step_output_schema"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "get_workflow_current_version",
+    "description": "Get the current version of a workflow. Returns the draft version if one exists, otherwise the last published version.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "get_workflow_current_version"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "update_logic_function_source",
+    "description": "Update the TypeScript source code of a logic function used in a workflow code step.\n\nUse this tool to modify the actual code that runs when a CODE step executes.\n\nThe code must:\n- Export a 'main' function as the entry point\n- Use TypeScript syntax\n- Return an object with the result\n- Use native APIs only (fetch, etc.) - external packages cannot be imported\n\nExample code using fetch for HTTP requests:\n```typescript\nexport const main = async (params: { url: string }) => {\n  const response = await fetch(params.url);\n  const data = await response.json();\n  return { data };\n};\n```\n\nTo find the logicFunctionId, look at the code step's settings.input.logicFunctionId field.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "update_logic_function_source"
+    },
+    "icon": "IconSettingsAutomation"
+  },
+  {
+    "name": "list_logic_function_tools",
+    "description": "List all logic functions exposed as workflow actions, which can be added as LOGIC_FUNCTION steps in workflows. Returns their IDs, names, and descriptions.",
+    "category": "WORKFLOW",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "list_logic_function_tools"
+    },
+    "icon": "IconSettingsAutomation"
+  }
+]

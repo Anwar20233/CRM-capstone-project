@@ -1,0 +1,132 @@
+{
+  "name": "create_company",
+  "description": "Create a new Company record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "description": "The company name",
+        "type": "string"
+      },
+      "domainName": {
+        "description": "The company website URL. We use this url to fetch the company icon",
+        "$ref": "#/$defs/_f1"
+      },
+      "address": {
+        "description": "Address of the company",
+        "type": "object",
+        "properties": {
+          "addressStreet1": {
+            "type": "string"
+          },
+          "addressStreet2": {
+            "type": "string"
+          },
+          "addressCity": {
+            "type": "string"
+          },
+          "addressPostcode": {
+            "type": "string"
+          },
+          "addressState": {
+            "type": "string"
+          },
+          "addressCountry": {
+            "type": "string"
+          },
+          "addressLat": {
+            "type": "number"
+          },
+          "addressLng": {
+            "type": "number"
+          }
+        }
+      },
+      "employees": {
+        "description": "Number of employees in the company",
+        "type": "integer"
+      },
+      "linkedinLink": {
+        "description": "The company Linkedin account",
+        "$ref": "#/$defs/_f1"
+      },
+      "xLink": {
+        "description": "The company Twitter/X account",
+        "$ref": "#/$defs/_f1"
+      },
+      "annualRecurringRevenue": {
+        "description": "Annual Recurring Revenue: The actual or estimated annual revenue of the company",
+        "type": "object",
+        "properties": {
+          "amountMicros": {
+            "type": "number"
+          },
+          "currencyCode": {
+            "type": "string"
+          }
+        }
+      },
+      "idealCustomerProfile": {
+        "description": "Ideal Customer Profile: Indicates whether the company is the most suitable and valuable customer for you",
+        "type": "boolean"
+      },
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "accountOwnerId": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "idealCustomerProfile",
+      "position"
+    ],
+    "$defs": {
+      "_f1": {
+        "type": "object",
+        "properties": {
+          "primaryLinkLabel": {
+            "type": "string"
+          },
+          "primaryLinkUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "secondaryLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "label"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

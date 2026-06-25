@@ -1,0 +1,17 @@
+{
+  "name": "get_view_fields",
+  "description": "List the columns (fields) displayed in a specific view. A view field controls which columns appear in a table or kanban view, their visibility, width, position, and aggregate operation. Use get_views first to find the view ID, then call this to inspect its column configuration.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "The ID of the view to list fields for. Obtain this from get_views.",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "viewId"
+    ]
+  }
+}
