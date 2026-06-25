@@ -1,0 +1,27 @@
+{
+  "name": "create_draft_from_workflow_version",
+  "description": "Create a new draft workflow version from an existing one. This allows for iterative workflow development.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "workflowId": {
+        "description": "The UUID of the workflow",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "workflowVersionIdToCopy": {
+        "description": "The UUID of the workflow version to create a draft from",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      }
+    },
+    "required": [
+      "workflowId",
+      "workflowVersionIdToCopy"
+    ],
+    "additionalProperties": false
+  }
+}

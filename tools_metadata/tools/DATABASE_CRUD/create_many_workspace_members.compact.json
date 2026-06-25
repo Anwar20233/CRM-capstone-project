@@ -1,0 +1,122 @@
+{
+  "name": "create_many_workspace_members",
+  "description": "Create multiple Workspace Members records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "records": {
+        "description": "Array of records to create. Each record should contain the required fields. Maximum 20 records per call.",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "first"
+                },
+                {
+                  "type": "string",
+                  "const": "last"
+                }
+              ]
+            },
+            "name": {
+              "description": "Workspace member name",
+              "type": "object",
+              "properties": {
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                }
+              }
+            },
+            "colorScheme": {
+              "description": "Preferred color scheme",
+              "type": "string"
+            },
+            "locale": {
+              "description": "Preferred language",
+              "type": "string"
+            },
+            "avatarUrl": {
+              "description": "Workspace member avatar",
+              "type": "string"
+            },
+            "userEmail": {
+              "description": "Related user email address",
+              "type": "string"
+            },
+            "calendarStartDay": {
+              "description": "User's preferred start day of the week",
+              "type": "integer"
+            },
+            "userId": {
+              "description": "Associated User Id",
+              "type": "string",
+              "format": "uuid"
+            },
+            "timeZone": {
+              "description": "User time zone",
+              "type": "string"
+            },
+            "dateFormat": {
+              "description": "User's preferred date format",
+              "type": "string",
+              "enum": [
+                "SYSTEM",
+                "MONTH_FIRST",
+                "DAY_FIRST",
+                "YEAR_FIRST"
+              ]
+            },
+            "timeFormat": {
+              "description": "User's preferred time format",
+              "type": "string",
+              "enum": [
+                "SYSTEM",
+                "HOUR_24",
+                "HOUR_12"
+              ]
+            },
+            "numberFormat": {
+              "description": "User's preferred number format",
+              "type": "string",
+              "enum": [
+                "SYSTEM",
+                "COMMAS_AND_DOT",
+                "SPACES_AND_COMMA",
+                "DOTS_AND_COMMA",
+                "APOSTROPHE_AND_DOT"
+              ]
+            }
+          },
+          "required": [
+            "position",
+            "name",
+            "colorScheme",
+            "locale",
+            "calendarStartDay",
+            "userId",
+            "timeZone",
+            "dateFormat",
+            "timeFormat",
+            "numberFormat"
+          ]
+        }
+      }
+    },
+    "required": [
+      "records"
+    ]
+  }
+}

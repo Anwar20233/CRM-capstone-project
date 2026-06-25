@@ -1,0 +1,27 @@
+{
+  "name": "get_object_metadata",
+  "description": "Find objects metadata. Retrieve information about the data model objects in the workspace.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "Unique identifier for the object metadata. If provided, returns a single object.",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "limit": {
+        "description": "Maximum number of objects to return.",
+        "default": 100,
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required": [
+      "limit"
+    ],
+    "additionalProperties": false
+  }
+}

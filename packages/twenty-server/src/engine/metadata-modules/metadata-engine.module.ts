@@ -5,6 +5,7 @@ import { AiAgentMonitorModule } from 'src/engine/metadata-modules/ai/ai-agent-mo
 import { AiAgentModule } from 'src/engine/metadata-modules/ai/ai-agent/ai-agent.module';
 import { AiChatModule } from 'src/engine/metadata-modules/ai/ai-chat/ai-chat.module';
 import { AiGenerateTextModule } from 'src/engine/metadata-modules/ai/ai-generate-text/ai-generate-text.module';
+import { FollowupWorkflowsModule } from 'src/engine/metadata-modules/ai/followup-workflows/followup-workflows.module';
 import { TextMaskingModule } from 'src/engine/metadata-modules/ai/text-masking/text-masking.module';
 import { CalendarChannelMetadataModule } from 'src/engine/metadata-modules/calendar-channel/calendar-channel-metadata.module';
 import { ConnectedAccountMetadataModule } from 'src/engine/metadata-modules/connected-account/connected-account-metadata.module';
@@ -43,6 +44,7 @@ import { WorkspaceMetadataVersionModule } from 'src/engine/metadata-modules/work
     AiAgentMonitorModule,
     AiChatModule,
     AiGenerateTextModule,
+    FollowupWorkflowsModule,
     TextMaskingModule,
     MinimalMetadataModule,
     ViewModule,

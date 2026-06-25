@@ -1,0 +1,134 @@
+{
+  "name": "create_many_calendar_channels",
+  "description": "Create multiple Calendar Channels records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "records": {
+        "description": "Array of records to create. Each record should contain the required fields. Maximum 20 records per call.",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "first"
+                },
+                {
+                  "type": "string",
+                  "const": "last"
+                }
+              ]
+            },
+            "handle": {
+              "description": "Handle",
+              "type": "string"
+            },
+            "visibility": {
+              "description": "Visibility",
+              "type": "string",
+              "enum": [
+                "METADATA",
+                "SHARE_EVERYTHING"
+              ]
+            },
+            "isContactAutoCreationEnabled": {
+              "description": "Is Contact Auto Creation Enabled",
+              "type": "boolean"
+            },
+            "contactAutoCreationPolicy": {
+              "description": "Automatically create records for people you participated with in an event.",
+              "type": "string",
+              "enum": [
+                "AS_PARTICIPANT_AND_ORGANIZER",
+                "AS_PARTICIPANT",
+                "AS_ORGANIZER",
+                "NONE"
+              ]
+            },
+            "isSyncEnabled": {
+              "description": "Is Sync Enabled",
+              "type": "boolean"
+            },
+            "syncCursor": {
+              "description": "Sync Cursor. Used for syncing events from the calendar provider",
+              "type": "string"
+            },
+            "syncStatus": {
+              "description": "Sync status",
+              "type": "string",
+              "enum": [
+                "ONGOING",
+                "NOT_SYNCED",
+                "ACTIVE",
+                "FAILED_INSUFFICIENT_PERMISSIONS",
+                "FAILED_UNKNOWN"
+              ]
+            },
+            "syncStage": {
+              "description": "Sync stage",
+              "type": "string",
+              "enum": [
+                "CALENDAR_EVENT_LIST_FETCH_PENDING",
+                "CALENDAR_EVENT_LIST_FETCH_SCHEDULED",
+                "CALENDAR_EVENT_LIST_FETCH_ONGOING",
+                "CALENDAR_EVENTS_IMPORT_PENDING",
+                "CALENDAR_EVENTS_IMPORT_SCHEDULED",
+                "CALENDAR_EVENTS_IMPORT_ONGOING",
+                "FAILED",
+                "PENDING_CONFIGURATION"
+              ]
+            },
+            "syncStageStartedAt": {
+              "description": "Sync stage started at",
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+            },
+            "syncedAt": {
+              "description": "Last sync date",
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+            },
+            "throttleFailureCount": {
+              "description": "Throttle Failure Count",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "connectedAccountId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            }
+          },
+          "required": [
+            "position",
+            "visibility",
+            "isContactAutoCreationEnabled",
+            "contactAutoCreationPolicy",
+            "isSyncEnabled",
+            "syncStage",
+            "throttleFailureCount",
+            "connectedAccountId"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "records"
+    ],
+    "additionalProperties": false
+  }
+}

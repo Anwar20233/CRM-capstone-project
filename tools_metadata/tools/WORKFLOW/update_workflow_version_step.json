@@ -1,0 +1,2977 @@
+{
+  "name": "update_workflow_version_step",
+  "description": "Update an existing step in a workflow version. This modifies the step configuration.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version containing the step",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "step": {
+        "description": "The updated step configuration",
+        "anyOf": [
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "CODE"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "logicFunctionId": {
+                            "description": "The ID of the logic function that holds the code. This is auto-generated when a CODE step is created via create_workflow_version_step \u2014 do NOT set this manually.",
+                            "type": "string"
+                          },
+                          "logicFunctionInput": {
+                            "description": "Key-value map of input parameters to pass to the logic function at runtime.",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "logicFunctionId",
+                          "logicFunctionInput"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "LOGIC_FUNCTION"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "logicFunctionId": {
+                            "type": "string"
+                          },
+                          "logicFunctionInput": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "logicFunctionId",
+                          "logicFunctionInput"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "SEND_EMAIL"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "connectedAccountId": {
+                            "type": "string"
+                          },
+                          "recipients": {
+                            "type": "object",
+                            "properties": {
+                              "to": {
+                                "default": "",
+                                "type": "string"
+                              },
+                              "cc": {
+                                "default": "",
+                                "type": "string"
+                              },
+                              "bcc": {
+                                "default": "",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "to",
+                              "cc",
+                              "bcc"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "subject": {
+                            "type": "string"
+                          },
+                          "body": {
+                            "type": "string"
+                          },
+                          "files": {
+                            "default": [],
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "size": {
+                                  "type": "number"
+                                },
+                                "type": {
+                                  "type": "string"
+                                },
+                                "createdAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "size",
+                                "type",
+                                "createdAt"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "inReplyTo": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "connectedAccountId",
+                          "recipients",
+                          "files"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "DRAFT_EMAIL"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "connectedAccountId": {
+                            "type": "string"
+                          },
+                          "recipients": {
+                            "type": "object",
+                            "properties": {
+                              "to": {
+                                "default": "",
+                                "type": "string"
+                              },
+                              "cc": {
+                                "default": "",
+                                "type": "string"
+                              },
+                              "bcc": {
+                                "default": "",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "to",
+                              "cc",
+                              "bcc"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "subject": {
+                            "type": "string"
+                          },
+                          "body": {
+                            "type": "string"
+                          },
+                          "files": {
+                            "default": [],
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "size": {
+                                  "type": "number"
+                                },
+                                "type": {
+                                  "type": "string"
+                                },
+                                "createdAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "size",
+                                "type",
+                                "createdAt"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "inReplyTo": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "connectedAccountId",
+                          "recipients",
+                          "files"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "CREATE_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "description": "The name of the object to create a record in. Must be lowercase (e.g., \"person\", \"company\", \"task\").",
+                            "type": "string"
+                          },
+                          "objectRecord": {
+                            "description": "The record data to create.",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecord"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "UPDATE_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "objectRecord": {
+                            "description": "Record data object. Use nested objects for relationships (e.g., \"company\": {\"id\": \"{{reference}}\"}). Common patterns:\n- Person: {\"name\": {\"firstName\": \"John\", \"lastName\": \"Doe\"}, \"emails\": {\"primaryEmail\": \"john@example.com\"}, \"company\": {\"id\": \"{{trigger.object.id}}\"}}\n- Company: {\"name\": \"Acme Corp\", \"domainName\": {\"primaryLinkUrl\": \"https://acme.com\"}}\n- Task: {\"title\": \"Follow up\", \"status\": \"TODO\", \"assignee\": {\"id\": \"{{user.id}}\"}}",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          },
+                          "objectRecordId": {
+                            "type": "string"
+                          },
+                          "fieldsToUpdate": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecord",
+                          "objectRecordId",
+                          "fieldsToUpdate"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "DELETE_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "objectRecordId": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecordId"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "UPSERT_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "objectRecord": {
+                            "description": "Record data object. Use nested objects for relationships (e.g., \"company\": {\"id\": \"{{reference}}\"}). Common patterns:\n- Person: {\"name\": {\"firstName\": \"John\", \"lastName\": \"Doe\"}, \"emails\": {\"primaryEmail\": \"john@example.com\"}, \"company\": {\"id\": \"{{trigger.object.id}}\"}}\n- Company: {\"name\": \"Acme Corp\", \"domainName\": {\"primaryLinkUrl\": \"https://acme.com\"}}\n- Task: {\"title\": \"Follow up\", \"status\": \"TODO\", \"assignee\": {\"id\": \"{{user.id}}\"}}",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecord"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "FIND_RECORDS"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "limit": {
+                            "type": "number"
+                          },
+                          "filter": {
+                            "type": "object",
+                            "properties": {
+                              "recordFilterGroups": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "recordFilters": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "gqlOperationFilter": {
+                                "anyOf": [
+                                  {},
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "orderBy": {
+                            "type": "object",
+                            "properties": {
+                              "recordSorts": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "gqlOperationOrderBy": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "additionalProperties": {}
+                                }
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "objectName"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "FORM"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "const": "TEXT"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "NUMBER"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "DATE"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "SELECT"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "MULTI_SELECT"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "RECORD"
+                                }
+                              ]
+                            },
+                            "placeholder": {
+                              "type": "string"
+                            },
+                            "settings": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
+                              "additionalProperties": {}
+                            },
+                            "value": {}
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "label",
+                            "type"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "HTTP_REQUEST"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "GET",
+                              "POST",
+                              "PUT",
+                              "PATCH",
+                              "DELETE"
+                            ]
+                          },
+                          "headers": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          },
+                          "body": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    },
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "url",
+                          "method"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "AI_AGENT"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "agentId": {
+                            "type": "string"
+                          },
+                          "prompt": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "FILTER"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "stepFilterGroups": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "logicalOperator": {
+                                  "type": "string",
+                                  "enum": [
+                                    "AND",
+                                    "OR"
+                                  ]
+                                },
+                                "parentStepFilterGroupId": {
+                                  "type": "string"
+                                },
+                                "positionInStepFilterGroup": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "logicalOperator"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "stepFilters": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "type": "string"
+                                },
+                                "stepOutputKey": {
+                                  "type": "string"
+                                },
+                                "operand": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "IS",
+                                        "IS_NOT_NULL",
+                                        "IS_NOT",
+                                        "LESS_THAN_OR_EQUAL",
+                                        "GREATER_THAN_OR_EQUAL",
+                                        "IS_BEFORE",
+                                        "IS_AFTER",
+                                        "CONTAINS",
+                                        "DOES_NOT_CONTAIN",
+                                        "IS_EMPTY",
+                                        "IS_NOT_EMPTY",
+                                        "IS_RELATIVE",
+                                        "IS_IN_PAST",
+                                        "IS_IN_FUTURE",
+                                        "IS_TODAY",
+                                        "VECTOR_SEARCH"
+                                      ]
+                                    },
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "is",
+                                        "isNotNull",
+                                        "isNot",
+                                        "lessThan",
+                                        "greaterThan",
+                                        "isBefore",
+                                        "isAfter",
+                                        "contains",
+                                        "doesNotContain",
+                                        "isEmpty",
+                                        "isNotEmpty",
+                                        "isRelative",
+                                        "isInPast",
+                                        "isInFuture",
+                                        "isToday"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "value": {
+                                  "type": "string"
+                                },
+                                "stepFilterGroupId": {
+                                  "type": "string"
+                                },
+                                "positionInStepFilterGroup": {
+                                  "type": "number"
+                                },
+                                "fieldMetadataId": {
+                                  "type": "string"
+                                },
+                                "compositeFieldSubFieldName": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "type",
+                                "stepOutputKey",
+                                "operand",
+                                "value",
+                                "stepFilterGroupId"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "stepFilterGroups",
+                          "stepFilters"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "IF_ELSE"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "stepFilterGroups": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "logicalOperator": {
+                                  "type": "string",
+                                  "enum": [
+                                    "AND",
+                                    "OR"
+                                  ]
+                                },
+                                "parentStepFilterGroupId": {
+                                  "type": "string"
+                                },
+                                "positionInStepFilterGroup": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "logicalOperator"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "stepFilters": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "type": "string"
+                                },
+                                "stepOutputKey": {
+                                  "type": "string"
+                                },
+                                "operand": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "IS",
+                                        "IS_NOT_NULL",
+                                        "IS_NOT",
+                                        "LESS_THAN_OR_EQUAL",
+                                        "GREATER_THAN_OR_EQUAL",
+                                        "IS_BEFORE",
+                                        "IS_AFTER",
+                                        "CONTAINS",
+                                        "DOES_NOT_CONTAIN",
+                                        "IS_EMPTY",
+                                        "IS_NOT_EMPTY",
+                                        "IS_RELATIVE",
+                                        "IS_IN_PAST",
+                                        "IS_IN_FUTURE",
+                                        "IS_TODAY",
+                                        "VECTOR_SEARCH"
+                                      ]
+                                    },
+                                    {
+                                      "type": "string",
+                                      "enum": [
+                                        "is",
+                                        "isNotNull",
+                                        "isNot",
+                                        "lessThan",
+                                        "greaterThan",
+                                        "isBefore",
+                                        "isAfter",
+                                        "contains",
+                                        "doesNotContain",
+                                        "isEmpty",
+                                        "isNotEmpty",
+                                        "isRelative",
+                                        "isInPast",
+                                        "isInFuture",
+                                        "isToday"
+                                      ]
+                                    }
+                                  ]
+                                },
+                                "value": {
+                                  "type": "string"
+                                },
+                                "stepFilterGroupId": {
+                                  "type": "string"
+                                },
+                                "positionInStepFilterGroup": {
+                                  "type": "number"
+                                },
+                                "fieldMetadataId": {
+                                  "type": "string"
+                                },
+                                "compositeFieldSubFieldName": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "type",
+                                "stepOutputKey",
+                                "operand",
+                                "value",
+                                "stepFilterGroupId"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "branches": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "nextStepIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "filterGroupId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "nextStepIds"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "stepFilterGroups",
+                          "stepFilters",
+                          "branches"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "ITERATOR"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    },
+                                    {
+                                      "type": "object",
+                                      "propertyNames": {
+                                        "type": "string"
+                                      },
+                                      "additionalProperties": {}
+                                    },
+                                    {}
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "initialLoopStepIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "shouldContinueOnIterationFailure": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "DELAY"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "delayType": {
+                            "type": "string",
+                            "enum": [
+                              "SCHEDULED_DATE",
+                              "DURATION"
+                            ]
+                          },
+                          "scheduledDateTime": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "duration": {
+                            "type": "object",
+                            "properties": {
+                              "days": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "hours": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "minutes": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "seconds": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "delayType"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "EMPTY"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "type": "object",
+                        "properties": {
+                          "retryOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to retry the action if it fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "continueOnFailure": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "description": "Whether to continue to the next step if this action fails.",
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "retryOnFailure",
+                          "continueOnFailure"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "required": [
+      "workflowVersionId",
+      "step"
+    ],
+    "additionalProperties": false
+  }
+}

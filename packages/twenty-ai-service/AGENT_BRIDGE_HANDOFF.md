@@ -1,14 +1,16 @@
 # Agent Bridge — Handoff & Next Steps
 
-This explains the bridge that now exists, and the work still to do on top of it,
-**split between two people**. Read it with
+This explains the bridge + agent layer that now exists, and the work still to do
+on top of it. Read it with
 [CRM_AGENT_TOOL_MAPPING_AND_PLAN.md](../twenty-server/docs/CRM_AGENT_TOOL_MAPPING_AND_PLAN.md)
 open — this is the "what's built + who does what next" companion to that plan.
 
-> TL;DR — the plumbing (Node bridge + Python tool layer an LLM can actually call)
-> is **done and verified**. What's left divides cleanly in two:
-> **Person 1** owns security, tiers, and masking. **Person 2** owns composite
-> workflows, session/cache, and the remaining new tools. Find your name in §3/§4.
+> TL;DR — the plumbing (Node bridge + Python meta-tools an LLM can actually call)
+> is **done and verified**, and the **Writer agent is now built** on top of it: a
+> scope-restricted, tier-gated write worker on a reusable `BaseWorker` foundation.
+> What's left: the **Reader worker**, the **Orchestrator** (owns routing, session
+> memory, conflict/entity resolution, and corrections), the real **tier catalog**,
+> and the cross-cutting **security + masking** layer. Find your piece in §4.
 
 ---
 
@@ -28,12 +30,14 @@ POST endpoints (mounted at the server root, **no `/api` prefix**):
 | `POST /agent-bridge/current-user` | resolve the workspace member for a `userId` |
 
 All responses use one envelope: `{ ok: true, data }` or `{ ok: false, error: { code, message } }`.
-`execute` auto-resolves `userWorkspaceId` from `userId + workspaceId` (DATABASE_CRUD
-tools require a user context for actor attribution / row-level perms).
+`execute` auto-resolves `userWorkspaceId` from `userId + workspaceId`. **Twenty
+filters tools by `roleId`** — a read-only role only exposes `find/find_one/group_by`;
+a write-capable role also exposes `create/update/delete`. The agent layer relies on
+this for its final enforcement (see §3).
 
 **Security posture is intentional:** the bridge trusts whatever `workspaceId` /
 `roleId` / `userId` it is given. That is the whole reason the security layer must
-live in Python (Person 1, §3).
+live in Python (§4C).
 
 ### Python side — what an LLM calls
 `packages/twenty-ai-service/`
@@ -42,32 +46,49 @@ live in Python (Person 1, §3).
 | :--- | :--- |
 | `bridge_client.py` | one async `forward(path, payload)` to the Node bridge (URL, timeout, error envelope) |
 | `routers/bridge.py` | FastAPI proxy `/bridge/*` (snake_case → camelCase) — handy for curl/debugging |
-| `agent/crm_tools.py` | **the LLM-facing layer**: `get_crm_tools()` returns LangChain tools |
+| `agent/crm_tools.py` | **the LLM-facing layer**: `build_crm_tools(scope, write_policy)` returns scoped meta-tools |
+| `agent/tool_scope.py` | **capability registry** — read/write/meta classification, scopes, allow/deny config |
+| `agent/workers/base_worker.py` | reusable tool-calling loop (the foundation every worker extends) |
+| `agent/workers/writer_worker.py` | the **Writer agent** (built) |
+| `agent/workers/write_policy.py` | invisible write-gate middleware (tier + confirmation token) |
+| `agent/stubs/safety_tools.py` | hardcoded `_lookup_action_tier` + `resolve_date` stubs |
 
-`agent/crm_tools.py` follows Twenty's own **progressive-disclosure** pattern: an
-LLM is never handed 254 tools. It gets four meta-tools and discovers the rest at
-runtime:
+`agent/crm_tools.py` follows Twenty's **progressive-disclosure** pattern: an LLM is
+never handed 254 tools. It gets four meta-tools and discovers the rest at runtime:
 
 ```
-get_tool_catalog(categories?)   # browse
-learn_tools(tool_names)         # fetch schemas
-execute_tool(tool, tool_args)   # run any tool by name
+get_tool_catalog(categories?)   # browse (filtered to the worker's scope)
+learn_tools(tool_names)         # fetch schemas (rejects out-of-scope names)
+execute_tool(tool, tool_args)   # run a tool by name (scope-guarded; write-gated)
 get_current_user()              # "act as me"
 ```
 
-Identity (`TWENTY_WORKSPACE_ID` / `TWENTY_ROLE_ID` / `TWENTY_USER_ID`) is injected
-server-side in `_identity()` and **never exposed to the model**. This is a
-placeholder for real session identity (Person 1, §3).
+Identity (`TWENTY_WORKSPACE_ID` / role id / `TWENTY_USER_ID`) is injected
+server-side and **never exposed to the model**. This is a placeholder for real
+session identity (§4C).
+
+### Built: the Writer agent + scope foundation
+The agent layer is now a **multi-worker architecture**, not a single agent:
+
+- **`BaseWorker`** — a generic LLM tool-calling loop parametrised by a `ToolScope`,
+  a system prompt, and an optional `WritePolicy`. Future agents are just
+  `BaseWorker(scope=…, system_prompt=…)` — no new plumbing.
+- **`WriterWorker`** — `BaseWorker` + `WRITER_SCOPE` (**write + meta only, no read**)
+  + a write-focused prompt + a `WritePolicy`. The LLM sees **5 tools**: the 4
+  meta-tools + `resolve_date`.
+- **`WritePolicy`** — *invisible middleware* embedded inside `execute_tool`, **not**
+  LLM-facing tools. On every write it looks up the action's tier and:
+  - **Tier 1/2** → executes transparently.
+  - **Tier 3** (and unknown actions, fail-safe) → blocks and returns
+    `CONFIRMATION_REQUIRED` + a single-use, 10-minute, action-bound token. The
+    write only runs when the token is passed back to `execute_tool`.
 
 ### Verified
-- All **254** tools are discoverable via `catalog` and have generatable schemas via `learn`.
-- Reads (31 `find_*`/`get_*`/`list_*`) and a create→delete round-trip work.
-- A real OpenAI (`gpt-4o-mini`) agent drove the full loop: `get_tool_catalog → learn_tools → execute_tool → grounded answer`.
-
-> Note: this is the **meta-tool** approach. The plan doc (§2) also lists ~33 named
-> semantic wrappers (`search_contacts`, `get_company`, …). Those are *not* built —
-> and for most the meta-tools already cover the need. Where named tools still add
-> value is the **composite workflows** Person 2 builds (§4).
+- All **254** tools discoverable via `catalog`; schemas via `learn`; create→delete round-trip works.
+- A real OpenAI agent drove the full meta-tool loop end-to-end.
+- **96 unit tests** cover scope guards, catalog filtering, the deny-list/overrides,
+  the tier flow, and the full confirmation-token lifecycle (generate → validate →
+  single-use → expiry → wrong-action).
 
 ---
 
@@ -81,222 +102,159 @@ npx nx start twenty-server                      # serves /agent-bridge on :3000
 # 2. Python service:
 cd packages/twenty-ai-service
 python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
-export TWENTY_WORKSPACE_ID=... TWENTY_ROLE_ID=... TWENTY_USER_ID=...
+export TWENTY_WORKSPACE_ID=... TWENTY_USER_ID=...
+export TWENTY_READER_ROLE_ID=...                # read-only Twenty role
+export TWENTY_WRITER_ROLE_ID=...                # read+write Twenty role
+# (TWENTY_ROLE_ID still works as a fallback for both if you only have one role)
 .venv/bin/uvicorn main:app --reload --port 8000
+.venv/bin/python -m pytest -q                   # run the unit tests
 ```
 
 Get test IDs from the DB:
 ```sql
 SELECT id FROM core.workspace WHERE "activationStatus"='ACTIVE';
-SELECT id, label FROM core.role WHERE "workspaceId"='<WS>';   -- use Admin for dev
+SELECT id, label FROM core.role WHERE "workspaceId"='<WS>';   -- need a reader + a writer role
 SELECT u.id FROM core."user" u
   JOIN core."userWorkspace" uw ON uw."userId"=u.id WHERE uw."workspaceId"='<WS>';
 ```
 
-Smoke-test the tools directly:
+Drive the Writer directly:
 ```python
-from agent import get_crm_tools
-tools = {t.name: t for t in get_crm_tools()}
-await tools["execute_tool"].ainvoke({"tool": "find_people", "tool_args": {"limit": 3}})
+from agent.workers import WriterWorker
+worker = WriterWorker(session_id="session-abc-123")
+await worker.run("Create a person named Sarah Connor")
 ```
 
 ---
 
-## 3. 👤 PERSON 1 — Security, Tiers & Masking
+## 3. Architecture you must build on (don't break these seams)
 
-You own the **guardrails**: nothing reaches the bridge unauthenticated, no raw PII
-reaches the model, and every write is tiered and gated. Three parts.
+### Read/write scoping — three enforcement layers
+Defined once in `agent/tool_scope.py`. A worker only ever touches tools in its scope:
 
-### A. Security (highest priority)
-The bridge is open by design; nothing in front of it is. Today anyone who can reach
-`:3000/agent-bridge` (or the Python `/bridge/*` proxy) can run any tool in any
-workspace by supplying IDs. Close that, in rough priority:
+1. **Catalog filtering** — `get_tool_catalog` drops out-of-scope names.
+2. **Execute/learn guard** — `execute_tool` / `learn_tools` reject out-of-scope
+   names *before* the bridge call (`OUT_OF_SCOPE`).
+3. **Bridge role identity** — the reader forwards `TWENTY_READER_ROLE_ID`, the writer
+   `TWENTY_WRITER_ROLE_ID`; Twenty's role permissions are the final backstop.
 
-1. **Network boundary.** The Node bridge must bind to localhost / the internal
-   network only — never publicly routable. Treat it like an internal DB port.
-2. **Authenticate the Python entrypoint.** `routers/bridge.py` and whatever HTTP
-   surface the agent is reached through must require auth (API key / session /
-   service token). Right now they're open.
-3. **Identity must not come from the model — or from the caller as free input.**
-   `_identity()` reads env vars as a stand-in. Replace it: derive
-   `workspaceId` / `roleId` / `userId` from the **authenticated session**, server
-   side. The LLM only ever sees tool names + args.
-4. **Least-privilege agent role.** Configure the Twenty role the bridge runs under
-   with only the object permissions the agent needs. (Twenty filters tools by role —
-   `catalog`/`learn`/`execute` all respect it.)
-5. **Tool allow/deny list.** Mirror Twenty's `MCP_EXCLUDED_TOOL_NAMES`
-   (`code_interpreter`, `http_request`) and reject anything not on the agent's
-   allow-list inside `execute_tool` before forwarding.
+`classify_tool()` tags each tool by verb prefix: READ (`find_*`, `get_*`,
+`group_by_*`, `search_*`, `list_*`), WRITE (`create_*`, `update_*`, `delete_*`,
+`advance_*`, `link_*`, …), META (the four meta-tools).
+`READER_SCOPE = {read, meta}`, `WRITER_SCOPE = {write, meta}`.
 
-**Done when:** an unauthenticated caller can't execute a tool, the model can't
-choose its own workspace/role/user, and the agent runs under a least-privilege
-role with a tool allow-list.
+### Configurable allow/deny (edit anytime)
+ACTION-category tools (`send_email`, `http_request`, …) have no read/write prefix.
+Two editable collections in `tool_scope.py` handle them:
 
-### B. Masking / unmasking (agent ↔ tool ↔ agent)
-PII must never sit in the LLM context in the clear:
+- **`_CAPABILITY_OVERRIDES`** — assign a capability by exact name
+  (`send_email`/`draft_email` → WRITE, `search_help_center` → READ). Extend as the
+  catalog grows.
+- **`DENIED_TOOLS`** — hard deny-list (`code_interpreter`, `http_request`); never
+  exposed to any worker, checked before capability. Mirrors `MCP_EXCLUDED_TOOL_NAMES`.
 
-```
-agent → (tokens) → UNMASK → bridge → Twenty
-Twenty → bridge → MASK → (tokens) → agent
-```
-
-- **Outbound (tool result → agent):** detect PII in the bridge response, replace
-  each value with a **stable token** (`{{person_1}}`, `{{email_3}}`), store
-  `token → real value` in a **per-session vault**.
-- **Inbound (agent args → tool):** before forwarding `execute_tool` args, swap any
-  tokens back to real values from the vault.
-- **Detector:** GLiNER NER already exists at `routers/ner.py` (`/ner/extract`) —
-  use it for free-text fields; mask known structured fields (emails/phones/names
-  from the tool schema) deterministically.
-- **Where it lives:** a `masking.py` module that wraps the `forward()` calls used
-  by Person 2's tools, so **no tool can bypass it**. Prove it on one tool, then
-  make it the wrapper everything inherits.
-- **Stable tokens** matter: the same person → same token within a session, so the
-  agent can reason ("link {{person_1}} to {{company_2}}") and unmask round-trips.
-
-**Done when:** no raw PII reaches the model, tokens round-trip through a write, and
-masking is a wrapper every tool inherits (not per-tool code).
-
-### C. Tiers & write gating
-Every write is classified and gated before it executes. Build the catalog first —
-the gate tools are lookups against it.
-
-| Piece | Type | Behavior |
-| :--- | :--- | :--- |
-| **Action catalog** | static table | every write action → its tier, required fields, the tool it maps to, min-info workflow. **Build first.** |
-| `lookup_action_tier` | deterministic + catalog | return an action's tier (1/2/3) + required fields. Ambiguous entity → bump tier. Unknown action → fail safe. |
-| `check_conflicts` | deterministic (rule-based) | flag order-of-magnitude value changes, **stage regression**, past dates. 15+ tests. *(needs stage order from Person 2's `get_pipeline_stages`.)* |
-
-The **write protocol** these enforce (also uses Person 2's session tools):
-
-```
-lookup_action_tier → session_check_duplicate → (Tier 2+) check_conflicts
-  → execute  (Tier 1/2)   |   draft + wait for confirmation token → execute  (Tier 3)
-  → session_log_write
-```
-
-Tier 1 = execute + compact confirm · Tier 2 = execute + diff · Tier 3 = draft,
-confirm, then call the gated tool with a confirmation token (e.g.
-`advance_deal_stage` to a terminal stage, bulk `delete_*`).
-
-**Done when:** every write action resolves to a tier, conflicts are caught (with
-tests), and Tier 1/2/3 + the confirmation-token path work end-to-end.
+### Writer safety is middleware, not tools
+`WritePolicy` (tier lookup + confirmation tokens) lives **inside** `execute_tool`.
+Do **not** expose tier/safety/session helpers as LLM tools — the model never sees
+them. The writer owns *only* its own structural write-safety; everything
+cross-worker (below) is the **orchestrator's** job.
 
 ---
 
-## 4. 👤 PERSON 2 — Workflows, Session & New Tools
+## 4. What the team builds — the tool + endpoint layer
 
-You own the **capabilities**: the multi-step tools that make the agent efficient,
-the session memory that makes it coherent, and the remaining utility tools. All of
-your tools are added to `get_crm_tools()` in the same `StructuredTool` shape and
-automatically inherit Person 1's masking wrapper.
+**Scope boundary (read this first).** The team builds **tools and endpoints** that any
+agent can call — it does **not** build agents. The *Writer* is already built (§1); the
+*Reader* (Majid) and the *Orchestrator* (built by the agent owners) are **out of scope
+for the team**. Build the capabilities below so those agents have something to call.
 
-### A. Composite workflow tools (chain >1 tool per call)
-Right now the agent orchestrates every small read itself. Give it **single tools
-that fan out multiple bridge calls and merge**, so one call answers a whole
-question. Build **two** to start (both COMPOSITE in the plan, §2):
+Two owners, same as before.
 
-1. **`get_company_overview(company_id_or_name)`** — company + its people + its
-   opportunities in one call:
-   - `find_one_company` (or `find_companies {name ilike}` to resolve first)
-   - `find_people { company.id: { eq } }`
-   - `find_opportunities { company.id: { eq } }`
-   - merge into one object, return.
-2. **`get_entity_timeline(entity_id)`** (or `search_all_records(query)`) — unified
-   activity/search across objects:
-   - `find_notes` + `find_tasks` for the entity, merged + sorted by date — *or*
-     `find_people` + `find_companies` + `find_opportunities` merged when the type
-     is unknown.
+### 👤 Person 1 — Security, Masking & the Tier Catalog
 
-Pattern: issue N `forward("execute", …)` calls (`asyncio.gather`), merge in Python,
-return. Keep agent-facing args minimal (an id or a query) and resolve the rest
-internally.
+**A. Security (highest priority).** The bridge is open by design; nothing in front of it
+is. Close that:
+1. **Network boundary** — bind the Node bridge to localhost / internal only.
+2. **Authenticate the Python entrypoint** (`routers/bridge.py` + the agent HTTP surface).
+3. **Identity from the authenticated session**, server-side — replace the env-var
+   placeholder; the LLM only ever sees tool names + args.
+4. **Two least-privilege roles** — a read-only role and a write role
+   (`TWENTY_READER_ROLE_ID` / `TWENTY_WRITER_ROLE_ID`). The deny-list/overrides in
+   `tool_scope.py` (§3) are the per-tool half of this — extend them as needed.
 
-**Done when:** the agent answers "tell me everything about company X" or "show the
-timeline for Y" in a single tool call instead of a multi-step loop.
+**B. Masking.** Wrap **`forward()`** (so *every* path inherits it, including composite
+read tools that call `forward` directly): detect PII outbound and replace with stable
+per-session tokens (`{{person_1}}`); swap tokens back inbound. GLiNER NER already exists
+at `routers/ner.py`.
 
-### B. Session + cache tools (no Twenty backing)
-Back these with a state store (in-memory for dev, Redis / a table for real); expose
-them as tools shaped like the rest so the agent can't tell they're not Twenty-backed.
+**C. Tier catalog + conflict checker.** `agent/stubs/safety_tools.py` ships a hardcoded
+`_ACTION_TIER_MAP` + `_lookup_action_tier`. Replace it with the **real action catalog**
+(every write action → tier 1/2/3, required fields, ambiguity-escalation), and add a
+**conflict checker** (order-of-magnitude value change, stage regression, past dates).
+These are **plain functions / endpoints, not LLM tools**: `_lookup_action_tier` is
+already wired into the writer's `WritePolicy`; the conflict checker is consumed by the
+orchestrator. Keep the `{ ok, data: { tier, required_fields, escalated } }` envelope so
+it stays a drop-in for the stub.
 
-| Tool | Behavior |
-| :--- | :--- |
-| `session_set_topic` / `session_get_topic` | track the current conversation topic for the orchestrator |
-| `session_log_write` | append `{tool, args, old_value, new_value, ts}` to a per-session write log |
-| `session_get_write_log` | read it back (powers **corrections** — `old_value` makes revert possible) |
-| `session_check_duplicate` | compare an intended write against the log to catch repeats |
-| `cache_update_lead` / `cache_get_lead_history` | per-lead recency cache, capped at 5, with staleness detection |
+### 👤 Person 2 — Session endpoints, composite read tools & utilities
 
-Session scoping is the key design choice: everything is keyed by a session id —
-it should ride with the authenticated identity (coordinate with Person 1), **not**
-come from the model. `session_check_duplicate` + `session_log_write` are the hooks
-Person 1's write protocol calls.
+**A. Session endpoints + store.** Build the underlying capability that used to be
+sketched as tools — a state store (in-memory for dev, Redis/Postgres later) behind
+endpoints the **orchestrator** calls (these are **not** LLM-facing tools, and the
+session id rides with the authenticated identity, never the model):
+- `session_set_topic` / `session_get_topic`
+- `session_log_write` (append `{tool, args, old_value, new_value, ts}`) / `session_get_write_log`
+- `session_check_duplicate` (compare an intended write against the log)
 
-**Done when:** the agent can set/recall topic, writes are logged with old values,
-duplicates are detectable, and corrections can revert via the log.
+**B. Composite read/write tools** (for the Reader/Writer to consume). One call fans out several bridge
+reads/writes and merges, e.g. `get_company_overview` (company + people + opportunities),
+`get_entity_timeline` (notes + tasks merged + sorted). Pattern: N `forward("execute", …)`
+via `asyncio.gather`, merge in Python, return. These auto-classify as READ.
+*Open integration point:* composite tools are local `StructuredTool`s, not bridge tools —
+agree on how they register into a worker's toolset and stay scope-filtered (today
+`base_worker`'s `extra_tools` bypasses the scope filter).
 
-### C. Utility tools
-| Tool | Type | Behavior |
-| :--- | :--- | :--- |
-| `resolve_date` | deterministic | relative → absolute ISO (`"next tuesday"` → date). 40+ cases. No DB. |
-| `get_pipeline_stages` | METADATA | read Twenty's opportunity `stage` options via `execute_tool("get_field_metadata", …)`. No records, **no masking**. Person 1's `check_conflicts` consumes the stage order from here. |
+**C. Utilities.**
+- `resolve_date` — a stub ships in `safety_tools.py` (hardcoded map). Make it real
+  (relative → absolute ISO, 40+ cases). This one **is** LLM-facing (a data helper).
+- `get_pipeline_stages` — METADATA read of the opportunity `stage` options (via
+  `execute_tool("get_field_metadata", …)`, no masking). Feeds Person 1's conflict checker.
 
-**Done when:** dates resolve to ISO with tests, and `get_pipeline_stages` returns
-ordered stage options the conflict checker can use.
-
----
-
-## 5. The seams between you (don't surprise each other)
-
-- **Masking wraps Person 2's tools.** Person 1 builds the wrapper around
-  `forward()`; Person 2's composite/session tools must call through it, not raw
-  `forward()`. Agree on the `masking.py` interface early.
-- **`get_pipeline_stages` (P2) feeds `check_conflicts` (P1).** Agree on the shape
-  of the returned stage list (ordered, with internal values) up front.
-- **Session tools (P2) are called by the write protocol (P1).** Lock
-  `session_check_duplicate` and `session_log_write` signatures before wiring.
-- **Session id comes from the authenticated identity (P1), used by P2's store.**
+### Not the team's job (don't build these)
+- **Reader worker** (`BaseWorker` + `READER_SCOPE`) — Majid.
+- **Orchestrator** — routing, session *use*, conflict/entity resolution, corrections.
+  It *calls* the endpoints/tools above; the team only provides them.
 
 ---
 
-## 6. Contracts you must not break
+## 5. Contracts you must not break
 
-- **Bridge envelope:** always `{ ok, data }` / `{ ok, error: { code, message } }`.
-- **`execute_tool` arg is `tool_args`, not `args`** — `args` collides with
-  `BaseTool.args` and LangChain mangles it to `v__args`.
-- **Twenty naming:** `person`/`people` (not "contact"); no "Activity"/"Comment"
-  objects — use `note` + `task`. See plan §1.
-- **Identity flows server-side**, never from the LLM. Don't add workspace/role/user
-  to any agent-facing tool signature.
-- **`get_current_user` already ships** as a meta-tool — nobody rebuilds it.
-
----
-
-## 7. Build order
-
-```
-Both parallel, on dev identity (env vars):
-  PERSON 1: (A) network boundary + auth + identity  →  (B) masking wrapper on one tool
-            →  (C) action catalog → lookup_action_tier → check_conflicts → write protocol
-  PERSON 2: (A) get_company_overview  →  (B) session + cache store
-            →  (C) resolve_date + get_pipeline_stages
-
-Wire together:
-  P2 tools route through P1's masking wrapper
-  P1 write protocol calls P2's session_check_duplicate / session_log_write
-  P1 check_conflicts consumes P2's get_pipeline_stages
-  First real end-to-end: agent → masked tools → bridge → Twenty → masked back. Debug together.
-```
-
-**Don't ship** without Person 1's security (§3A) and masking (§3B). Person 2's
-work can run end-to-end on dev identity before that, but not in front of real users.
+- **Bridge envelope:** always `{ ok, data }` / `{ ok, error: { code, message } }` — every
+  new endpoint/tool returns it too.
+- **`execute_tool` args:** `tool_args` (not `args` — collides with LangChain), plus an
+  optional `confirmation_token` for tier-3 actions.
+- **Confirmation flow is built — don't rebuild it.** Tier-3 writes return
+  `{ code: "CONFIRMATION_REQUIRED", confirmation_token, draft }`; the caller/UI surfaces
+  the draft and re-sends `execute_tool(..., confirmation_token=…)`. Tokens are
+  single-use, action-bound, 10-min TTL.
+- **Safety/session/tier are middleware/endpoints, not LLM tools** — never add them to a
+  worker's toolset. The model sees only the meta-tools (+ data utilities like
+  `resolve_date`).
+- **Session id comes from the authenticated identity**, never the model. Lock
+  `session_check_duplicate` / `session_log_write` signatures before the orchestrator wires in.
+- **Identity flows server-side**, never from the LLM. Don't add workspace/role/user to
+  any agent-facing tool signature.
+- **Twenty naming:** `person`/`people` (not "contact"); `note` + `task` (no
+  "Activity"/"Comment"). See plan §1.
 
 ---
 
-## 8. One-line summary per person
+## 6. One-line summary
 
-- **Person 1:** the guardrails — lock the bridge down (auth + identity + role +
-  allow-list), mask/unmask all PII at the boundary, and tier + gate every write.
-- **Person 2:** the capabilities — composite workflow tools so the agent doesn't
-  micromanage, session/cache memory for coherence + corrections, and the
+- **Writer (built):** scope-restricted, tier-gated write worker; no read access.
+- **Person 1 (team):** lock the bridge (auth + identity + two roles + deny-list), mask
+  PII at the `forward()` boundary, and build the real tier catalog + conflict checker.
+- **Person 2 (team):** session endpoints + store, composite read tools, and the
   `resolve_date` / `get_pipeline_stages` utilities.
+- **Reader (Majid) & Orchestrator (agent owners):** built separately — they consume the
+  team's tools/endpoints; the team does not build agents.

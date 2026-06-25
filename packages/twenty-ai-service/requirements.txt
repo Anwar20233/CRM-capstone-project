@@ -2,10 +2,26 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 pydantic==2.10.4
-gliner==0.2.13
+# PII detection: Presidio analyzer over a spaCy transformer NLP model.
+# en_core_web_trf (the default) runs on the curated-transformers stack, so the
+# model wheel + spacy-curated-transformers are required. Swap to a lighter model
+# (e.g. en_core_web_lg) via PRESIDIO_SPACY_MODEL.
+presidio-analyzer==2.2.362
+spacy==3.8.14
+spacy-curated-transformers==0.3.1
+# Transformer NER model, pinned by wheel URL so `pip install -r` is reproducible
+# (it is not published to PyPI). ~430MB.
+en_core_web_trf @ https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.8.0/en_core_web_trf-3.8.0-py3-none-any.whl
 torch==2.5.1
 transformers==4.47.1
 httpx==0.28.1
 # Tool abstraction for the internal LangGraph agent (agent/crm_tools.py).
 # Range, not an exact pin, so it stays compatible with the agent's langgraph.
 langchain-core>=0.3.0,<0.4.0
+langgraph>=1.0.0
+openai>=1.0,<2.0
+python-dotenv>=1.0,<2.0
+pytest>=8.0
+phonenumbers>=9.0
+# Direct Postgres access for the seed_data.py dev/test utility (not used at runtime).
+asyncpg>=0.30

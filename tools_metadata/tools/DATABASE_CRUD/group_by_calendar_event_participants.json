@@ -1,0 +1,833 @@
+{
+  "name": "group_by_calendar_event_participants",
+  "description": "Group Calendar event participants records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "groupBy": {
+        "description": "Fields to group by (max 2). Each entry must be an object with exactly one field key. Examples: {\"status\": true}, {\"companyId\": true}, {\"createdAt\": {\"granularity\": \"MONTH\", \"timeZone\": \"UTC\"}}. Available: createdAt (date), updatedAt (date), handle, displayName, isOrganizer, responseStatus, calendarEventId, personId, workspaceMemberId.",
+        "minItems": 1,
+        "maxItems": 2,
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "createdAt": {
+                  "description": "Date field grouping configuration",
+                  "type": "object",
+                  "properties": {
+                    "granularity": {
+                      "description": "Date grouping granularity. Default: MONTH.",
+                      "default": "MONTH",
+                      "type": "string",
+                      "enum": [
+                        "DAY",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "WEEK",
+                        "DAY_OF_THE_WEEK",
+                        "MONTH_OF_THE_YEAR",
+                        "QUARTER_OF_THE_YEAR"
+                      ]
+                    },
+                    "weekStartDay": {
+                      "description": "First day of week (MONDAY, SUNDAY, SATURDAY). Only used when granularity is WEEK.",
+                      "type": "string",
+                      "enum": [
+                        "MONDAY",
+                        "SUNDAY",
+                        "SATURDAY"
+                      ]
+                    },
+                    "timeZone": {
+                      "description": "IANA timezone for date groupings (e.g. \"America/New_York\"). Default: UTC.",
+                      "default": "UTC",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "granularity",
+                    "timeZone"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "createdAt"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "updatedAt": {
+                  "description": "Date field grouping configuration",
+                  "type": "object",
+                  "properties": {
+                    "granularity": {
+                      "description": "Date grouping granularity. Default: MONTH.",
+                      "default": "MONTH",
+                      "type": "string",
+                      "enum": [
+                        "DAY",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "WEEK",
+                        "DAY_OF_THE_WEEK",
+                        "MONTH_OF_THE_YEAR",
+                        "QUARTER_OF_THE_YEAR"
+                      ]
+                    },
+                    "weekStartDay": {
+                      "description": "First day of week (MONDAY, SUNDAY, SATURDAY). Only used when granularity is WEEK.",
+                      "type": "string",
+                      "enum": [
+                        "MONDAY",
+                        "SUNDAY",
+                        "SATURDAY"
+                      ]
+                    },
+                    "timeZone": {
+                      "description": "IANA timezone for date groupings (e.g. \"America/New_York\"). Default: UTC.",
+                      "default": "UTC",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "granularity",
+                    "timeZone"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "handle": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "handle"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "displayName": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "displayName"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "isOrganizer": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "isOrganizer"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "responseStatus": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "responseStatus"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "calendarEventId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "calendarEventId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "personId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "personId"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "workspaceMemberId": {
+                  "type": "boolean",
+                  "const": true
+                }
+              },
+              "required": [
+                "workspaceMemberId"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "aggregateOperation": {
+        "description": "Aggregate operation to apply per group. Default: COUNT. Any operation other than COUNT requires aggregateFieldName.",
+        "default": "COUNT",
+        "type": "string",
+        "enum": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "SUM",
+          "COUNT",
+          "COUNT_UNIQUE_VALUES",
+          "COUNT_EMPTY",
+          "COUNT_NOT_EMPTY",
+          "COUNT_TRUE",
+          "COUNT_FALSE",
+          "PERCENTAGE_EMPTY",
+          "PERCENTAGE_NOT_EMPTY"
+        ]
+      },
+      "aggregateFieldName": {
+        "description": "Field to aggregate. Required for any operation other than COUNT. Available fields: id, createdAt, updatedAt, deletedAt, createdBy, updatedBy, position, searchVector, handle, displayName, isOrganizer, responseStatus.",
+        "type": "string"
+      },
+      "limit": {
+        "description": "Maximum number of groups to return (default: 50, max: 100).",
+        "default": 50,
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 100
+      },
+      "orderBy": {
+        "description": "Order groups by aggregate value. DESC (default) gives \"top N\" behavior.",
+        "default": "DESC",
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      },
+      "handle": {
+        "description": "Filter by handle (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "displayName": {
+        "description": "Filter by displayName (text field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string"
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string"
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "description": "Case-sensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "ilike": {
+            "description": "Case-insensitive pattern match (use % for wildcards)",
+            "type": "string"
+          },
+          "startsWith": {
+            "description": "Starts with",
+            "type": "string"
+          },
+          "endsWith": {
+            "description": "Ends with",
+            "type": "string"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "isOrganizer": {
+        "description": "Filter by isOrganizer (boolean field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "boolean"
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "responseStatus": {
+        "description": "Filter by responseStatus (select field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Equals",
+            "type": "string",
+            "enum": [
+              "NEEDS_ACTION",
+              "DECLINED",
+              "TENTATIVE",
+              "ACCEPTED"
+            ]
+          },
+          "neq": {
+            "description": "Not equals",
+            "type": "string",
+            "enum": [
+              "NEEDS_ACTION",
+              "DECLINED",
+              "TENTATIVE",
+              "ACCEPTED"
+            ]
+          },
+          "in": {
+            "description": "In array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "NEEDS_ACTION",
+                "DECLINED",
+                "TENTATIVE",
+                "ACCEPTED"
+              ]
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "calendarEventId": {
+        "description": "Filter by calendarEventId (relation field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Related record ID equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "neq": {
+            "description": "Related record ID not equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "in": {
+            "description": "Related record ID in array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "personId": {
+        "description": "Filter by personId (relation field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Related record ID equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "neq": {
+            "description": "Related record ID not equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "in": {
+            "description": "Related record ID in array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "workspaceMemberId": {
+        "description": "Filter by workspaceMemberId (relation field)",
+        "type": "object",
+        "properties": {
+          "eq": {
+            "description": "Related record ID equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "neq": {
+            "description": "Related record ID not equals",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "in": {
+            "description": "Related record ID in array of values",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "is": {
+            "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "or": {
+        "description": "OR condition - matches if ANY of the filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "and": {
+        "description": "AND condition - matches if ALL filters match",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/__schema0"
+        }
+      },
+      "not": {
+        "description": "NOT condition - matches if the filter does NOT match",
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "required": [
+      "groupBy",
+      "aggregateOperation",
+      "limit",
+      "orderBy"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "description": "Filter by handle (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "displayName": {
+            "description": "Filter by displayName (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "isOrganizer": {
+            "description": "Filter by isOrganizer (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "responseStatus": {
+            "description": "Filter by responseStatus (select field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string",
+                "enum": [
+                  "NEEDS_ACTION",
+                  "DECLINED",
+                  "TENTATIVE",
+                  "ACCEPTED"
+                ]
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string",
+                "enum": [
+                  "NEEDS_ACTION",
+                  "DECLINED",
+                  "TENTATIVE",
+                  "ACCEPTED"
+                ]
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "NEEDS_ACTION",
+                    "DECLINED",
+                    "TENTATIVE",
+                    "ACCEPTED"
+                  ]
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "calendarEventId": {
+            "description": "Filter by calendarEventId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "personId": {
+            "description": "Filter by personId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "workspaceMemberId": {
+            "description": "Filter by workspaceMemberId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

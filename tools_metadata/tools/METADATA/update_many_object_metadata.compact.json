@@ -1,0 +1,77 @@
+{
+  "name": "update_many_object_metadata",
+  "description": "Update multiple object metadata at once. More efficient than calling update_object_metadata multiple times. Each item must include the object ID and the properties to update.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "objects": {
+        "description": "Array of object metadata updates to apply (1-20 items).",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "ID of the object to update",
+              "type": "string",
+              "format": "uuid"
+            },
+            "labelSingular": {
+              "description": "Display label in singular form",
+              "type": "string"
+            },
+            "labelPlural": {
+              "description": "Display label in plural form",
+              "type": "string"
+            },
+            "nameSingular": {
+              "description": "Singular name for the object",
+              "type": "string"
+            },
+            "namePlural": {
+              "description": "Plural name for the object",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description of the object",
+              "type": "string"
+            },
+            "icon": {
+              "description": "Icon identifier for the object",
+              "type": "string"
+            },
+            "shortcut": {
+              "description": "Keyboard shortcut for the object",
+              "type": "string"
+            },
+            "isActive": {
+              "description": "Whether the object is active",
+              "type": "boolean"
+            },
+            "labelIdentifierFieldMetadataId": {
+              "description": "ID of the field used as label identifier",
+              "type": "string",
+              "format": "uuid"
+            },
+            "imageIdentifierFieldMetadataId": {
+              "description": "ID of the field used as image identifier",
+              "type": "string",
+              "format": "uuid"
+            },
+            "isLabelSyncedWithName": {
+              "description": "Whether label should sync with name changes",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        }
+      }
+    },
+    "required": [
+      "objects"
+    ]
+  }
+}

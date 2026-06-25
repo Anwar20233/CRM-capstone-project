@@ -1,0 +1,17 @@
+{
+  "name": "get_view_query_parameters",
+  "description": "Get filter and sort parameters from a view. Use these parameters with find_* tools to query records matching the view.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "ID of the view to get query parameters for.",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "viewId"
+    ]
+  }
+}

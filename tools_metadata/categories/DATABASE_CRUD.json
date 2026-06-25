@@ -1,0 +1,2498 @@
+[
+  {
+    "name": "find_blocklists",
+    "description": "Search for Blocklists records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "find"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_blocklist",
+    "description": "Retrieve a single Blocklist record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "find_one"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_blocklists",
+    "description": "Group Blocklists records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "group_by"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_blocklist",
+    "description": "Create a new Blocklist record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "create"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_blocklists",
+    "description": "Create multiple Blocklists records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "create_many"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_blocklist",
+    "description": "Update an existing Blocklist record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "update"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_blocklists",
+    "description": "Update multiple Blocklists records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "update_many"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_blocklist",
+    "description": "Delete a Blocklist record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "blocklist",
+      "operation": "delete"
+    },
+    "objectName": "blocklist",
+    "icon": "IconForbid2",
+    "operation": "delete"
+  },
+  {
+    "name": "find_notes",
+    "description": "Search for Notes records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "find"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_note",
+    "description": "Retrieve a single Note record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "find_one"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_notes",
+    "description": "Group Notes records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "group_by"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_note",
+    "description": "Create a new Note record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "create"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_notes",
+    "description": "Create multiple Notes records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "create_many"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_note",
+    "description": "Update an existing Note record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "update"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_notes",
+    "description": "Update multiple Notes records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "update_many"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_note",
+    "description": "Delete a Note record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "note",
+      "operation": "delete"
+    },
+    "objectName": "note",
+    "icon": "IconNotes",
+    "operation": "delete"
+  },
+  {
+    "name": "find_tasks",
+    "description": "Search for Tasks records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "find"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_task",
+    "description": "Retrieve a single Task record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "find_one"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_tasks",
+    "description": "Group Tasks records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "group_by"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_task",
+    "description": "Create a new Task record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "create"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_tasks",
+    "description": "Create multiple Tasks records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "create_many"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_task",
+    "description": "Update an existing Task record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "update"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_tasks",
+    "description": "Update multiple Tasks records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "update_many"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_task",
+    "description": "Delete a Task record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "task",
+      "operation": "delete"
+    },
+    "objectName": "task",
+    "icon": "IconCheckbox",
+    "operation": "delete"
+  },
+  {
+    "name": "find_workspace_members",
+    "description": "Search for Workspace Members records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "find"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_workspace_member",
+    "description": "Retrieve a single Workspace Member record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "find_one"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_workspace_members",
+    "description": "Group Workspace Members records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "group_by"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_workspace_member",
+    "description": "Create a new Workspace Member record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "create"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_workspace_members",
+    "description": "Create multiple Workspace Members records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "create_many"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_workspace_member",
+    "description": "Update an existing Workspace Member record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "update"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_workspace_members",
+    "description": "Update multiple Workspace Members records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "update_many"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_workspace_member",
+    "description": "Delete a Workspace Member record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "workspaceMember",
+      "operation": "delete"
+    },
+    "objectName": "workspaceMember",
+    "icon": "IconUserCircle",
+    "operation": "delete"
+  },
+  {
+    "name": "find_dashboards",
+    "description": "Search for Dashboards records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "find"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_dashboard",
+    "description": "Retrieve a single Dashboard record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "find_one"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_dashboards",
+    "description": "Group Dashboards records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "group_by"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_dashboard",
+    "description": "Create a new Dashboard record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "create"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_dashboards",
+    "description": "Create multiple Dashboards records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "create_many"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_dashboard",
+    "description": "Update an existing Dashboard record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "update"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_dashboards",
+    "description": "Update multiple Dashboards records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "update_many"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_dashboard",
+    "description": "Delete a Dashboard record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "dashboard",
+      "operation": "delete"
+    },
+    "objectName": "dashboard",
+    "icon": "IconLayoutDashboard",
+    "operation": "delete"
+  },
+  {
+    "name": "find_messages",
+    "description": "Search for Messages records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "find"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_message",
+    "description": "Retrieve a single Message record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "find_one"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_messages",
+    "description": "Group Messages records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "group_by"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_message",
+    "description": "Create a new Message record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "create"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_messages",
+    "description": "Create multiple Messages records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "create_many"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_message",
+    "description": "Update an existing Message record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "update"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_messages",
+    "description": "Update multiple Messages records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "update_many"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_message",
+    "description": "Delete a Message record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "message",
+      "operation": "delete"
+    },
+    "objectName": "message",
+    "icon": "IconMessage",
+    "operation": "delete"
+  },
+  {
+    "name": "find_calendar_channel_event_associations",
+    "description": "Search for Calendar Channel Event Associations records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "find"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_calendar_channel_event_association",
+    "description": "Retrieve a single Calendar Channel Event Association record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "find_one"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_calendar_channel_event_associations",
+    "description": "Group Calendar Channel Event Associations records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "group_by"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_calendar_channel_event_association",
+    "description": "Create a new Calendar Channel Event Association record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "create"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_calendar_channel_event_associations",
+    "description": "Create multiple Calendar Channel Event Associations records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "create_many"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_calendar_channel_event_association",
+    "description": "Update an existing Calendar Channel Event Association record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "update"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_calendar_channel_event_associations",
+    "description": "Update multiple Calendar Channel Event Associations records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "update_many"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_calendar_channel_event_association",
+    "description": "Delete a Calendar Channel Event Association record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannelEventAssociation",
+      "operation": "delete"
+    },
+    "objectName": "calendarChannelEventAssociation",
+    "icon": "IconCalendar",
+    "operation": "delete"
+  },
+  {
+    "name": "find_message_folders",
+    "description": "Search for Message Folders records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "find"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_message_folder",
+    "description": "Retrieve a single Message Folder record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "find_one"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_message_folders",
+    "description": "Group Message Folders records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "group_by"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_message_folder",
+    "description": "Create a new Message Folder record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "create"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_message_folders",
+    "description": "Create multiple Message Folders records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "create_many"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_message_folder",
+    "description": "Update an existing Message Folder record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "update"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_message_folders",
+    "description": "Update multiple Message Folders records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "update_many"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_message_folder",
+    "description": "Delete a Message Folder record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageFolder",
+      "operation": "delete"
+    },
+    "objectName": "messageFolder",
+    "icon": "IconFolder",
+    "operation": "delete"
+  },
+  {
+    "name": "find_task_targets",
+    "description": "Search for Task Targets records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "find"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_task_target",
+    "description": "Retrieve a single Task Target record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "find_one"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_task_targets",
+    "description": "Group Task Targets records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "group_by"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_task_target",
+    "description": "Create a new Task Target record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "create"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_task_targets",
+    "description": "Create multiple Task Targets records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "create_many"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_task_target",
+    "description": "Update an existing Task Target record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "update"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_task_targets",
+    "description": "Update multiple Task Targets records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "update_many"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_task_target",
+    "description": "Delete a Task Target record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "taskTarget",
+      "operation": "delete"
+    },
+    "objectName": "taskTarget",
+    "icon": "IconCheckbox",
+    "operation": "delete"
+  },
+  {
+    "name": "find_timeline_activities",
+    "description": "Search for Timeline Activities records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "find"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_timeline_activity",
+    "description": "Retrieve a single Timeline Activity record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "find_one"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_timeline_activities",
+    "description": "Group Timeline Activities records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "group_by"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_timeline_activity",
+    "description": "Create a new Timeline Activity record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "create"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_timeline_activities",
+    "description": "Create multiple Timeline Activities records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "create_many"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_timeline_activity",
+    "description": "Update an existing Timeline Activity record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "update"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_timeline_activities",
+    "description": "Update multiple Timeline Activities records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "update_many"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_timeline_activity",
+    "description": "Delete a Timeline Activity record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "timelineActivity",
+      "operation": "delete"
+    },
+    "objectName": "timelineActivity",
+    "icon": "IconTimelineEvent",
+    "operation": "delete"
+  },
+  {
+    "name": "find_message_threads",
+    "description": "Search for Message Threads records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "find"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_message_thread",
+    "description": "Retrieve a single Message Thread record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "find_one"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_message_threads",
+    "description": "Group Message Threads records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "group_by"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_message_thread",
+    "description": "Create a new Message Thread record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "create"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_message_threads",
+    "description": "Create multiple Message Threads records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "create_many"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_message_thread",
+    "description": "Update an existing Message Thread record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "update"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_message_threads",
+    "description": "Update multiple Message Threads records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "update_many"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_message_thread",
+    "description": "Delete a Message Thread record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageThread",
+      "operation": "delete"
+    },
+    "objectName": "messageThread",
+    "icon": "IconMessage",
+    "operation": "delete"
+  },
+  {
+    "name": "find_calendar_events",
+    "description": "Search for Calendar events records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "find"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_calendar_event",
+    "description": "Retrieve a single Calendar event record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "find_one"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_calendar_events",
+    "description": "Group Calendar events records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "group_by"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_calendar_event",
+    "description": "Create a new Calendar event record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "create"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_calendar_events",
+    "description": "Create multiple Calendar events records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "create_many"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_calendar_event",
+    "description": "Update an existing Calendar event record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "update"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_calendar_events",
+    "description": "Update multiple Calendar events records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "update_many"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_calendar_event",
+    "description": "Delete a Calendar event record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEvent",
+      "operation": "delete"
+    },
+    "objectName": "calendarEvent",
+    "icon": "IconCalendar",
+    "operation": "delete"
+  },
+  {
+    "name": "find_opportunities",
+    "description": "Search for Opportunities records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "find"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_opportunity",
+    "description": "Retrieve a single Opportunity record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "find_one"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_opportunities",
+    "description": "Group Opportunities records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "group_by"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_opportunity",
+    "description": "Create a new Opportunity record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "create"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_opportunities",
+    "description": "Create multiple Opportunities records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "create_many"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_opportunity",
+    "description": "Update an existing Opportunity record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "update"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_opportunities",
+    "description": "Update multiple Opportunities records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "update_many"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_opportunity",
+    "description": "Delete a Opportunity record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "opportunity",
+      "operation": "delete"
+    },
+    "objectName": "opportunity",
+    "icon": "IconTargetArrow",
+    "operation": "delete"
+  },
+  {
+    "name": "find_connected_accounts",
+    "description": "Search for Connected Accounts records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "find"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_connected_account",
+    "description": "Retrieve a single Connected Account record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "find_one"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_connected_accounts",
+    "description": "Group Connected Accounts records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "group_by"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_connected_account",
+    "description": "Create a new Connected Account record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "create"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_connected_accounts",
+    "description": "Create multiple Connected Accounts records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "create_many"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_connected_account",
+    "description": "Update an existing Connected Account record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "update"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_connected_accounts",
+    "description": "Update multiple Connected Accounts records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "update_many"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_connected_account",
+    "description": "Delete a Connected Account record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "connectedAccount",
+      "operation": "delete"
+    },
+    "objectName": "connectedAccount",
+    "icon": "IconAt",
+    "operation": "delete"
+  },
+  {
+    "name": "find_message_channel_message_association_message_folders",
+    "description": "Search for Message Channel Message Association Message Folders records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "find"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_message_channel_message_association_message_folder",
+    "description": "Retrieve a single Message Channel Message Association Message Folder record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "find_one"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_message_channel_message_association_message_folders",
+    "description": "Group Message Channel Message Association Message Folders records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "group_by"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_message_channel_message_association_message_folder",
+    "description": "Create a new Message Channel Message Association Message Folder record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "create"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_message_channel_message_association_message_folders",
+    "description": "Create multiple Message Channel Message Association Message Folders records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "create_many"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_message_channel_message_association_message_folder",
+    "description": "Update an existing Message Channel Message Association Message Folder record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "update"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_message_channel_message_association_message_folders",
+    "description": "Update multiple Message Channel Message Association Message Folders records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "update_many"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_message_channel_message_association_message_folder",
+    "description": "Delete a Message Channel Message Association Message Folder record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociationMessageFolder",
+      "operation": "delete"
+    },
+    "objectName": "messageChannelMessageAssociationMessageFolder",
+    "icon": "IconFolder",
+    "operation": "delete"
+  },
+  {
+    "name": "find_calendar_event_participants",
+    "description": "Search for Calendar event participants records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "find"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_calendar_event_participant",
+    "description": "Retrieve a single Calendar event participant record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "find_one"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_calendar_event_participants",
+    "description": "Group Calendar event participants records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "group_by"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_calendar_event_participant",
+    "description": "Create a new Calendar event participant record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "create"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_calendar_event_participants",
+    "description": "Create multiple Calendar event participants records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "create_many"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_calendar_event_participant",
+    "description": "Update an existing Calendar event participant record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "update"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_calendar_event_participants",
+    "description": "Update multiple Calendar event participants records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "update_many"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_calendar_event_participant",
+    "description": "Delete a Calendar event participant record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarEventParticipant",
+      "operation": "delete"
+    },
+    "objectName": "calendarEventParticipant",
+    "icon": "IconCalendar",
+    "operation": "delete"
+  },
+  {
+    "name": "find_message_participants",
+    "description": "Search for Message Participants records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "find"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_message_participant",
+    "description": "Retrieve a single Message Participant record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "find_one"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_message_participants",
+    "description": "Group Message Participants records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "group_by"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_message_participant",
+    "description": "Create a new Message Participant record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "create"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_message_participants",
+    "description": "Create multiple Message Participants records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "create_many"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_message_participant",
+    "description": "Update an existing Message Participant record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "update"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_message_participants",
+    "description": "Update multiple Message Participants records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "update_many"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_message_participant",
+    "description": "Delete a Message Participant record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageParticipant",
+      "operation": "delete"
+    },
+    "objectName": "messageParticipant",
+    "icon": "IconUserCircle",
+    "operation": "delete"
+  },
+  {
+    "name": "find_message_channel_message_associations",
+    "description": "Search for Message Channel Message Associations records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "find"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_message_channel_message_association",
+    "description": "Retrieve a single Message Channel Message Association record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "find_one"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_message_channel_message_associations",
+    "description": "Group Message Channel Message Associations records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "group_by"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_message_channel_message_association",
+    "description": "Create a new Message Channel Message Association record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "create"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_message_channel_message_associations",
+    "description": "Create multiple Message Channel Message Associations records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "create_many"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_message_channel_message_association",
+    "description": "Update an existing Message Channel Message Association record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "update"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_message_channel_message_associations",
+    "description": "Update multiple Message Channel Message Associations records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "update_many"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_message_channel_message_association",
+    "description": "Delete a Message Channel Message Association record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannelMessageAssociation",
+      "operation": "delete"
+    },
+    "objectName": "messageChannelMessageAssociation",
+    "icon": "IconMessage",
+    "operation": "delete"
+  },
+  {
+    "name": "find_companies",
+    "description": "Search for Companies records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "find"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_company",
+    "description": "Retrieve a single Company record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "find_one"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_companies",
+    "description": "Group Companies records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "group_by"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_company",
+    "description": "Create a new Company record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "create"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_companies",
+    "description": "Create multiple Companies records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "create_many"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_company",
+    "description": "Update an existing Company record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "update"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_companies",
+    "description": "Update multiple Companies records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "update_many"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_company",
+    "description": "Delete a Company record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "company",
+      "operation": "delete"
+    },
+    "objectName": "company",
+    "icon": "IconBuildingSkyscraper",
+    "operation": "delete"
+  },
+  {
+    "name": "find_attachments",
+    "description": "Search for Attachments records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "find"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_attachment",
+    "description": "Retrieve a single Attachment record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "find_one"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_attachments",
+    "description": "Group Attachments records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "group_by"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_attachment",
+    "description": "Create a new Attachment record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "create"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_attachments",
+    "description": "Create multiple Attachments records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "create_many"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_attachment",
+    "description": "Update an existing Attachment record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "update"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_attachments",
+    "description": "Update multiple Attachments records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "update_many"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_attachment",
+    "description": "Delete a Attachment record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "attachment",
+      "operation": "delete"
+    },
+    "objectName": "attachment",
+    "icon": "IconFileImport",
+    "operation": "delete"
+  },
+  {
+    "name": "find_people",
+    "description": "Search for People records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "find"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_person",
+    "description": "Retrieve a single Person record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "find_one"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_people",
+    "description": "Group People records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "group_by"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_person",
+    "description": "Create a new Person record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "create"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_people",
+    "description": "Create multiple People records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "create_many"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_person",
+    "description": "Update an existing Person record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "update"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_people",
+    "description": "Update multiple People records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "update_many"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_person",
+    "description": "Delete a Person record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "person",
+      "operation": "delete"
+    },
+    "objectName": "person",
+    "icon": "IconUser",
+    "operation": "delete"
+  },
+  {
+    "name": "find_calendar_channels",
+    "description": "Search for Calendar Channels records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "find"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_calendar_channel",
+    "description": "Retrieve a single Calendar Channel record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "find_one"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_calendar_channels",
+    "description": "Group Calendar Channels records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "group_by"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_calendar_channel",
+    "description": "Create a new Calendar Channel record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "create"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_calendar_channels",
+    "description": "Create multiple Calendar Channels records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "create_many"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_calendar_channel",
+    "description": "Update an existing Calendar Channel record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "update"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_calendar_channels",
+    "description": "Update multiple Calendar Channels records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "update_many"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_calendar_channel",
+    "description": "Delete a Calendar Channel record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "calendarChannel",
+      "operation": "delete"
+    },
+    "objectName": "calendarChannel",
+    "icon": "IconCalendar",
+    "operation": "delete"
+  },
+  {
+    "name": "find_message_channels",
+    "description": "Search for Message Channels records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "find"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_message_channel",
+    "description": "Retrieve a single Message Channel record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "find_one"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_message_channels",
+    "description": "Group Message Channels records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "group_by"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_message_channel",
+    "description": "Create a new Message Channel record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "create"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_message_channels",
+    "description": "Create multiple Message Channels records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "create_many"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_message_channel",
+    "description": "Update an existing Message Channel record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "update"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_message_channels",
+    "description": "Update multiple Message Channels records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "update_many"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_message_channel",
+    "description": "Delete a Message Channel record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "messageChannel",
+      "operation": "delete"
+    },
+    "objectName": "messageChannel",
+    "icon": "IconMessage",
+    "operation": "delete"
+  },
+  {
+    "name": "find_note_targets",
+    "description": "Search for Note Targets records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "find"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "find"
+  },
+  {
+    "name": "find_one_note_target",
+    "description": "Retrieve a single Note Target record by its unique ID. Use this when you know the exact record ID and need the complete record data. Returns the full record or an error if not found.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "find_one"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "find_one"
+  },
+  {
+    "name": "group_by_note_targets",
+    "description": "Group Note Targets records by one or two fields and compute an aggregate (COUNT, SUM, AVG, MIN, MAX, etc.). Use for questions like \"how many deals per stage?\" or \"total revenue by company\". Returns groups with dimension values and aggregate results, ordered by the aggregate value.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "group_by"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "group_by"
+  },
+  {
+    "name": "create_note_target",
+    "description": "Create a new Note Target record. Provide all required fields and any optional fields you want to set. The system will automatically handle timestamps and IDs. Returns the created record with all its data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "create"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "create"
+  },
+  {
+    "name": "create_many_note_targets",
+    "description": "Create multiple Note Targets records in a single call. Provide an array of records, each containing the required fields. Maximum 20 records per call. Returns the created records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "create_many"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "create_many"
+  },
+  {
+    "name": "update_note_target",
+    "description": "Update an existing Note Target record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "update"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "update"
+  },
+  {
+    "name": "update_many_note_targets",
+    "description": "Update multiple Note Targets records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "update_many"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "update_many"
+  },
+  {
+    "name": "delete_note_target",
+    "description": "Delete a Note Target record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+    "category": "DATABASE_CRUD",
+    "executionRef": {
+      "kind": "database_crud",
+      "objectNameSingular": "noteTarget",
+      "operation": "delete"
+    },
+    "objectName": "noteTarget",
+    "icon": "IconCheckbox",
+    "operation": "delete"
+  }
+]

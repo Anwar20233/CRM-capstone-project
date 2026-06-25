@@ -1,0 +1,610 @@
+{
+  "name": "update_many_connected_accounts",
+  "description": "Update multiple Connected Accounts records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "handle": {
+            "description": "The account handle (email, username, phone number, etc.)",
+            "type": "string"
+          },
+          "provider": {
+            "description": "The account provider",
+            "type": "string"
+          },
+          "accessToken": {
+            "description": "Messaging provider access token",
+            "type": "string"
+          },
+          "refreshToken": {
+            "description": "Messaging provider refresh token",
+            "type": "string"
+          },
+          "lastSyncHistoryId": {
+            "description": "Last sync history ID",
+            "type": "string"
+          },
+          "authFailedAt": {
+            "description": "Auth failed at",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "lastCredentialsRefreshedAt": {
+            "description": "Last credentials refreshed at",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "handleAliases": {
+            "description": "Handle Aliases",
+            "type": "string"
+          },
+          "scopes": {
+            "description": "Scopes",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "connectionParameters": {
+            "description": "JSON object containing custom connection parameters",
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "accountOwnerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "description": "Filter by handle (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "provider": {
+            "description": "Filter by provider (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "accessToken": {
+            "description": "Filter by accessToken (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "refreshToken": {
+            "description": "Filter by refreshToken (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "lastSyncHistoryId": {
+            "description": "Filter by lastSyncHistoryId (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "authFailedAt": {
+            "description": "Filter by authFailedAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "lastCredentialsRefreshedAt": {
+            "description": "Filter by lastCredentialsRefreshedAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "handleAliases": {
+            "description": "Filter by handleAliases (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "scopes": {
+            "description": "Filter by scopes (array field)",
+            "type": "object",
+            "properties": {
+              "containsIlike": {
+                "description": "Contains case-insensitive substring",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              },
+              "isEmptyArray": {
+                "description": "Is empty array",
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "connectionParameters": {
+            "description": "Filter by connectionParameters (raw JSON field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Raw JSON equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Raw JSON not equals",
+                "type": "string"
+              },
+              "like": {
+                "description": "Raw JSON case-sensitive pattern match",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Raw JSON case-insensitive pattern match",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "accountOwnerId": {
+            "description": "Filter by accountOwnerId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

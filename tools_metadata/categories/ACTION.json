@@ -1,0 +1,62 @@
+[
+  {
+    "name": "http_request",
+    "description": "Make an HTTP request to any URL with configurable method, headers, and body.",
+    "category": "ACTION",
+    "icon": "IconPlayerPlay",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "http_request"
+    }
+  },
+  {
+    "name": "send_email",
+    "description": "Send an email using a connected account. Requires SEND_EMAIL_TOOL permission.",
+    "category": "ACTION",
+    "icon": "IconPlayerPlay",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "send_email"
+    }
+  },
+  {
+    "name": "draft_email",
+    "description": "Create a draft email using a connected account. The email will be saved as a draft, not sent.",
+    "category": "ACTION",
+    "icon": "IconPlayerPlay",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "draft_email"
+    }
+  },
+  {
+    "name": "search_help_center",
+    "description": "Search Twenty documentation and help center to find information about features, setup, usage, and troubleshooting.",
+    "category": "ACTION",
+    "icon": "IconPlayerPlay",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "search_help_center"
+    }
+  },
+  {
+    "name": "navigate_app",
+    "description": "Navigate the application.\n    Use navigateToRecord when the user wants to go to a specific record by name.\n    Default to navigateToObject for all other navigation requests.\n    Only use navigateToView when the user explicitly mentions the word \"view\" in their request.\n    If the user asks to wait, use the wait tool with the specified duration.",
+    "category": "ACTION",
+    "icon": "IconPlayerPlay",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "navigate_app"
+    }
+  },
+  {
+    "name": "code_interpreter",
+    "description": "Execute Python code in a sandboxed environment for data analysis, CSV processing, calculations, and chart generation. Returns stdout, stderr, and generated files. Input files are available at /home/user/{filename}. Save output files (charts, reports) to /home/user/output/ using plt.savefig() for matplotlib charts.",
+    "category": "ACTION",
+    "icon": "IconPlayerPlay",
+    "executionRef": {
+      "kind": "static",
+      "toolId": "code_interpreter"
+    }
+  }
+]

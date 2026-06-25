@@ -1,0 +1,17 @@
+{
+  "name": "delete_dashboard_widget",
+  "description": "Delete a widget from a dashboard. Use get_dashboard first to find the widgetId.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "widgetId": {
+        "description": "The UUID of the widget to delete",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "widgetId"
+    ]
+  }
+}

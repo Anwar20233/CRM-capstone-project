@@ -22,14 +22,13 @@ _model_md = None
 
 
 GLINER_LABELS = [
-    "person", "company", "deal", "job title", "date",
+    "person", "company", "job title", "date",
     "money", "location", "product", "competitor",
 ]
 
 LABEL_THRESHOLDS = {
     "person":     0.55,   # cuts single-word low-confidence names
     "company":    0.55,   # cuts email-fragment companies
-    "deal":       0.50,   # zero-shot deal/opportunity name extraction
     "job title":  0.50,   # cuts ambiguous single-word extractions
     "date":       0.35,   # low — GLiNER dates are generally reliable
     "money":      0.45,   # cuts vague financial terms
@@ -80,7 +79,14 @@ _JOB_TITLE_NONTITLE_CONTAINS = [
 _EMAIL_RE = re.compile(r'\b[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}\b')
 
 # Matches international formats: +971 50 123 4567 / 01-555-1234 / +1-800-555-0199
-_PHONE_RE = re.compile(r'(?<!\d)(\+?(?:\d[\s\-.]?){7,14}\d)(?!\d)')
+# plus a trailing extension (x4715 / ext. 12 / #6218) and a leading "(422)".
+# Letter/digit look-arounds (not just digit) so a number wedged inside a larger
+# token — e.g. the "1574306202" in record id "C1574306202Eb8e" — never matches.
+_PHONE_RE = re.compile(
+    r'(?<![0-9A-Za-z])(\+?(?:\(\d+\)[\s\-.]?)?(?:\d[\s\-.]?){6,14}\d'
+    r'(?:\s?(?:x|ext\.?|#)\s?\d{1,7})?)(?![0-9A-Za-z])',
+    re.I,
+)
 
 # Handles: $45,000  €1.2M  AED 500k  120,000 EGP  $4,500/month  six figures
 _MONEY_PATTERNS = [
@@ -134,6 +140,61 @@ _PRODUCT_SIGNALS = re.compile(
     r'\b(?:plan|tier|package|subscription|module|suite|add[\-\s]?on|upgrade|downgrade|'
     r'version|edition|bundle|platform|tool|product)\b', re.I
 )
+
+
+# ── Protected (structured NON-PII) spans ──────────────────────────────────────
+# These are identifiers the agent must keep verbatim (record ids, UUIDs, URLs).
+# They are recognised FIRST so no PII recogniser can mask a chunk inside them —
+# the root-cause fix for "a record id had a phone number masked in the middle".
+_URL_RE = re.compile(r'\bhttps?://[^\s,;<>"\']+|\bwww\.[^\s,;<>"\']+', re.I)
+_UUID_RE = re.compile(
+    r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
+    r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b'
+)
+# A record id is an alphanumeric token (len >= 6) containing BOTH a letter and a
+# digit — e.g. "dE014d010c7ab0c", "INV00123" — optionally hyphen-segmented.
+_RECORD_ID_RE = re.compile(
+    r'\b(?=[A-Za-z0-9]*[A-Za-z])(?=[A-Za-z0-9]*\d)[A-Za-z0-9]{6,}'
+    r'(?:-[A-Za-z0-9]+)*\b'
+)
+
+# Context windows for numeric ambiguity (phone vs id/date).
+_PHONE_CONTEXT = re.compile(
+    r'\b(call|phone|tel|telephone|mobile|cell|fax|whatsapp|dial|contact)\b', re.I
+)
+_ID_CONTEXT = re.compile(
+    r'\b(id|uuid|order|invoice|sku|ref|reference|ticket|account|index|customer ?id)\b',
+    re.I,
+)
+# A date-shaped token must never be taken as a phone number.
+_DATE_LIKE = re.compile(
+    r'^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$|^\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}$'
+)
+
+
+def _spans_overlap(start, end, spans):
+    return any(not (end <= s0 or start >= s1) for s0, s1 in spans)
+
+
+def _phone_is_possible(candidate):
+    """Length/structure plausibility via libphonenumber, when available.
+
+    Uses ``is_possible_number`` (not ``is_valid_number``): we want to keep real,
+    oddly-formatted or synthetic numbers while rejecting random digit runs.
+    Degrades to ``None`` (unknown) if the library is missing.
+    """
+    try:
+        import phonenumbers
+    except ImportError:
+        return None
+    for region in ("US", None):
+        try:
+            parsed = phonenumbers.parse(candidate, region)
+        except phonenumbers.NumberParseException:
+            continue
+        if phonenumbers.is_possible_number(parsed):
+            return True
+    return False
 
 
 # ── Model loading ───────────────────────────────────────────────────────────
@@ -357,13 +418,64 @@ def extract_emails(text):
 
 
 def extract_phones(text):
+    """Extract phone numbers as *validated candidates*, not bare regex hits.
+
+    A candidate is accepted only when it is phone-plausible (libphonenumber) or
+    clearly phone-formatted, is in the 7–15 digit range, is not date-shaped, and
+    is not sitting in id-context ("order", "invoice", …). Bare digit runs with no
+    formatting and no phone-context are rejected — those are ids, not phones.
+    """
     res, seen = [], set()
     for m in _PHONE_RE.finditer(text):
-        t = m.group().strip()
-        if len(re.sub(r'\D', '', t)) >= 7 and t not in seen:
-            res.append({"label": "phone number", "text": t, "score": 1.0})
-            seen.add(t)
+        candidate = m.group().strip()
+        if candidate in seen:
+            continue
+        if _is_plausible_phone(candidate, text, m.start(), m.end()):
+            res.append({"label": "phone number", "text": candidate, "score": 1.0})
+            seen.add(candidate)
     return res
+
+
+_EXT_RE = re.compile(r'\s?(?:x|ext\.?|#)\s?\d{1,7}$', re.I)
+
+
+def _is_plausible_phone(candidate, text, start, end):
+    if _DATE_LIKE.match(candidate):
+        return False
+
+    # Validate the base number (E.164 is ≤ 15 digits); an extension adds more.
+    base = _EXT_RE.sub('', candidate).strip()
+    base_digits = re.sub(r'\D', '', base)
+    if not (7 <= len(base_digits) <= 15):
+        return False
+
+    window = text[max(0, start - 20):end + 20]
+    if _ID_CONTEXT.search(window):
+        return False
+
+    has_extension = candidate != base
+    has_format = (
+        '+' in candidate
+        or has_extension
+        or bool(re.search(r'[()/.\s]', candidate))
+        or base.count('-') >= 1
+    )
+    has_phone_context = bool(_PHONE_CONTEXT.search(window))
+
+    possible = _phone_is_possible(candidate)
+    if possible is None:
+        possible = _phone_is_possible(base)
+
+    if has_format or has_phone_context:
+        # Formatted, or a human flagged it with "phone"/"call": trust it unless
+        # libphonenumber is confident it's impossible *and* it's unformatted.
+        return has_format or possible is not False or len(base_digits) >= 10
+
+    # Bare digit run, no context: accept only a plausible 10–15 digit number.
+    # (Masking is reversible, so a mislabelled order id is recoverable; the
+    # harmful case — masking a chunk *inside* an id — is handled by protected
+    # spans, not here.)
+    return possible is True and 10 <= len(base_digits) <= 15
 
 
 def extract_money(text):
@@ -446,6 +558,40 @@ def add_offsets(entities, text):
     return result
 
 
+def filter_protected_spans(entities, text):
+    """Drop any entity that sits inside a structured identifier (URL/UUID/id).
+
+    Phone and email entities are *trusted* — they carve out their own spans so a
+    phone like ``846-790-4623x4715`` (which superficially looks like a record
+    id) is never reclassified. Every other recogniser (GLiNER persons/companies,
+    etc.) is rejected when it overlaps a protected span.
+    """
+    trusted = [
+        (e["start"], e["end"])
+        for e in entities
+        if e["label"] in ("email address", "phone number") and e.get("start") is not None
+    ]
+
+    protected = []
+    for regex in (_URL_RE, _UUID_RE, _RECORD_ID_RE):
+        for match in regex.finditer(text):
+            span = match.span()
+            if not _spans_overlap(span[0], span[1], trusted):
+                protected.append(span)
+
+    if not protected:
+        return entities
+
+    kept = []
+    for entity in entities:
+        start, end = entity.get("start"), entity.get("end")
+        is_trusted = entity["label"] in ("email address", "phone number")
+        if start is not None and not is_trusted and _spans_overlap(start, end, protected):
+            continue
+        kept.append(entity)
+    return kept
+
+
 # ── Main pipeline ───────────────────────────────────────────────────────────
 def extract(text):
     """Run the full CRM entity extraction pipeline on a single text.
@@ -490,4 +636,6 @@ def extract(text):
     combined = deduplicate_with_containment(combined)
     extracted = deduplicate(combined)
 
-    return add_offsets(extracted, text)
+    # 13. Offsets, then drop anything inside a protected identifier (URL/UUID/id).
+    with_offsets = add_offsets(extracted, text)
+    return filter_protected_spans(with_offsets, text)

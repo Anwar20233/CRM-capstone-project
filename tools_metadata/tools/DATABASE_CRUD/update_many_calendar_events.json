@@ -1,0 +1,702 @@
+{
+  "name": "update_many_calendar_events",
+  "description": "Update multiple Calendar events records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "isCanceled": {
+            "description": "Is canceled",
+            "type": "boolean"
+          },
+          "isFullDay": {
+            "description": "Is Full Day",
+            "type": "boolean"
+          },
+          "startsAt": {
+            "description": "Start Date",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "endsAt": {
+            "description": "End Date",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "externalCreatedAt": {
+            "description": "Creation DateTime",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "externalUpdatedAt": {
+            "description": "Update DateTime",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "title": {
+            "description": "Title",
+            "type": "string"
+          },
+          "description": {
+            "description": "Description",
+            "type": "string"
+          },
+          "location": {
+            "description": "Location",
+            "type": "string"
+          },
+          "iCalUid": {
+            "description": "iCal UID",
+            "type": "string"
+          },
+          "conferenceSolution": {
+            "description": "Conference Solution",
+            "type": "string"
+          },
+          "conferenceLink": {
+            "description": "Meet Link",
+            "type": "object",
+            "properties": {
+              "primaryLinkLabel": {
+                "type": "string"
+              },
+              "primaryLinkUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "secondaryLinks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "isCanceled": {
+            "description": "Filter by isCanceled (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "isFullDay": {
+            "description": "Filter by isFullDay (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "startsAt": {
+            "description": "Filter by startsAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "endsAt": {
+            "description": "Filter by endsAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "externalCreatedAt": {
+            "description": "Filter by externalCreatedAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "externalUpdatedAt": {
+            "description": "Filter by externalUpdatedAt (date field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "neq": {
+                "description": "Not equals (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gt": {
+                "description": "Greater than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "gte": {
+                "description": "Greater than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lt": {
+                "description": "Less than (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "lte": {
+                "description": "Less than or equal (ISO datetime string)",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "in": {
+                "description": "In array of values (ISO datetime strings)",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "title": {
+            "description": "Filter by title (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": {
+            "description": "Filter by description (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "location": {
+            "description": "Filter by location (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "iCalUid": {
+            "description": "Filter by iCalUid (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "conferenceSolution": {
+            "description": "Filter by conferenceSolution (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "conferenceLink": {
+            "description": "Filter by conferenceLink (links field)",
+            "type": "object",
+            "properties": {
+              "primaryLinkUrl": {
+                "description": "Filter by primary link URL",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary link URL equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "neq": {
+                    "description": "Primary link URL not equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "like": {
+                    "description": "Primary link URL case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary link URL case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary link URL. Use \"NULL\" to find records with no primary link URL, \"NOT_NULL\" for records with a primary link URL",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

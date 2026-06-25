@@ -10,7 +10,9 @@ import { AGENT_CHAT_INSTANCE_ID } from '@/ai/constants/AgentChatInstanceId';
 import { AGENT_CHAT_RESTORE_EDITOR_CONTENT_EVENT_NAME } from '@/ai/constants/AgentChatRestoreEditorContentEventName';
 import { AGENT_CHAT_SEND_MESSAGE_EVENT_NAME } from '@/ai/constants/AgentChatSendMessageEventName';
 import { AGENT_CHAT_STOP_EVENT_NAME } from '@/ai/constants/AgentChatStopEventName';
+import { SEND_CHAT_MESSAGE } from '@/ai/graphql/mutations/sendChatMessage';
 import { STOP_AGENT_CHAT_STREAM } from '@/ai/graphql/mutations/stopAgentChatStream';
+import { useGetBrowsingContext } from '@/ai/hooks/useBrowsingContext';
 import { useOptimisticallyUnarchiveOnSend } from '@/ai/hooks/useOptimisticallyUnarchiveOnSend';
 import {
   AGENT_CHAT_NEW_THREAD_DRAFT_KEY,
@@ -22,6 +24,7 @@ import { agentChatMaskingSessionByThreadIdState } from '@/ai/states/agentChatMas
 import { agentChatMessagesComponentFamilyState } from '@/ai/states/agentChatMessagesComponentFamilyState';
 import { agentChatSelectedFilesState } from '@/ai/states/agentChatSelectedFilesState';
 import { agentChatUploadedFilesState } from '@/ai/states/agentChatUploadedFilesState';
+import { aiChatForcedBrowsingContextState } from '@/ai/states/aiChatForcedBrowsingContextState';
 import { currentAiChatThreadState } from '@/ai/states/currentAiChatThreadState';
 import { maskText } from '@/ai/utils/maskText';
 import { tokenPairState } from '@/auth/states/tokenPairState';
@@ -36,6 +39,7 @@ export const useAgentChat = (
   ensureThreadIdForSend: () => Promise<string | null>,
 ) => {
   const { applyOptimisticUnarchive } = useOptimisticallyUnarchiveOnSend();
+  const { getBrowsingContext } = useGetBrowsingContext();
   const apolloClient = useApolloClient();
   const { enqueueErrorSnackBar } = useSnackBar();
   const setCurrentAiChatThread = useSetAtomState(currentAiChatThreadState);
@@ -174,6 +178,37 @@ export const useAgentChat = (
         ),
       );
 
+      // Send the raw message to the agent. The server proxies it to the
+      // external orchestrator (which does its own masking) and streams the
+      // reply back over the agent-chat subscription. Entity spans above are
+      // only for inline highlighting of the user's own message.
+      const fileIds = agentChatUploadedFiles
+        .map((file) => ('fileId' in file ? file.fileId : undefined))
+        .filter(isDefined);
+
+      await apolloClient.mutate({
+        mutation: SEND_CHAT_MESSAGE,
+        variables: {
+          threadId,
+          text: contentToSend,
+          messageId,
+          // Carry the current record/list context so the server can scope the
+          // turn — on an opportunity record page this routes to the deal-aware
+          // Follow-Up agent (see stream-agent-chat.job getFollowupChatContext).
+          // A forced context (set by an embedded surface like the Follow-Up tab)
+          // wins, so that surface always routes to its record's agent regardless
+          // of the global context store.
+          browsingContext:
+            store.get(aiChatForcedBrowsingContextState.atom) ??
+            getBrowsingContext(),
+          // The rep's browser timezone, so the Follow-Up agent reads clock times
+          // ("1pm") as local and converts to UTC before booking a meeting.
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          modelId: undefined,
+          fileIds: fileIds.length > 0 ? fileIds : undefined,
+        },
+      });
+
       setPendingThreadIdAfterFirstSend((pendingId) => {
         if (isDefined(pendingId)) {
           setCurrentAiChatThread(pendingId);
@@ -231,6 +266,7 @@ export const useAgentChat = (
     setAgentChatDraftsByThreadId,
     setCurrentAiChatThread,
     applyOptimisticUnarchive,
+    getBrowsingContext,
   ]);
 
   useListenToBrowserEvent({

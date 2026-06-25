@@ -1,0 +1,72 @@
+{
+  "name": "update_many_field_metadata",
+  "description": "Update multiple field metadata at once. More efficient than calling update_field_metadata multiple times. Each item must include the field ID and the properties to update.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "fields": {
+        "description": "Array of field metadata updates to apply (1-20 items).",
+        "minItems": 1,
+        "maxItems": 20,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "description": "ID of the field to update",
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "description": "Internal name of the field",
+              "type": "string"
+            },
+            "label": {
+              "description": "Display label of the field",
+              "type": "string"
+            },
+            "description": {
+              "description": "Description of the field",
+              "type": "string"
+            },
+            "icon": {
+              "description": "Icon identifier for the field",
+              "type": "string"
+            },
+            "isActive": {
+              "description": "Whether the field is active",
+              "type": "boolean"
+            },
+            "isNullable": {
+              "description": "Whether the field can be null",
+              "type": "boolean"
+            },
+            "isUnique": {
+              "description": "Whether the field value must be unique",
+              "type": "boolean"
+            },
+            "defaultValue": {
+              "description": "Default value for the field"
+            },
+            "options": {
+              "description": "Options for SELECT/MULTI_SELECT fields"
+            },
+            "settings": {
+              "description": "Additional settings for the field"
+            },
+            "isLabelSyncedWithName": {
+              "description": "Whether label should sync with name changes",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id"
+          ]
+        }
+      }
+    },
+    "required": [
+      "fields"
+    ]
+  }
+}

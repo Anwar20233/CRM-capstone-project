@@ -1,0 +1,17 @@
+{
+  "name": "get_dashboard",
+  "description": "Get a dashboard with its full layout structure including tabs and widgets.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "dashboardId": {
+        "description": "The UUID of the dashboard to fetch",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "dashboardId"
+    ]
+  }
+}

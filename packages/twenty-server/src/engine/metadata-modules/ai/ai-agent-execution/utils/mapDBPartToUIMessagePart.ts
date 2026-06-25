@@ -55,6 +55,12 @@ export const mapDBPartToUIMessagePart = (
       };
     case 'data-routing-status':
       return null;
+    case 'data-write-confirmation':
+      return {
+        type: 'data-write-confirmation',
+        id: part.id,
+        data: part.toolInput,
+      } as ExtendedUIMessagePart;
     default: {
       if (part.type.includes('tool-') && part.toolCallId) {
         return {

@@ -106,6 +106,12 @@ const NotFound = lazy(() =>
   })),
 );
 
+const SkillsPage = lazy(() =>
+  import('~/pages/skills/SkillsPage').then((module) => ({
+    default: module.SkillsPage,
+  })),
+);
+
 export const useCreateAppRouter = (
   isFunctionSettingsEnabled?: boolean,
   isAdminPageEnabled?: boolean,
@@ -210,6 +216,14 @@ export const useCreateAppRouter = (
             }
           />
           <Route path={indexAppPath.getIndexAppPath()} element={<></>} />
+          <Route
+            path={AppPath.SkillsPage}
+            element={
+              <LazyRoute>
+                <SkillsPage />
+              </LazyRoute>
+            }
+          />
           <Route
             path={AppPath.RecordIndexPage}
             element={

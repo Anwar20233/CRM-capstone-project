@@ -21,6 +21,8 @@ export enum AppPath {
   TasksPage = '/objects/tasks',
   OpportunitiesPage = '/objects/opportunities',
 
+  SkillsPage = '/skills',
+
   RecordIndexPage = '/objects/:objectNamePlural',
   RecordShowPage = '/object/:objectNameSingular/:objectRecordId',
   PageLayoutPage = '/page/:pageLayoutId',

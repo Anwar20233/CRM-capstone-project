@@ -38,6 +38,7 @@ export type StreamAgentChatOptions = {
   workspace: WorkspaceEntity;
   text: string;
   browsingContext: BrowsingContextType | null;
+  timezone?: string | null;
   modelId?: string;
   messageId?: string;
   fileIds?: string[];
@@ -65,6 +66,7 @@ export class AgentChatStreamingService {
     workspace,
     text,
     browsingContext,
+    timezone,
     modelId,
     messageId,
     fileIds,
@@ -122,6 +124,7 @@ export class AgentChatStreamingService {
         workspaceId: workspace.id,
         messages: previousMessages,
         browsingContext,
+        timezone,
         modelId,
         lastUserMessageText: text,
         lastUserMessageParts: userMessageParts,
@@ -136,6 +139,81 @@ export class AgentChatStreamingService {
     });
 
     return { streamId, messageId: savedUserMessage.id };
+  }
+
+  // Resume a paused external-orchestrator turn after the user approves or
+  // rejects a high-risk write. Enqueues a stream job with the `resume` flag
+  // (no new user message — it reuses the paused turn) so the job calls the
+  // orchestrator's /agent/resume instead of /agent/chat.
+  async resumeAgentChat({
+    threadId,
+    userWorkspaceId,
+    workspace,
+    approved,
+  }: {
+    threadId: string;
+    userWorkspaceId: string;
+    workspace: WorkspaceEntity;
+    approved: boolean;
+  }): Promise<{ streamId: string }> {
+    const thread = await this.threadRepository.findOne({
+      where: { id: threadId, userWorkspaceId },
+    });
+
+    if (!thread) {
+      throw new AiException(
+        'Thread not found',
+        AiExceptionCode.THREAD_NOT_FOUND,
+      );
+    }
+
+    // Mark the pending approval card as resolved before re-entering the agent,
+    // then nudge the client to refetch so the buttons flip to the outcome
+    // immediately (the resume continuation streams in as a new message).
+    await this.agentChatService.resolveWriteConfirmation({
+      threadId,
+      approved,
+    });
+    await this.eventPublisherService.publish({
+      threadId,
+      workspaceId: workspace.id,
+      event: { type: 'queue-updated' },
+    });
+
+    const messages = await this.agentChatService.getMessagesForThread(
+      threadId,
+      userWorkspaceId,
+    );
+    const lastTurnId =
+      messages.length > 0
+        ? (messages[messages.length - 1].turnId ?? undefined)
+        : undefined;
+
+    const streamId = generateId();
+
+    await this.messageQueueService.add<StreamAgentChatJobData>(
+      STREAM_AGENT_CHAT_JOB_NAME,
+      {
+        threadId,
+        streamId,
+        userWorkspaceId,
+        workspaceId: workspace.id,
+        messages: [],
+        browsingContext: null,
+        lastUserMessageText: '',
+        lastUserMessageParts: [],
+        hasTitle: true,
+        conversationSizeTokens: thread.conversationSize,
+        existingTurnId: lastTurnId,
+        resume: approved,
+      },
+    );
+
+    await this.threadRepository.update(threadId, {
+      activeStreamId: streamId,
+    });
+
+    return { streamId };
   }
 
   async flushNextQueuedMessage(
