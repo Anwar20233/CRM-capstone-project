@@ -25,7 +25,6 @@ const RECORD_LABEL_TO_OBJECT: Record<string, MatchObjectName> = {
   'email address': 'person',
   company: 'company',
   competitor: 'company',
-  deal: 'opportunity',
 };
 
 @Injectable()

@@ -1,13 +1,20 @@
 import { Logger, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { createUIMessageStream } from 'ai';
+import { createUIMessageStream, generateId } from 'ai';
 import type {
   CodeExecutionData,
   ExtendedUIMessage,
   ExtendedUIMessagePart,
 } from 'twenty-shared/ai';
 import { Repository } from 'typeorm';
+
+import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
+import {
+  AgentOrchestratorClientService,
+  type FollowupChatContext,
+  type OrchestratorResult,
+} from 'src/engine/metadata-modules/ai/ai-chat/services/agent-orchestrator-client.service';
 
 import { Process } from 'src/engine/core-modules/message-queue/decorators/process.decorator';
 import { Processor } from 'src/engine/core-modules/message-queue/decorators/processor.decorator';
@@ -32,6 +39,30 @@ import { type StreamAgentChatJobData } from './stream-agent-chat-job.types';
 
 export { STREAM_AGENT_CHAT_JOB_NAME, type StreamAgentChatJobData };
 
+// When the chat is opened on an opportunity record page, scope the turn to the
+// deal-aware Follow-Up agent. The browsing context (carried from the front-end)
+// is the reliable signal; tab ids are random per workspace so we key off the
+// opportunity record itself.
+const getFollowupChatContext = (
+  data: StreamAgentChatJobData,
+): FollowupChatContext | undefined => {
+  const browsingContext = data.browsingContext;
+
+  if (
+    browsingContext?.type === 'recordPage' &&
+    browsingContext.objectNameSingular === 'opportunity'
+  ) {
+    return {
+      opportunityId: browsingContext.recordId,
+      workspaceId: data.workspaceId,
+      userId: data.userWorkspaceId,
+      timezone: data.timezone ?? undefined,
+    };
+  }
+
+  return undefined;
+};
+
 @Processor({ queueName: MessageQueue.aiStreamQueue, scope: Scope.REQUEST })
 export class StreamAgentChatJob {
   private readonly logger = new Logger(StreamAgentChatJob.name);
@@ -46,6 +77,8 @@ export class StreamAgentChatJob {
     private readonly eventPublisherService: AgentChatEventPublisherService,
     private readonly cancelSubscriberService: AgentChatCancelSubscriberService,
     private readonly agentChatStreamingService: AgentChatStreamingService,
+    private readonly agentOrchestratorClientService: AgentOrchestratorClientService,
+    private readonly twentyConfigService: TwentyConfigService,
   ) {}
 
   @Process(STREAM_AGENT_CHAT_JOB_NAME)
@@ -150,15 +183,36 @@ export class StreamAgentChatJob {
 
     userMessagePromise.catch(() => {});
 
-    const titlePromise = data.hasTitle
-      ? Promise.resolve(null)
-      : this.agentChatService
-          .generateTitleIfNeeded({
-            threadId: data.threadId,
-            messageContent: data.lastUserMessageText,
-            workspaceId: data.workspaceId,
-          })
-          .catch(() => null);
+    const useExternalOrchestrator = this.twentyConfigService.get(
+      'AI_AGENT_USE_EXTERNAL_ORCHESTRATOR',
+    );
+
+    // The built-in Node agent names threads with its own fast model. The
+    // external path can't — the Node side has no AI provider configured — so it
+    // asks the Python orchestrator for the title instead (see onTitle below).
+    const titlePromise =
+      data.hasTitle || useExternalOrchestrator
+        ? Promise.resolve(null)
+        : this.agentChatService
+            .generateTitleIfNeeded({
+              threadId: data.threadId,
+              messageContent: data.lastUserMessageText,
+              workspaceId: data.workspaceId,
+            })
+            .catch(() => null);
+
+    // Route through the external Python orchestrator (with its human-in-the-loop
+    // write-approval flow) when enabled; otherwise use the built-in Node agent.
+    if (useExternalOrchestrator) {
+      await this.buildAndPublishExternalAgentStream({
+        data,
+        userMessagePromise,
+        titlePromise,
+        abortSignal,
+      });
+
+      return;
+    }
 
     await this.buildAndPublishStream({
       workspace,
@@ -166,6 +220,197 @@ export class StreamAgentChatJob {
       userMessagePromise,
       titlePromise,
       abortSignal,
+    });
+  }
+
+  // Drives the UI stream from the external Python orchestrator instead of the
+  // AI SDK streamText loop. Emits a single assistant message containing either
+  // a text part (normal answer) or a `data-write-confirmation` part (a tier-3
+  // write paused for the user's approval — see write_gate.py). The approval
+  // card on the client resumes the flow via the resumeAgentChatStream mutation.
+  private async buildAndPublishExternalAgentStream({
+    data,
+    userMessagePromise,
+    titlePromise,
+    abortSignal,
+  }: {
+    data: StreamAgentChatJobData;
+    userMessagePromise: Promise<{ turnId: string | null }>;
+    titlePromise: Promise<string | null>;
+    abortSignal: AbortSignal;
+  }): Promise<void> {
+    const isResume = data.resume !== undefined;
+
+    // Populated as the stream runs; read after the UI stream drains to decide
+    // what to persist (a single text part, or the pending approval card).
+    // Reassigned inside the async execute callback below; the cast keeps the
+    // outer-scope type the full union (not narrowed to the 'response' literal)
+    // so the interrupt branch is still reachable after the stream drains.
+    let result = { type: 'response', response: '' } as OrchestratorResult;
+
+    const uiStream = createUIMessageStream<ExtendedUIMessage>({
+      execute: async ({ writer }) => {
+        const generatedTitle = await titlePromise.catch(() => null);
+
+        if (generatedTitle) {
+          writer.write({
+            type: 'data-thread-title' as const,
+            id: `thread-title-${data.threadId}`,
+            data: { title: generatedTitle },
+          });
+        }
+
+        // One stable id per part so repeated writes reconcile in place: the
+        // routing-status line updates as stages change, and the text part grows
+        // delta by delta into a typed-out answer.
+        const routingStatusId = `routing-status-${data.threadId}`;
+        const textId = `text-${generateId()}`;
+        let textStarted = false;
+
+        const handlers = {
+          onStage: (text: string) => {
+            if (abortSignal.aborted) {
+              return;
+            }
+            writer.write({
+              type: 'data-routing-status' as const,
+              id: routingStatusId,
+              data: { text, state: 'loading' },
+            });
+          },
+          onToken: (delta: string) => {
+            if (abortSignal.aborted) {
+              return;
+            }
+            if (!textStarted) {
+              writer.write({ type: 'text-start', id: textId });
+              textStarted = true;
+            }
+            writer.write({ type: 'text-delta', id: textId, delta });
+          },
+          // The Python orchestrator names the thread on its first turn; surface
+          // the title to the client live and persist it for the sidebar.
+          onTitle: (title: string) => {
+            const trimmed = title.trim();
+
+            if (trimmed.length === 0) {
+              return;
+            }
+
+            writer.write({
+              type: 'data-thread-title' as const,
+              id: `thread-title-${data.threadId}`,
+              data: { title: trimmed },
+            });
+
+            void this.agentChatService
+              .persistGeneratedTitle({
+                threadId: data.threadId,
+                title: trimmed,
+              })
+              .catch(() => {});
+          },
+        };
+
+        result = isResume
+          ? await this.agentOrchestratorClientService.resumeStream(
+              data.threadId,
+              data.resume as boolean,
+              handlers,
+            )
+          : await this.agentOrchestratorClientService.chatStream(
+              data.threadId,
+              data.lastUserMessageText,
+              handlers,
+              getFollowupChatContext(data),
+              !data.hasTitle,
+            );
+
+        if (result.type === 'interrupt') {
+          writer.write({
+            type: 'data-write-confirmation' as const,
+            id: `write-confirmation-${generateId()}`,
+            data: {
+              threadId: data.threadId,
+              action: result.interrupt.action,
+              args: result.interrupt.args,
+              summary: result.interrupt.summary,
+              status: 'pending',
+            },
+          } as never);
+        } else if (textStarted) {
+          writer.write({ type: 'text-end', id: textId });
+        } else if (result.response.length > 0) {
+          // No tokens streamed (edge case) — emit the whole answer at once.
+          writer.write({ type: 'text-start', id: textId });
+          writer.write({
+            type: 'text-delta',
+            id: textId,
+            delta: result.response,
+          });
+          writer.write({ type: 'text-end', id: textId });
+        }
+      },
+    });
+
+    for await (const chunk of uiStream) {
+      await this.eventPublisherService.publish({
+        threadId: data.threadId,
+        workspaceId: data.workspaceId,
+        event: {
+          type: 'stream-chunk',
+          chunk: chunk as Record<string, unknown>,
+        },
+      });
+    }
+
+    if (abortSignal.aborted) {
+      return;
+    }
+
+    // Persist only the durable outcome — the pending approval card, or the
+    // final text. Routing-status stages are live-only progress, not persisted.
+    const assistantParts: ExtendedUIMessagePart[] =
+      result.type === 'interrupt'
+        ? [
+            {
+              type: 'data-write-confirmation',
+              id: `write-confirmation-${generateId()}`,
+              data: {
+                threadId: data.threadId,
+                action: result.interrupt.action,
+                args: result.interrupt.args,
+                summary: result.interrupt.summary,
+                status: 'pending',
+              },
+            } as ExtendedUIMessagePart,
+          ]
+        : [{ type: 'text', text: result.response }];
+
+    // Persist the assistant turn so reopening the thread shows it.
+    const threadStatus = await this.threadRepository.findOne({
+      where: { id: data.threadId },
+      select: ['id', 'deletedAt'],
+    });
+
+    if (threadStatus && !threadStatus.deletedAt) {
+      const userMessage = await userMessagePromise;
+
+      await this.agentChatService.addMessage({
+        threadId: data.threadId,
+        uiMessage: {
+          role: AgentMessageRole.ASSISTANT,
+          parts: assistantParts,
+        },
+        turnId: userMessage.turnId ?? undefined,
+        workspaceId: data.workspaceId,
+      });
+    }
+
+    await this.eventPublisherService.publish({
+      threadId: data.threadId,
+      workspaceId: data.workspaceId,
+      event: { type: 'message-persisted', messageId: data.threadId },
     });
   }
 

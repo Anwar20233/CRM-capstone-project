@@ -1,0 +1,683 @@
+{
+  "name": "update_many_companies",
+  "description": "Update multiple Companies records matching a filter in a single operation. All matching records will receive the same field values. WARNING: Use specific filters to avoid unintended mass updates. Always verify the filter scope with a find query first. Returns the updated records.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "filter": {
+        "description": "Filter to select which records to update. Supports field-level filters and logical operators (or, and, not). WARNING: A broad filter may update many records at once. Always verify the filter scope with a find query first.",
+        "$ref": "#/$defs/__schema0"
+      },
+      "data": {
+        "description": "The field values to apply to all matching records. Only include fields you want to change.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "The company name",
+            "type": "string"
+          },
+          "domainName": {
+            "description": "The company website URL. We use this url to fetch the company icon",
+            "type": "object",
+            "properties": {
+              "primaryLinkLabel": {
+                "type": "string"
+              },
+              "primaryLinkUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "secondaryLinks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "address": {
+            "description": "Address of the company",
+            "type": "object",
+            "properties": {
+              "addressStreet1": {
+                "type": "string"
+              },
+              "addressStreet2": {
+                "type": "string"
+              },
+              "addressCity": {
+                "type": "string"
+              },
+              "addressPostcode": {
+                "type": "string"
+              },
+              "addressState": {
+                "type": "string"
+              },
+              "addressCountry": {
+                "type": "string"
+              },
+              "addressLat": {
+                "type": "number"
+              },
+              "addressLng": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "employees": {
+            "description": "Number of employees in the company",
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "linkedinLink": {
+            "description": "The company Linkedin account",
+            "type": "object",
+            "properties": {
+              "primaryLinkLabel": {
+                "type": "string"
+              },
+              "primaryLinkUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "secondaryLinks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "xLink": {
+            "description": "The company Twitter/X account",
+            "type": "object",
+            "properties": {
+              "primaryLinkLabel": {
+                "type": "string"
+              },
+              "primaryLinkUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "secondaryLinks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url",
+                    "label"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "annualRecurringRevenue": {
+            "description": "Annual Recurring Revenue: The actual or estimated annual revenue of the company",
+            "type": "object",
+            "properties": {
+              "amountMicros": {
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "idealCustomerProfile": {
+            "description": "Ideal Customer Profile: Indicates whether the company is the most suitable and valuable customer for you",
+            "type": "boolean"
+          },
+          "position": {
+            "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "const": "first"
+              },
+              {
+                "type": "string",
+                "const": "last"
+              }
+            ]
+          },
+          "accountOwnerId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "filter",
+      "data"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Filter by name (text field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "string"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "string"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "like": {
+                "description": "Case-sensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "ilike": {
+                "description": "Case-insensitive pattern match (use % for wildcards)",
+                "type": "string"
+              },
+              "startsWith": {
+                "description": "Starts with",
+                "type": "string"
+              },
+              "endsWith": {
+                "description": "Ends with",
+                "type": "string"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "domainName": {
+            "description": "Filter by domainName (links field)",
+            "type": "object",
+            "properties": {
+              "primaryLinkUrl": {
+                "description": "Filter by primary link URL",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary link URL equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "neq": {
+                    "description": "Primary link URL not equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "like": {
+                    "description": "Primary link URL case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary link URL case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary link URL. Use \"NULL\" to find records with no primary link URL, \"NOT_NULL\" for records with a primary link URL",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "address": {
+            "description": "Filter by address (address field)",
+            "type": "object",
+            "properties": {
+              "addressStreet1": {
+                "description": "Filter by street 1",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Street 1 equals",
+                    "type": "string"
+                  },
+                  "neq": {
+                    "description": "Street 1 not equals",
+                    "type": "string"
+                  },
+                  "like": {
+                    "description": "Street 1 case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Street 1 case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty street 1. Use \"NULL\" to find records with no street 1, \"NOT_NULL\" for records with a street 1",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "addressCity": {
+                "description": "Filter by city",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "City equals",
+                    "type": "string"
+                  },
+                  "neq": {
+                    "description": "City not equals",
+                    "type": "string"
+                  },
+                  "like": {
+                    "description": "City case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "City case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty city. Use \"NULL\" to find records with no city, \"NOT_NULL\" for records with a city",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "addressCountry": {
+                "description": "Filter by country",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Country equals",
+                    "type": "string"
+                  },
+                  "neq": {
+                    "description": "Country not equals",
+                    "type": "string"
+                  },
+                  "like": {
+                    "description": "Country case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Country case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty country. Use \"NULL\" to find records with no country, \"NOT_NULL\" for records with a country",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "employees": {
+            "description": "Filter by employees (number field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "number"
+              },
+              "neq": {
+                "description": "Not equals",
+                "type": "number"
+              },
+              "gt": {
+                "description": "Greater than",
+                "type": "number"
+              },
+              "gte": {
+                "description": "Greater than or equal",
+                "type": "number"
+              },
+              "lt": {
+                "description": "Less than",
+                "type": "number"
+              },
+              "lte": {
+                "description": "Less than or equal",
+                "type": "number"
+              },
+              "in": {
+                "description": "In array of values",
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "linkedinLink": {
+            "description": "Filter by linkedinLink (links field)",
+            "type": "object",
+            "properties": {
+              "primaryLinkUrl": {
+                "description": "Filter by primary link URL",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary link URL equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "neq": {
+                    "description": "Primary link URL not equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "like": {
+                    "description": "Primary link URL case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary link URL case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary link URL. Use \"NULL\" to find records with no primary link URL, \"NOT_NULL\" for records with a primary link URL",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "xLink": {
+            "description": "Filter by xLink (links field)",
+            "type": "object",
+            "properties": {
+              "primaryLinkUrl": {
+                "description": "Filter by primary link URL",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Primary link URL equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "neq": {
+                    "description": "Primary link URL not equals",
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "like": {
+                    "description": "Primary link URL case-sensitive pattern match",
+                    "type": "string"
+                  },
+                  "ilike": {
+                    "description": "Primary link URL case-insensitive pattern match",
+                    "type": "string"
+                  },
+                  "is": {
+                    "description": "Check for missing or empty primary link URL. Use \"NULL\" to find records with no primary link URL, \"NOT_NULL\" for records with a primary link URL",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "annualRecurringRevenue": {
+            "description": "Filter by annualRecurringRevenue (currency field)",
+            "type": "object",
+            "properties": {
+              "amountMicros": {
+                "description": "Filter by amount",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Amount equals",
+                    "type": "number"
+                  },
+                  "neq": {
+                    "description": "Amount not equals",
+                    "type": "number"
+                  },
+                  "gt": {
+                    "description": "Amount greater than",
+                    "type": "number"
+                  },
+                  "gte": {
+                    "description": "Amount greater than or equal",
+                    "type": "number"
+                  },
+                  "lt": {
+                    "description": "Amount less than",
+                    "type": "number"
+                  },
+                  "lte": {
+                    "description": "Amount less than or equal",
+                    "type": "number"
+                  },
+                  "in": {
+                    "description": "Amount in array of values",
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "is": {
+                    "description": "Check for missing or empty amount. Use \"NULL\" to find records with no amount, \"NOT_NULL\" for records with an amount",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "currencyCode": {
+                "description": "Filter by currency code",
+                "type": "object",
+                "properties": {
+                  "eq": {
+                    "description": "Currency code equals",
+                    "type": "string"
+                  },
+                  "neq": {
+                    "description": "Currency code not equals",
+                    "type": "string"
+                  },
+                  "in": {
+                    "description": "Currency code in array of values",
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "is": {
+                    "description": "Check for missing or empty currency code. Use \"NULL\" to find records with no currency code, \"NOT_NULL\" for records with a currency code",
+                    "type": "string",
+                    "enum": [
+                      "NULL",
+                      "NOT_NULL"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "idealCustomerProfile": {
+            "description": "Filter by idealCustomerProfile (boolean field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Equals",
+                "type": "boolean"
+              },
+              "is": {
+                "description": "Check for missing or empty values. Use \"NULL\" to find records with no value, \"NOT_NULL\" for records with a value",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "accountOwnerId": {
+            "description": "Filter by accountOwnerId (relation field)",
+            "type": "object",
+            "properties": {
+              "eq": {
+                "description": "Related record ID equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "neq": {
+                "description": "Related record ID not equals",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "in": {
+                "description": "Related record ID in array of values",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "is": {
+                "description": "Check for missing or empty related record. Use \"NULL\" to find records with no relation, \"NOT_NULL\" for records with a relation",
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

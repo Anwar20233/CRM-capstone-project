@@ -1,0 +1,243 @@
+{
+  "name": "find_connected_accounts",
+  "description": "Search for Connected Accounts records using flexible filtering criteria. Supports exact matches, pattern matching, ranges, and null checks. Use limit/offset for pagination and orderBy for sorting. To find by ID, use filter: { id: { eq: \"record-id\" } }. Returns an array of matching records with their full data.",
+  "inputSchema": {
+    "type": "object",
+    "required": [
+      "limit",
+      "offset"
+    ],
+    "$defs": {
+      "__schema0": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "$ref": "#/$defs/_f2"
+          },
+          "provider": {
+            "$ref": "#/$defs/_f2"
+          },
+          "accessToken": {
+            "$ref": "#/$defs/_f2"
+          },
+          "refreshToken": {
+            "$ref": "#/$defs/_f2"
+          },
+          "lastSyncHistoryId": {
+            "$ref": "#/$defs/_f2"
+          },
+          "authFailedAt": {
+            "$ref": "#/$defs/_f3"
+          },
+          "lastCredentialsRefreshedAt": {
+            "$ref": "#/$defs/_f3"
+          },
+          "handleAliases": {
+            "$ref": "#/$defs/_f2"
+          },
+          "scopes": {
+            "type": "object",
+            "properties": {
+              "containsIlike": {
+                "description": "Contains case-insensitive substring",
+                "type": "string"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              },
+              "isEmptyArray": {
+                "description": "Is empty array",
+                "type": "boolean"
+              }
+            }
+          },
+          "connectionParameters": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string"
+              },
+              "neq": {
+                "type": "string"
+              },
+              "like": {
+                "type": "string"
+              },
+              "ilike": {
+                "type": "string"
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "accountOwnerId": {
+            "type": "object",
+            "properties": {
+              "eq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "neq": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "in": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "is": {
+                "type": "string",
+                "enum": [
+                  "NULL",
+                  "NOT_NULL"
+                ]
+              }
+            }
+          },
+          "or": {
+            "description": "OR condition - matches if ANY of the filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "and": {
+            "description": "AND condition - matches if ALL filters match",
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "not": {
+            "description": "NOT condition - matches if the filter does NOT match",
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "_f2": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string"
+          },
+          "neq": {
+            "type": "string"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "like": {
+            "type": "string"
+          },
+          "ilike": {
+            "type": "string"
+          },
+          "startsWith": {
+            "type": "string"
+          },
+          "endsWith": {
+            "type": "string"
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      },
+      "_f3": {
+        "type": "object",
+        "properties": {
+          "eq": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "neq": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "gte": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lte": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "in": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "is": {
+            "type": "string",
+            "enum": [
+              "NULL",
+              "NOT_NULL"
+            ]
+          }
+        }
+      }
+    },
+    "properties": {
+      "limit": {
+        "default": 10,
+        "type": "integer",
+        "maximum": 100
+      },
+      "offset": {
+        "default": 0,
+        "type": "integer",
+        "minimum": 0
+      },
+      "orderBy": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "AscNullsFirst",
+              "AscNullsLast",
+              "DescNullsFirst",
+              "DescNullsLast"
+            ]
+          }
+        }
+      }
+    },
+    "allOf": [
+      {
+        "$ref": "#/$defs/__schema0"
+      }
+    ]
+  }
+}

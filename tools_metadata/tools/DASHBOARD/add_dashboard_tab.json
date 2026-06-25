@@ -1,0 +1,31 @@
+{
+  "name": "add_dashboard_tab",
+  "description": "Add a new tab to an existing dashboard.\n\nUse get_dashboard first to get the pageLayoutId and see existing tabs.\nAfter creating a tab, use add_dashboard_widget with the returned tab ID to add widgets.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "pageLayoutId": {
+        "description": "The page layout UUID of the dashboard (from get_dashboard result)",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "title": {
+        "description": "Title for the new tab",
+        "type": "string"
+      },
+      "position": {
+        "description": "Tab position (0-based). Defaults to after the last existing tab.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    },
+    "required": [
+      "pageLayoutId",
+      "title"
+    ],
+    "additionalProperties": false
+  }
+}

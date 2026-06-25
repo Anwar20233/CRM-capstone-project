@@ -1,0 +1,98 @@
+{
+  "name": "create_field_metadata",
+  "description": "Create a new field metadata on an object. Specify the objectMetadataId and field properties.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "objectMetadataId": {
+        "description": "ID of the object to add the field to",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "type": {
+        "description": "Field type (e.g., TEXT, NUMBER, BOOLEAN, DATE_TIME, RELATION, etc.)",
+        "type": "string",
+        "enum": [
+          "ACTOR",
+          "ADDRESS",
+          "ARRAY",
+          "BOOLEAN",
+          "CURRENCY",
+          "DATE",
+          "DATE_TIME",
+          "EMAILS",
+          "FILES",
+          "FULL_NAME",
+          "LINKS",
+          "MORPH_RELATION",
+          "MULTI_SELECT",
+          "NUMBER",
+          "NUMERIC",
+          "PHONES",
+          "POSITION",
+          "RATING",
+          "RAW_JSON",
+          "RELATION",
+          "RICH_TEXT",
+          "SELECT",
+          "TEXT",
+          "TS_VECTOR",
+          "UUID"
+        ]
+      },
+      "name": {
+        "description": "Internal name of the field (camelCase)",
+        "type": "string"
+      },
+      "label": {
+        "description": "Display label of the field",
+        "type": "string"
+      },
+      "description": {
+        "description": "Description of the field",
+        "type": "string"
+      },
+      "icon": {
+        "description": "Icon identifier for the field",
+        "type": "string"
+      },
+      "isNullable": {
+        "description": "Whether the field can be null",
+        "type": "boolean"
+      },
+      "isUnique": {
+        "description": "Whether the field value must be unique",
+        "type": "boolean"
+      },
+      "defaultValue": {
+        "description": "Default value for the field"
+      },
+      "options": {
+        "description": "Options for SELECT/MULTI_SELECT fields"
+      },
+      "settings": {
+        "description": "Additional settings for the field"
+      },
+      "isLabelSyncedWithName": {
+        "description": "Whether label should sync with name changes",
+        "type": "boolean"
+      },
+      "isRemoteCreation": {
+        "description": "Whether this is a remote field creation",
+        "type": "boolean"
+      },
+      "relationCreationPayload": {
+        "description": "Payload for creating relation fields"
+      }
+    },
+    "required": [
+      "objectMetadataId",
+      "type",
+      "name",
+      "label"
+    ],
+    "additionalProperties": false
+  }
+}

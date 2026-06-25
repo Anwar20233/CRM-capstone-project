@@ -1,0 +1,18 @@
+{
+  "name": "list_dashboards",
+  "description": "List all dashboards in the workspace. Use get_dashboard to retrieve full layout structure.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "limit": {
+        "default": 20,
+        "type": "number",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required": [
+      "limit"
+    ]
+  }
+}

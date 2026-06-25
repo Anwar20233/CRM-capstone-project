@@ -1,0 +1,746 @@
+{
+  "name": "update_dashboard_widget",
+  "description": "Update an existing widget's properties, position, or configuration.\n\nUse get_dashboard first to find the widgetId.\n\nOnly provide fields you want to change - others remain unchanged.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "widgetId": {
+        "description": "The UUID of the widget to update",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "title": {
+        "description": "New widget title",
+        "type": "string"
+      },
+      "type": {
+        "description": "New widget type",
+        "type": "string",
+        "enum": [
+          "VIEW",
+          "GRAPH",
+          "IFRAME",
+          "STANDALONE_RICH_TEXT",
+          "RECORD_TABLE"
+        ]
+      },
+      "gridPosition": {
+        "description": "New position and size in the grid layout",
+        "type": "object",
+        "properties": {
+          "row": {
+            "description": "Row position (0-based)",
+            "type": "number",
+            "minimum": 0
+          },
+          "column": {
+            "description": "Column position (0-11 for 12-column grid)",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 11
+          },
+          "rowSpan": {
+            "description": "Number of rows the widget spans",
+            "type": "number",
+            "minimum": 1
+          },
+          "columnSpan": {
+            "description": "Number of columns the widget spans (1-12)",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 12
+          }
+        },
+        "required": [
+          "row",
+          "column",
+          "rowSpan",
+          "columnSpan"
+        ],
+        "additionalProperties": false
+      },
+      "objectMetadataId": {
+        "description": "New object metadata ID",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "configuration": {
+        "description": "Widget configuration - structure depends on widget type",
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "configurationType": {
+                "type": "string",
+                "const": "AGGREGATE_CHART"
+              },
+              "aggregateFieldMetadataId": {
+                "description": "Field UUID to aggregate (must be from the widget objectMetadataId)",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "aggregateOperation": {
+                "description": "Aggregation operation: COUNT, SUM, AVG, MIN, MAX, etc.",
+                "type": "string",
+                "enum": [
+                  "MIN",
+                  "MAX",
+                  "AVG",
+                  "SUM",
+                  "COUNT",
+                  "COUNT_UNIQUE_VALUES",
+                  "COUNT_EMPTY",
+                  "COUNT_NOT_EMPTY",
+                  "COUNT_TRUE",
+                  "COUNT_FALSE",
+                  "PERCENTAGE_EMPTY",
+                  "PERCENTAGE_NOT_EMPTY"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "displayDataLabel": {
+                "type": "boolean"
+              },
+              "prefix": {
+                "type": "string"
+              },
+              "suffix": {
+                "type": "string"
+              },
+              "ratioAggregateConfig": {
+                "type": "object",
+                "properties": {
+                  "fieldMetadataId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "optionValue": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "fieldMetadataId",
+                  "optionValue"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "configurationType",
+              "aggregateFieldMetadataId",
+              "aggregateOperation"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "configurationType": {
+                "type": "string",
+                "const": "BAR_CHART"
+              },
+              "aggregateFieldMetadataId": {
+                "description": "Field UUID to aggregate",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "aggregateOperation": {
+                "type": "string",
+                "enum": [
+                  "MIN",
+                  "MAX",
+                  "AVG",
+                  "SUM",
+                  "COUNT",
+                  "COUNT_UNIQUE_VALUES",
+                  "COUNT_EMPTY",
+                  "COUNT_NOT_EMPTY",
+                  "COUNT_TRUE",
+                  "COUNT_FALSE",
+                  "PERCENTAGE_EMPTY",
+                  "PERCENTAGE_NOT_EMPTY"
+                ]
+              },
+              "primaryAxisGroupByFieldMetadataId": {
+                "description": "Field UUID to group by on primary axis",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "primaryAxisGroupBySubFieldName": {
+                "description": "REQUIRED for relation fields (e.g. \"name\", \"address.addressCity\") and composite fields (e.g. \"addressCity\"). Without this, relation fields group by raw UUID which is not useful.",
+                "type": "string"
+              },
+              "secondaryAxisGroupByFieldMetadataId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "secondaryAxisGroupBySubFieldName": {
+                "description": "REQUIRED for relation fields (e.g. \"name\", \"stage\") and composite fields (e.g. \"addressCity\"). Without this, relation fields group by raw UUID which is not useful.",
+                "type": "string"
+              },
+              "primaryAxisOrderBy": {
+                "type": "string",
+                "enum": [
+                  "FIELD_ASC",
+                  "FIELD_DESC",
+                  "FIELD_POSITION_ASC",
+                  "FIELD_POSITION_DESC",
+                  "VALUE_ASC",
+                  "VALUE_DESC",
+                  "MANUAL"
+                ]
+              },
+              "primaryAxisManualSortOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "secondaryAxisOrderBy": {
+                "type": "string",
+                "enum": [
+                  "FIELD_ASC",
+                  "FIELD_DESC",
+                  "FIELD_POSITION_ASC",
+                  "FIELD_POSITION_DESC",
+                  "VALUE_ASC",
+                  "VALUE_DESC",
+                  "MANUAL"
+                ]
+              },
+              "secondaryAxisManualSortOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "omitNullValues": {
+                "type": "boolean"
+              },
+              "primaryAxisDateGranularity": {
+                "description": "Date grouping granularity for X axis",
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH",
+                  "QUARTER",
+                  "YEAR",
+                  "DAY_OF_THE_WEEK",
+                  "MONTH_OF_THE_YEAR",
+                  "QUARTER_OF_THE_YEAR"
+                ]
+              },
+              "secondaryAxisGroupByDateGranularity": {
+                "description": "Date grouping granularity for secondary grouping",
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH",
+                  "QUARTER",
+                  "YEAR",
+                  "DAY_OF_THE_WEEK",
+                  "MONTH_OF_THE_YEAR",
+                  "QUARTER_OF_THE_YEAR"
+                ]
+              },
+              "color": {
+                "description": "Chart color theme",
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "red",
+                  "ruby",
+                  "crimson",
+                  "tomato",
+                  "orange",
+                  "amber",
+                  "yellow",
+                  "lime",
+                  "grass",
+                  "green",
+                  "jade",
+                  "mint",
+                  "turquoise",
+                  "cyan",
+                  "sky",
+                  "blue",
+                  "iris",
+                  "violet",
+                  "purple",
+                  "plum",
+                  "pink",
+                  "bronze",
+                  "gold",
+                  "brown",
+                  "gray"
+                ]
+              },
+              "axisNameDisplay": {
+                "description": "Which axis labels to show",
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "X",
+                  "Y",
+                  "BOTH"
+                ]
+              },
+              "displayDataLabel": {
+                "type": "boolean"
+              },
+              "displayLegend": {
+                "type": "boolean"
+              },
+              "groupMode": {
+                "description": "Bar display mode when using secondary grouping",
+                "type": "string",
+                "enum": [
+                  "STACKED",
+                  "GROUPED"
+                ]
+              },
+              "isCumulative": {
+                "description": "Show running totals",
+                "type": "boolean"
+              },
+              "rangeMin": {
+                "description": "Y axis minimum value",
+                "type": "number"
+              },
+              "rangeMax": {
+                "description": "Y axis maximum value",
+                "type": "number"
+              },
+              "layout": {
+                "description": "Layout orientation for bar charts",
+                "type": "string",
+                "enum": [
+                  "VERTICAL",
+                  "HORIZONTAL"
+                ]
+              }
+            },
+            "required": [
+              "configurationType",
+              "aggregateFieldMetadataId",
+              "aggregateOperation",
+              "primaryAxisGroupByFieldMetadataId",
+              "layout"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "configurationType": {
+                "type": "string",
+                "const": "LINE_CHART"
+              },
+              "aggregateFieldMetadataId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "aggregateOperation": {
+                "type": "string",
+                "enum": [
+                  "MIN",
+                  "MAX",
+                  "AVG",
+                  "SUM",
+                  "COUNT",
+                  "COUNT_UNIQUE_VALUES",
+                  "COUNT_EMPTY",
+                  "COUNT_NOT_EMPTY",
+                  "COUNT_TRUE",
+                  "COUNT_FALSE",
+                  "PERCENTAGE_EMPTY",
+                  "PERCENTAGE_NOT_EMPTY"
+                ]
+              },
+              "primaryAxisGroupByFieldMetadataId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "primaryAxisGroupBySubFieldName": {
+                "description": "REQUIRED for relation fields (e.g. \"name\", \"address.addressCity\") and composite fields (e.g. \"addressCity\"). Without this, relation fields group by raw UUID which is not useful.",
+                "type": "string"
+              },
+              "secondaryAxisGroupByFieldMetadataId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "secondaryAxisGroupBySubFieldName": {
+                "description": "REQUIRED for relation fields (e.g. \"name\", \"stage\") and composite fields (e.g. \"addressCity\"). Without this, relation fields group by raw UUID which is not useful.",
+                "type": "string"
+              },
+              "primaryAxisOrderBy": {
+                "type": "string",
+                "enum": [
+                  "FIELD_ASC",
+                  "FIELD_DESC",
+                  "FIELD_POSITION_ASC",
+                  "FIELD_POSITION_DESC",
+                  "VALUE_ASC",
+                  "VALUE_DESC",
+                  "MANUAL"
+                ]
+              },
+              "primaryAxisManualSortOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "secondaryAxisOrderBy": {
+                "type": "string",
+                "enum": [
+                  "FIELD_ASC",
+                  "FIELD_DESC",
+                  "FIELD_POSITION_ASC",
+                  "FIELD_POSITION_DESC",
+                  "VALUE_ASC",
+                  "VALUE_DESC",
+                  "MANUAL"
+                ]
+              },
+              "secondaryAxisManualSortOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "omitNullValues": {
+                "type": "boolean"
+              },
+              "primaryAxisDateGranularity": {
+                "description": "Date grouping granularity for X axis",
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH",
+                  "QUARTER",
+                  "YEAR",
+                  "DAY_OF_THE_WEEK",
+                  "MONTH_OF_THE_YEAR",
+                  "QUARTER_OF_THE_YEAR"
+                ]
+              },
+              "secondaryAxisGroupByDateGranularity": {
+                "description": "Date grouping granularity for secondary grouping",
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH",
+                  "QUARTER",
+                  "YEAR",
+                  "DAY_OF_THE_WEEK",
+                  "MONTH_OF_THE_YEAR",
+                  "QUARTER_OF_THE_YEAR"
+                ]
+              },
+              "color": {
+                "description": "Line color theme",
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "red",
+                  "ruby",
+                  "crimson",
+                  "tomato",
+                  "orange",
+                  "amber",
+                  "yellow",
+                  "lime",
+                  "grass",
+                  "green",
+                  "jade",
+                  "mint",
+                  "turquoise",
+                  "cyan",
+                  "sky",
+                  "blue",
+                  "iris",
+                  "violet",
+                  "purple",
+                  "plum",
+                  "pink",
+                  "bronze",
+                  "gold",
+                  "brown",
+                  "gray"
+                ]
+              },
+              "axisNameDisplay": {
+                "description": "Which axis labels to show",
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "X",
+                  "Y",
+                  "BOTH"
+                ]
+              },
+              "displayDataLabel": {
+                "type": "boolean"
+              },
+              "displayLegend": {
+                "type": "boolean"
+              },
+              "isStacked": {
+                "description": "Stack multiple lines",
+                "type": "boolean"
+              },
+              "isCumulative": {
+                "description": "Show running totals",
+                "type": "boolean"
+              },
+              "rangeMin": {
+                "description": "Y axis minimum value",
+                "type": "number"
+              },
+              "rangeMax": {
+                "description": "Y axis maximum value",
+                "type": "number"
+              }
+            },
+            "required": [
+              "configurationType",
+              "aggregateFieldMetadataId",
+              "aggregateOperation",
+              "primaryAxisGroupByFieldMetadataId"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "configurationType": {
+                "type": "string",
+                "const": "PIE_CHART"
+              },
+              "aggregateFieldMetadataId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "aggregateOperation": {
+                "type": "string",
+                "enum": [
+                  "MIN",
+                  "MAX",
+                  "AVG",
+                  "SUM",
+                  "COUNT",
+                  "COUNT_UNIQUE_VALUES",
+                  "COUNT_EMPTY",
+                  "COUNT_NOT_EMPTY",
+                  "COUNT_TRUE",
+                  "COUNT_FALSE",
+                  "PERCENTAGE_EMPTY",
+                  "PERCENTAGE_NOT_EMPTY"
+                ]
+              },
+              "groupByFieldMetadataId": {
+                "description": "Field UUID to slice by",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "groupBySubFieldName": {
+                "description": "REQUIRED for relation fields (e.g. \"name\", \"stage\") and composite fields (e.g. \"addressCity\"). Without this, relation fields group by raw UUID which is not useful.",
+                "type": "string"
+              },
+              "orderBy": {
+                "type": "string",
+                "enum": [
+                  "FIELD_ASC",
+                  "FIELD_DESC",
+                  "FIELD_POSITION_ASC",
+                  "FIELD_POSITION_DESC",
+                  "VALUE_ASC",
+                  "VALUE_DESC",
+                  "MANUAL"
+                ]
+              },
+              "manualSortOrder": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "dateGranularity": {
+                "description": "Date grouping granularity when slicing by date",
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH",
+                  "QUARTER",
+                  "YEAR",
+                  "DAY_OF_THE_WEEK",
+                  "MONTH_OF_THE_YEAR",
+                  "QUARTER_OF_THE_YEAR"
+                ]
+              },
+              "color": {
+                "description": "Chart color theme",
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "red",
+                  "ruby",
+                  "crimson",
+                  "tomato",
+                  "orange",
+                  "amber",
+                  "yellow",
+                  "lime",
+                  "grass",
+                  "green",
+                  "jade",
+                  "mint",
+                  "turquoise",
+                  "cyan",
+                  "sky",
+                  "blue",
+                  "iris",
+                  "violet",
+                  "purple",
+                  "plum",
+                  "pink",
+                  "bronze",
+                  "gold",
+                  "brown",
+                  "gray"
+                ]
+              },
+              "displayDataLabel": {
+                "type": "boolean"
+              },
+              "displayLegend": {
+                "type": "boolean"
+              },
+              "showCenterMetric": {
+                "description": "Show aggregate value in center",
+                "type": "boolean"
+              },
+              "hideEmptyCategory": {
+                "description": "Hide slices with zero values",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "configurationType",
+              "aggregateFieldMetadataId",
+              "aggregateOperation",
+              "groupByFieldMetadataId"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "configurationType": {
+                "type": "string",
+                "const": "IFRAME"
+              },
+              "url": {
+                "description": "URL to embed",
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "required": [
+              "configurationType"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "configurationType": {
+                "type": "string",
+                "const": "STANDALONE_RICH_TEXT"
+              },
+              "body": {
+                "description": "Rich text content. Use { \"markdown\": \"your content here\" } for text. Supports full markdown syntax.",
+                "type": "object",
+                "properties": {
+                  "blocknote": {
+                    "description": "BlockNote JSON string (advanced). Stringified array of BlockNote blocks.",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "markdown": {
+                    "description": "Markdown content string (preferred for AI). Supports headings, bold, lists, links, etc.",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "configurationType",
+              "body"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "configurationType": {
+                "type": "string",
+                "const": "RECORD_TABLE"
+              },
+              "viewId": {
+                "description": "UUID of the dedicated view created for this widget. Must be created with create_view before creating the widget. Never reuse a record index view.",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "required": [
+              "configurationType",
+              "viewId"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "required": [
+      "widgetId"
+    ],
+    "additionalProperties": false
+  }
+}

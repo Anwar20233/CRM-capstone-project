@@ -1,0 +1,163 @@
+{
+  "name": "create_workflow_version_step",
+  "description": "Create a new step in a workflow version. This adds a step to the specified workflow version with the given configuration. If parentStepId is not provided, the step will be appended at the end of the workflow.",
+  "inputSchema": {
+    "anyOf": [
+      {
+        "type": "object",
+        "properties": {
+          "workflowVersionId": {
+            "description": "The UUID of the workflow version to add the step to",
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentStepId": {
+            "description": "Optional ID of the parent step this step should come after (UUID, or \"trigger\" for the trigger step). If not provided, the step will be added at the end of the workflow.",
+            "type": "string"
+          },
+          "parentStepConnectionOptions": {
+            "description": "Optional parent step connection options",
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "conditionGroupIndex": {
+                "type": "number"
+              }
+            }
+          },
+          "nextStepId": {
+            "description": "Optional ID of the step this new step should connect to",
+            "type": "string"
+          },
+          "position": {
+            "description": "Optional position coordinates for the step",
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "x",
+              "y"
+            ]
+          },
+          "stepType": {
+            "type": "string",
+            "const": "LOGIC_FUNCTION"
+          },
+          "defaultSettings": {
+            "description": "Settings for the LOGIC_FUNCTION step. Must include input.logicFunctionId.",
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "properties": {
+                  "logicFunctionId": {
+                    "description": "The ID of the logic function. Use list_logic_function_tools to discover available IDs.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "logicFunctionId"
+                ]
+              }
+            },
+            "required": [
+              "input"
+            ]
+          }
+        },
+        "required": [
+          "workflowVersionId",
+          "stepType",
+          "defaultSettings"
+        ]
+      },
+      {
+        "type": "object",
+        "properties": {
+          "workflowVersionId": {
+            "description": "The UUID of the workflow version to add the step to",
+            "type": "string",
+            "format": "uuid"
+          },
+          "parentStepId": {
+            "description": "Optional ID of the parent step this step should come after (UUID, or \"trigger\" for the trigger step). If not provided, the step will be added at the end of the workflow.",
+            "type": "string"
+          },
+          "parentStepConnectionOptions": {
+            "description": "Optional parent step connection options",
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "conditionGroupIndex": {
+                "type": "number"
+              }
+            }
+          },
+          "nextStepId": {
+            "description": "Optional ID of the step this new step should connect to",
+            "type": "string"
+          },
+          "position": {
+            "description": "Optional position coordinates for the step",
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "x",
+              "y"
+            ]
+          },
+          "stepType": {
+            "type": "string",
+            "enum": [
+              "CODE",
+              "SEND_EMAIL",
+              "DRAFT_EMAIL",
+              "CREATE_RECORD",
+              "UPDATE_RECORD",
+              "DELETE_RECORD",
+              "UPSERT_RECORD",
+              "FIND_RECORDS",
+              "FORM",
+              "FILTER",
+              "IF_ELSE",
+              "HTTP_REQUEST",
+              "AI_AGENT",
+              "ITERATOR",
+              "EMPTY",
+              "DELAY"
+            ]
+          },
+          "defaultSettings": {
+            "description": "Optional default settings for the step.",
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "workflowVersionId",
+          "stepType"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "create_view_sort",
+  "description": "Add a sort to a view. Use list_object_metadata_items to get fieldMetadataId values.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "viewId": {
+        "description": "ID of the view to add the sort to",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "fieldMetadataId": {
+        "description": "ID of the field to sort by. Use list_object_metadata_items to find field IDs.",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "direction": {
+        "description": "Sort direction: ASC (ascending) or DESC (descending)",
+        "default": "ASC",
+        "type": "string",
+        "enum": [
+          "ASC",
+          "DESC"
+        ]
+      }
+    },
+    "required": [
+      "viewId",
+      "fieldMetadataId",
+      "direction"
+    ],
+    "additionalProperties": false
+  }
+}

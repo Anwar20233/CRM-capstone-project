@@ -1,0 +1,17 @@
+{
+  "name": "delete_calendar_channel_event_association",
+  "description": "Delete a Calendar Channel Event Association record by marking it as deleted. The record is hidden from normal queries. This is reversible. Use this to remove records.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "The unique UUID of the record to delete",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

@@ -1,0 +1,2754 @@
+{
+  "name": "compute_step_output_schema",
+  "description": "Compute the output schema for a workflow step. This determines what data the step produces. The step parameter must be a valid WorkflowTrigger or WorkflowAction with the correct settings structure for its type.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "step": {
+        "description": "The workflow step configuration",
+        "anyOf": [
+          {
+            "anyOf": [
+              {
+                "description": "Database event trigger that fires when a record is created, updated, deleted, or upserted. The triggered record is accessible in workflow steps via {{trigger.object.fieldName}}.",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Human-readable name for the trigger. Optional but recommended for clarity.",
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "DATABASE_EVENT"
+                  },
+                  "position": {
+                    "description": "Position coordinates for the trigger in the workflow diagram. Use (0, 0) for the trigger step.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that the trigger connects to. These are the first steps in the workflow.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "eventName": {
+                        "description": "Event name in format: objectName.action (e.g., \"company.created\", \"person.updated\", \"task.deleted\", \"company.upserted\"). Use lowercase object names.",
+                        "type": "string"
+                      },
+                      "input": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. For database events, this includes the record that triggered the workflow accessible via {{trigger.object.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "objectType": {
+                        "type": "string"
+                      },
+                      "fields": {
+                        "anyOf": [
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "eventName",
+                      "outputSchema"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "description": "Manual trigger that can be launched by the user. If a record is selected when launched, it is accessible via {{trigger.record.fieldName}}. If no record is selected, no data context is available.",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Human-readable name for the trigger. Optional but recommended for clarity.",
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "MANUAL"
+                  },
+                  "position": {
+                    "description": "Position coordinates for the trigger in the workflow diagram. Use (0, 0) for the trigger step.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that the trigger connects to. These are the first steps in the workflow.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "objectType": {
+                        "type": "string"
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. When a record is selected, it is accessible via {{trigger.record.fieldName}}. When no record is selected, no data is available.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "icon": {
+                        "type": "string"
+                      },
+                      "isPinned": {
+                        "type": "boolean"
+                      },
+                      "availability": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "GLOBAL"
+                                  },
+                                  "locations": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "type"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "SINGLE_RECORD"
+                                  },
+                                  "objectNameSingular": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "objectNameSingular"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "type": {
+                                    "type": "string",
+                                    "const": "BULK_RECORDS"
+                                  },
+                                  "objectNameSingular": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "objectNameSingular"
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "outputSchema"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Human-readable name for the trigger. Optional but recommended for clarity.",
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "CRON"
+                  },
+                  "position": {
+                    "description": "Position coordinates for the trigger in the workflow diagram. Use (0, 0) for the trigger step.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that the trigger connects to. These are the first steps in the workflow.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "settings": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "DAYS"
+                          },
+                          "schedule": {
+                            "type": "object",
+                            "properties": {
+                              "day": {
+                                "type": "number",
+                                "minimum": 1
+                              },
+                              "hour": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 23
+                              },
+                              "minute": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 59
+                              }
+                            },
+                            "required": [
+                              "day",
+                              "hour",
+                              "minute"
+                            ]
+                          },
+                          "outputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "schedule",
+                          "outputSchema"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "HOURS"
+                          },
+                          "schedule": {
+                            "type": "object",
+                            "properties": {
+                              "hour": {
+                                "type": "number",
+                                "minimum": 1
+                              },
+                              "minute": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 59
+                              }
+                            },
+                            "required": [
+                              "hour",
+                              "minute"
+                            ]
+                          },
+                          "outputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "schedule",
+                          "outputSchema"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "MINUTES"
+                          },
+                          "schedule": {
+                            "type": "object",
+                            "properties": {
+                              "minute": {
+                                "type": "number",
+                                "minimum": 1,
+                                "maximum": 60
+                              }
+                            },
+                            "required": [
+                              "minute"
+                            ]
+                          },
+                          "outputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "schedule",
+                          "outputSchema"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "CUSTOM"
+                          },
+                          "pattern": {
+                            "type": "string"
+                          },
+                          "outputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "pattern",
+                          "outputSchema"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "Human-readable name for the trigger. Optional but recommended for clarity.",
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "WEBHOOK"
+                  },
+                  "position": {
+                    "description": "Position coordinates for the trigger in the workflow diagram. Use (0, 0) for the trigger step.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that the trigger connects to. These are the first steps in the workflow.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "settings": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "outputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": {}
+                          },
+                          "httpMethod": {
+                            "type": "string",
+                            "const": "GET"
+                          },
+                          "authentication": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "API_KEY"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "outputSchema",
+                          "httpMethod",
+                          "authentication"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "outputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": {}
+                          },
+                          "httpMethod": {
+                            "type": "string",
+                            "const": "POST"
+                          },
+                          "expectedBody": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": {}
+                          },
+                          "authentication": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "API_KEY"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "outputSchema",
+                          "httpMethod",
+                          "expectedBody",
+                          "authentication"
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "settings"
+                ]
+              }
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "CODE"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "logicFunctionId": {
+                            "description": "The ID of the logic function that holds the code. This is auto-generated when a CODE step is created via create_workflow_version_step \u2014 do NOT set this manually.",
+                            "type": "string"
+                          },
+                          "logicFunctionInput": {
+                            "description": "Key-value map of input parameters to pass to the logic function at runtime.",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "logicFunctionId",
+                          "logicFunctionInput"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "LOGIC_FUNCTION"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "logicFunctionId": {
+                            "type": "string"
+                          },
+                          "logicFunctionInput": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "logicFunctionId",
+                          "logicFunctionInput"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "SEND_EMAIL"
+                  },
+                  "settings": {
+                    "$ref": "#/$defs/_f29"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "DRAFT_EMAIL"
+                  },
+                  "settings": {
+                    "$ref": "#/$defs/_f29"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "CREATE_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "description": "The name of the object to create a record in. Must be lowercase (e.g., \"person\", \"company\", \"task\").",
+                            "type": "string"
+                          },
+                          "objectRecord": {
+                            "description": "The record data to create.",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecord"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "UPDATE_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "objectRecord": {
+                            "description": "Record data object. Use nested objects for relationships (e.g., \"company\": {\"id\": \"{{reference}}\"}). Common patterns:\n- Person: {\"name\": {\"firstName\": \"John\", \"lastName\": \"Doe\"}, \"emails\": {\"primaryEmail\": \"john@example.com\"}, \"company\": {\"id\": \"{{trigger.object.id}}\"}}\n- Company: {\"name\": \"Acme Corp\", \"domainName\": {\"primaryLinkUrl\": \"https://acme.com\"}}\n- Task: {\"title\": \"Follow up\", \"status\": \"TODO\", \"assignee\": {\"id\": \"{{user.id}}\"}}",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          },
+                          "objectRecordId": {
+                            "type": "string"
+                          },
+                          "fieldsToUpdate": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecord",
+                          "objectRecordId",
+                          "fieldsToUpdate"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "DELETE_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "objectRecordId": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecordId"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "UPSERT_RECORD"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "objectRecord": {
+                            "description": "Record data object. Use nested objects for relationships (e.g., \"company\": {\"id\": \"{{reference}}\"}). Common patterns:\n- Person: {\"name\": {\"firstName\": \"John\", \"lastName\": \"Doe\"}, \"emails\": {\"primaryEmail\": \"john@example.com\"}, \"company\": {\"id\": \"{{trigger.object.id}}\"}}\n- Company: {\"name\": \"Acme Corp\", \"domainName\": {\"primaryLinkUrl\": \"https://acme.com\"}}\n- Task: {\"title\": \"Follow up\", \"status\": \"TODO\", \"assignee\": {\"id\": \"{{user.id}}\"}}",
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          }
+                        },
+                        "required": [
+                          "objectName",
+                          "objectRecord"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "FIND_RECORDS"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "objectName": {
+                            "type": "string"
+                          },
+                          "limit": {
+                            "type": "number"
+                          },
+                          "filter": {
+                            "type": "object",
+                            "properties": {
+                              "recordFilterGroups": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "recordFilters": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "gqlOperationFilter": {
+                                "anyOf": [
+                                  {},
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "orderBy": {
+                            "type": "object",
+                            "properties": {
+                              "recordSorts": {
+                                "type": "array",
+                                "items": {}
+                              },
+                              "gqlOperationOrderBy": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "propertyNames": {
+                                    "type": "string"
+                                  },
+                                  "additionalProperties": {}
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "required": [
+                          "objectName"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "FORM"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "const": "TEXT"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "NUMBER"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "DATE"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "SELECT"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "MULTI_SELECT"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "RECORD"
+                                }
+                              ]
+                            },
+                            "placeholder": {
+                              "type": "string"
+                            },
+                            "settings": {
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
+                              "additionalProperties": {}
+                            },
+                            "value": {}
+                          },
+                          "required": [
+                            "id",
+                            "name",
+                            "label",
+                            "type"
+                          ]
+                        }
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "HTTP_REQUEST"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "GET",
+                              "POST",
+                              "PUT",
+                              "PATCH",
+                              "DELETE"
+                            ]
+                          },
+                          "headers": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          },
+                          "body": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    },
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "boolean"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "url",
+                          "method"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "AI_AGENT"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "agentId": {
+                            "type": "string"
+                          },
+                          "prompt": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "FILTER"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "stepFilterGroups": {
+                            "$ref": "#/$defs/_f63"
+                          },
+                          "stepFilters": {
+                            "$ref": "#/$defs/_f65"
+                          }
+                        },
+                        "required": [
+                          "stepFilterGroups",
+                          "stepFilters"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "IF_ELSE"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "stepFilterGroups": {
+                            "$ref": "#/$defs/_f63"
+                          },
+                          "stepFilters": {
+                            "$ref": "#/$defs/_f65"
+                          },
+                          "branches": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "nextStepIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "filterGroupId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "nextStepIds"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "stepFilterGroups",
+                          "stepFilters",
+                          "branches"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "ITERATOR"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "boolean"
+                                    },
+                                    {
+                                      "type": "null"
+                                    },
+                                    {
+                                      "type": "object",
+                                      "propertyNames": {
+                                        "type": "string"
+                                      },
+                                      "additionalProperties": {}
+                                    },
+                                    {}
+                                  ]
+                                }
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          "initialLoopStepIds": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "shouldContinueOnIterationFailure": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "DELAY"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {
+                          "delayType": {
+                            "type": "string",
+                            "enum": [
+                              "SCHEDULED_DATE",
+                              "DURATION"
+                            ]
+                          },
+                          "scheduledDateTime": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "duration": {
+                            "type": "object",
+                            "properties": {
+                              "days": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "hours": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "minutes": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              },
+                              "seconds": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "string"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        },
+                        "required": [
+                          "delayType"
+                        ]
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Unique identifier for the workflow step. Must be unique within the workflow.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable name for the workflow step. Should clearly describe what the step does.",
+                    "type": "string"
+                  },
+                  "valid": {
+                    "description": "Whether the step configuration is valid. Set to true when all required fields are properly configured.",
+                    "type": "boolean"
+                  },
+                  "nextStepIds": {
+                    "description": "Array of step IDs that this step connects to. Leave empty or null for the final step.",
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "position": {
+                    "description": "Position coordinates for the step in the workflow diagram.",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "const": "EMPTY"
+                  },
+                  "settings": {
+                    "type": "object",
+                    "properties": {
+                      "input": {
+                        "type": "object",
+                        "properties": {}
+                      },
+                      "outputSchema": {
+                        "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": {}
+                      },
+                      "errorHandlingOptions": {
+                        "$ref": "#/$defs/_f24"
+                      }
+                    },
+                    "required": [
+                      "input",
+                      "outputSchema",
+                      "errorHandlingOptions"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "valid",
+                  "type",
+                  "settings"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "workflowVersionId": {
+        "description": "The UUID of the workflow version",
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "step",
+      "workflowVersionId"
+    ],
+    "$defs": {
+      "_f24": {
+        "type": "object",
+        "properties": {
+          "retryOnFailure": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "description": "Whether to retry the action if it fails.",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          "continueOnFailure": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "description": "Whether to continue to the next step if this action fails.",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          }
+        },
+        "required": [
+          "retryOnFailure",
+          "continueOnFailure"
+        ]
+      },
+      "_f29": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "$ref": "#/$defs/_f30"
+          },
+          "outputSchema": {
+            "description": "Schema defining the output data structure. This data can be referenced in subsequent steps using {{stepId.fieldName}}.",
+            "type": "object",
+            "properties": {},
+            "additionalProperties": {}
+          },
+          "errorHandlingOptions": {
+            "$ref": "#/$defs/_f24"
+          }
+        },
+        "required": [
+          "input",
+          "outputSchema",
+          "errorHandlingOptions"
+        ]
+      },
+      "_f30": {
+        "type": "object",
+        "properties": {
+          "connectedAccountId": {
+            "type": "string"
+          },
+          "recipients": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "default": "",
+                "type": "string"
+              },
+              "cc": {
+                "default": "",
+                "type": "string"
+              },
+              "bcc": {
+                "default": "",
+                "type": "string"
+              }
+            },
+            "required": [
+              "to",
+              "cc",
+              "bcc"
+            ]
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "files": {
+            "$ref": "#/$defs/_f31"
+          },
+          "inReplyTo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "connectedAccountId",
+          "recipients",
+          "files"
+        ]
+      },
+      "_f31": {
+        "default": [],
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/_f32"
+        }
+      },
+      "_f32": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "size",
+          "type",
+          "createdAt"
+        ]
+      },
+      "_f63": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/_f64"
+        }
+      },
+      "_f64": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "logicalOperator": {
+            "type": "string",
+            "enum": [
+              "AND",
+              "OR"
+            ]
+          },
+          "parentStepFilterGroupId": {
+            "type": "string"
+          },
+          "positionInStepFilterGroup": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "logicalOperator"
+        ]
+      },
+      "_f65": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/_f66"
+        }
+      },
+      "_f66": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "stepOutputKey": {
+            "type": "string"
+          },
+          "operand": {
+            "$ref": "#/$defs/_f67"
+          },
+          "value": {
+            "type": "string"
+          },
+          "stepFilterGroupId": {
+            "type": "string"
+          },
+          "positionInStepFilterGroup": {
+            "type": "number"
+          },
+          "fieldMetadataId": {
+            "type": "string"
+          },
+          "compositeFieldSubFieldName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "stepOutputKey",
+          "operand",
+          "value",
+          "stepFilterGroupId"
+        ]
+      },
+      "_f67": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/_f68"
+          },
+          {
+            "type": "string",
+            "enum": [
+              "is",
+              "isNotNull",
+              "isNot",
+              "lessThan",
+              "greaterThan",
+              "isBefore",
+              "isAfter",
+              "contains",
+              "doesNotContain",
+              "isEmpty",
+              "isNotEmpty",
+              "isRelative",
+              "isInPast",
+              "isInFuture",
+              "isToday"
+            ]
+          }
+        ]
+      },
+      "_f68": {
+        "type": "string",
+        "enum": [
+          "IS",
+          "IS_NOT_NULL",
+          "IS_NOT",
+          "LESS_THAN_OR_EQUAL",
+          "GREATER_THAN_OR_EQUAL",
+          "IS_BEFORE",
+          "IS_AFTER",
+          "CONTAINS",
+          "DOES_NOT_CONTAIN",
+          "IS_EMPTY",
+          "IS_NOT_EMPTY",
+          "IS_RELATIVE",
+          "IS_IN_PAST",
+          "IS_IN_FUTURE",
+          "IS_TODAY",
+          "VECTOR_SEARCH"
+        ]
+      }
+    }
+  }
+}

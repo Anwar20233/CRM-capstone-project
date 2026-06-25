@@ -1,0 +1,53 @@
+{
+  "name": "create_object_metadata",
+  "description": "Create a new object metadata in the workspace data model.",
+  "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "nameSingular": {
+        "description": "Singular name for the object (e.g., \"company\")",
+        "type": "string"
+      },
+      "namePlural": {
+        "description": "Plural name for the object (e.g., \"companies\")",
+        "type": "string"
+      },
+      "labelSingular": {
+        "description": "Display label in singular form (e.g., \"Company\")",
+        "type": "string"
+      },
+      "labelPlural": {
+        "description": "Display label in plural form (e.g., \"Companies\")",
+        "type": "string"
+      },
+      "description": {
+        "description": "Description of the object",
+        "type": "string"
+      },
+      "icon": {
+        "description": "Icon identifier for the object",
+        "type": "string"
+      },
+      "shortcut": {
+        "description": "Keyboard shortcut for the object",
+        "type": "string"
+      },
+      "isRemote": {
+        "description": "Whether this is a remote object",
+        "type": "boolean"
+      },
+      "isLabelSyncedWithName": {
+        "description": "Whether label should sync with name changes",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "nameSingular",
+      "namePlural",
+      "labelSingular",
+      "labelPlural"
+    ],
+    "additionalProperties": false
+  }
+}

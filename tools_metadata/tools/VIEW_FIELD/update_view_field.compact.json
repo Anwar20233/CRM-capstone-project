@@ -1,0 +1,47 @@
+{
+  "name": "update_view_field",
+  "description": "Update properties of a column in a view. You can change its visibility, width (size in pixels), display position, or aggregate operation. Use get_view_fields to find the view field ID. Constraints: position must not be -1, must not precede the label identifier field, and must not conflict with another field's position.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "The ID of the view field to update. Obtain this from get_view_fields.",
+        "type": "string",
+        "format": "uuid"
+      },
+      "isVisible": {
+        "description": "Whether the field is visible.",
+        "type": "boolean"
+      },
+      "size": {
+        "description": "Column width in pixels.",
+        "type": "integer"
+      },
+      "position": {
+        "description": "Position of the field.",
+        "type": "number"
+      },
+      "aggregateOperation": {
+        "description": "Aggregate operation for this field.",
+        "type": "string",
+        "enum": [
+          "MIN",
+          "MAX",
+          "AVG",
+          "SUM",
+          "COUNT",
+          "COUNT_UNIQUE_VALUES",
+          "COUNT_EMPTY",
+          "COUNT_NOT_EMPTY",
+          "COUNT_TRUE",
+          "COUNT_FALSE",
+          "PERCENTAGE_EMPTY",
+          "PERCENTAGE_NOT_EMPTY"
+        ]
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

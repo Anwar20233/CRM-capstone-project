@@ -1,0 +1,16 @@
+{
+  "name": "search_help_center",
+  "description": "Search Twenty documentation and help center to find information about features, setup, usage, and troubleshooting.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "description": "The search query to find relevant help articles about Twenty",
+        "type": "string"
+      }
+    },
+    "required": [
+      "query"
+    ]
+  }
+}

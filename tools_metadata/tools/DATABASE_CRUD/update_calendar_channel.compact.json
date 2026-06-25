@@ -1,0 +1,109 @@
+{
+  "name": "update_calendar_channel",
+  "description": "Update an existing Calendar Channel record. Provide the record ID and only the fields you want to change. Unspecified fields will remain unchanged. Returns the updated record with all current data.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "description": "Use \"first\" to insert at the top, \"last\" for the bottom, or a number for explicit ordering. Leave empty to place at the top (recommended).",
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "const": "first"
+          },
+          {
+            "type": "string",
+            "const": "last"
+          }
+        ]
+      },
+      "handle": {
+        "description": "Handle",
+        "type": "string"
+      },
+      "visibility": {
+        "description": "Visibility",
+        "type": "string",
+        "enum": [
+          "METADATA",
+          "SHARE_EVERYTHING"
+        ]
+      },
+      "isContactAutoCreationEnabled": {
+        "description": "Is Contact Auto Creation Enabled",
+        "type": "boolean"
+      },
+      "contactAutoCreationPolicy": {
+        "description": "Automatically create records for people you participated with in an event.",
+        "type": "string",
+        "enum": [
+          "AS_PARTICIPANT_AND_ORGANIZER",
+          "AS_PARTICIPANT",
+          "AS_ORGANIZER",
+          "NONE"
+        ]
+      },
+      "isSyncEnabled": {
+        "description": "Is Sync Enabled",
+        "type": "boolean"
+      },
+      "syncCursor": {
+        "description": "Sync Cursor. Used for syncing events from the calendar provider",
+        "type": "string"
+      },
+      "syncStatus": {
+        "description": "Sync status",
+        "type": "string",
+        "enum": [
+          "ONGOING",
+          "NOT_SYNCED",
+          "ACTIVE",
+          "FAILED_INSUFFICIENT_PERMISSIONS",
+          "FAILED_UNKNOWN"
+        ]
+      },
+      "syncStage": {
+        "description": "Sync stage",
+        "type": "string",
+        "enum": [
+          "CALENDAR_EVENT_LIST_FETCH_PENDING",
+          "CALENDAR_EVENT_LIST_FETCH_SCHEDULED",
+          "CALENDAR_EVENT_LIST_FETCH_ONGOING",
+          "CALENDAR_EVENTS_IMPORT_PENDING",
+          "CALENDAR_EVENTS_IMPORT_SCHEDULED",
+          "CALENDAR_EVENTS_IMPORT_ONGOING",
+          "FAILED",
+          "PENDING_CONFIGURATION"
+        ]
+      },
+      "syncStageStartedAt": {
+        "description": "Sync stage started at",
+        "type": "string",
+        "format": "date-time"
+      },
+      "syncedAt": {
+        "description": "Last sync date",
+        "type": "string",
+        "format": "date-time"
+      },
+      "throttleFailureCount": {
+        "description": "Throttle Failure Count",
+        "type": "integer"
+      },
+      "connectedAccountId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}

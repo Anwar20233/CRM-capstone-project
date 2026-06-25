@@ -1,0 +1,52 @@
+{
+  "agent": "chat",
+  "label": "chat-GEPA",
+  "split": "test",
+  "model": null,
+  "timestamp": "2026-06-20T17:42:41.541172+00:00",
+  "n": 2,
+  "aggregate": 1.0,
+  "by_category": {
+    "clarify": {
+      "mean": 1.0,
+      "n": 1
+    },
+    "deal_question": {
+      "mean": 1.0,
+      "n": 1
+    }
+  },
+  "by_signal": {
+    "no_forbidden": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "parsimony": {
+      "mean": 1.0,
+      "n": 2
+    },
+    "required_tools": {
+      "mean": 1.0,
+      "n": 2
+    }
+  },
+  "prompt_chars": 2593,
+  "per_example": [
+    {
+      "id": "ch_ambiguous",
+      "category": "clarify",
+      "score": 1.0,
+      "error": "APIConnectionError: Connection error.",
+      "notes": [
+        "Rollout errored: APIConnectionError: Connection error."
+      ]
+    },
+    {
+      "id": "ch_health_then_nothing",
+      "category": "deal_question",
+      "score": 1.0,
+      "error": null,
+      "notes": []
+    }
+  ]
+}

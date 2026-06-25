@@ -1,0 +1,9 @@
+# Minimal deps for Person 3 agent work (Steps 0–3): LLM client, Worker, tests.
+# Install with: pip install -r requirements-agent.txt
+# Does not include torch/gliner (NER pipeline) — use requirements.txt for the full service.
+openai>=1.0,<2.0
+python-dotenv>=1.0,<2.0
+pytest>=8.0
+pytest-asyncio>=0.23.0
+langchain-core>=0.3.0,<0.4.0
+httpx>=0.28.0

@@ -1,0 +1,73 @@
+{
+  "name": "create_many_view_fields",
+  "description": "Add multiple columns to a view at once. More efficient than calling create_view_field multiple times. Each item follows the same schema as create_view_field. All view fields can target the same or different views.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "viewFields": {
+        "description": "Array of view fields to create (1-50 items).",
+        "minItems": 1,
+        "maxItems": 50,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "viewId": {
+              "description": "The ID of the view to add the field to.",
+              "type": "string",
+              "format": "uuid"
+            },
+            "fieldMetadataId": {
+              "description": "The ID of the field metadata to add. Use get_field_metadata to find available fields.",
+              "type": "string",
+              "format": "uuid"
+            },
+            "isVisible": {
+              "description": "Whether the field is visible in the view.",
+              "default": true,
+              "type": "boolean"
+            },
+            "size": {
+              "description": "Column width in pixels.",
+              "default": 150,
+              "type": "integer"
+            },
+            "position": {
+              "description": "Position of the field in the view (0-based).",
+              "default": 0,
+              "type": "number"
+            },
+            "aggregateOperation": {
+              "description": "Aggregate operation for this field (e.g., \"SUM\", \"AVG\", \"COUNT\").",
+              "type": "string",
+              "enum": [
+                "MIN",
+                "MAX",
+                "AVG",
+                "SUM",
+                "COUNT",
+                "COUNT_UNIQUE_VALUES",
+                "COUNT_EMPTY",
+                "COUNT_NOT_EMPTY",
+                "COUNT_TRUE",
+                "COUNT_FALSE",
+                "PERCENTAGE_EMPTY",
+                "PERCENTAGE_NOT_EMPTY"
+              ]
+            }
+          },
+          "required": [
+            "viewId",
+            "fieldMetadataId",
+            "isVisible",
+            "size",
+            "position"
+          ]
+        }
+      }
+    },
+    "required": [
+      "viewFields"
+    ]
+  }
+}

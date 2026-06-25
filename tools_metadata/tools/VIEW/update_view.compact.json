@@ -1,0 +1,25 @@
+{
+  "name": "update_view",
+  "description": "Update an existing view. You can change the name and icon.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "View ID to update",
+        "type": "string",
+        "format": "uuid"
+      },
+      "name": {
+        "description": "New view name",
+        "type": "string"
+      },
+      "icon": {
+        "description": "New icon identifier",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id"
+    ]
+  }
+}
