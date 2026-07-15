@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { google } from 'googleapis';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { ConnectedAccountProvider } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 
@@ -115,7 +115,10 @@ export class BookCalendarEventTool implements Tool {
   }
 
   // Use the explicit account when given; otherwise fall back to the workspace's
-  // Google account (the one whose calendar is synced).
+  // Google account (the one whose calendar is synced). Require a refresh token:
+  // seeded/placeholder Google accounts have a null token and can't authenticate
+  // (events.insert would throw "Refresh token is required"), so we skip them and
+  // pick a genuinely connected account.
   private async resolveConnectedAccount(
     connectedAccountId: string | undefined,
     workspaceId: string,
@@ -127,7 +130,11 @@ export class BookCalendarEventTool implements Tool {
     }
 
     return this.connectedAccountRepository.findOne({
-      where: { workspaceId, provider: ConnectedAccountProvider.GOOGLE },
+      where: {
+        workspaceId,
+        provider: ConnectedAccountProvider.GOOGLE,
+        refreshToken: Not(IsNull()),
+      },
     });
   }
 }

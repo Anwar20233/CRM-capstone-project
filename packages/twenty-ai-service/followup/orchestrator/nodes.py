@@ -289,18 +289,23 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
             from followup.profile.extraction import extract_from_email
 
             trigger = state.get("trigger") or {}
+            # An explicit opportunity_id from the caller is authoritative — pass it
+            # into extraction so the deal binds to it directly instead of being
+            # (mis-)inferred from the sender's other open opportunities.
+            explicit_opportunity_id = state.get("opportunity_id")
             outcome = await extract_from_email(
                 workspace_id=state["workspace_id"],
                 source_type="email",
                 source_id=str(trigger.get("id", state["run_id"])),
                 source_text=_email_source_text(trigger),
                 sender_email=trigger.get("sender_email", ""),
+                opportunity_id=explicit_opportunity_id,
                 deps=deps.pipeline,
             )
-            resolved = getattr(outcome, "opportunity_id", None)
+            resolved = explicit_opportunity_id or getattr(outcome, "opportunity_id", None)
             # A halt (unknown sender, ambiguous deal) leaves no opportunity to
             # work — end the run cleanly with the reason rather than crashing.
-            if not resolved and not state.get("opportunity_id"):
+            if not resolved:
                 reason = (
                     getattr(outcome, "reason", None)
                     or getattr(outcome, "status", None)
@@ -309,7 +314,7 @@ def build_nodes(deps: OrchestratorDeps) -> dict[str, Callable]:
                 return _fail(
                     state, "extract", f"extract: no deal resolved from sender ({reason})"
                 )
-            updates = {"opportunity_id": resolved} if resolved else {}
+            updates = {"opportunity_id": resolved}
             return _advance(state, "extract", **updates)
         except Exception as error:  # noqa: BLE001
             return _fail(state, "extract", f"extract: {error}")

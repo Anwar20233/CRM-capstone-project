@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ripple — Project Report</title>
+<style>
+  :root {
+    --ink: #1a1a22;
+    --muted: #5c5c6b;
+    --accent: #e0794e;      /* Ripple orange */
+    --accent-soft: #fbeee7;
+    --line: #e6e3dd;
+    --paper: #ffffff;
+    --bg: #f4f1ea;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.8px;
+    line-height: 1.55;
+  }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 14px auto;
+    background: var(--paper);
+    padding: 15mm 16mm 12mm;
+    box-shadow: 0 4px 24px rgba(0,0,0,.10);
+    display: flex;
+    flex-direction: column;
+  }
+  /* ---------- Header ---------- */
+  .masthead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 12px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .ripplemark { width: 42px; height: 42px; position: relative; flex: none; }
+  .ripplemark span {
+    position: absolute; left: 50%; top: 50%;
+    border: 1.4px solid var(--accent); border-radius: 50%;
+    transform: translate(-50%, -50%); opacity: .55;
+  }
+  .ripplemark span:nth-child(1){ width: 42px; height: 14px; opacity:.3;}
+  .ripplemark span:nth-child(2){ width: 29px; height: 10px; opacity:.5;}
+  .ripplemark span:nth-child(3){ width: 17px; height: 6px; opacity:.75;}
+  .ripplemark .dot {
+    position:absolute; left:50%; top:38%; width:9px; height:9px;
+    background: var(--accent); border-radius:50%; transform:translate(-50%,-50%);
+    border:none; opacity:1;
+  }
+  .wordmark { font-family: Georgia, "Times New Roman", serif; font-size: 31px; font-weight: 600; letter-spacing: -.5px; }
+  .tagline { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+  .partners { text-align: right; font-size: 8.5px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; line-height: 1.7; }
+  .partners b { color: var(--ink); }
+  .reporttitle { margin: 14px 0 2px; font-size: 18px; font-weight: 700; letter-spacing: -.2px; }
+  .reportsub { color: var(--muted); font-size: 10.5px; margin-bottom: 14px; }
+
+  /* ---------- Sections ---------- */
+  h2 {
+    font-size: 11.5px; text-transform: uppercase; letter-spacing: 1.6px;
+    margin: 16px 0 6px; padding-left: 9px; position: relative; color: var(--ink);
+  }
+  h2::before {
+    content: ""; position: absolute; left: 0; top: 1px; bottom: 1px;
+    width: 3px; background: var(--accent); border-radius: 2px;
+  }
+  h3 { font-size: 10px; margin: 8px 0 3px; color: var(--accent); letter-spacing: .3px; }
+  p { margin: 0 0 7px; }
+  .lead { font-size: 11px; }
+  strong { color: var(--ink); }
+  .accent { color: var(--accent); font-weight: 600; }
+  ul { margin: 0 0 7px; padding-left: 16px; }
+  li { margin-bottom: 3.5px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 26px; }
+
+  /* flow chips */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 5px 0 9px; }
+  .chip {
+    border: 1px solid var(--line); background: #faf8f4;
+    border-radius: 4px; padding: 3px 7px; font-size: 8.8px; white-space: nowrap;
+  }
+  .chip.k { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  .arrow { color: var(--muted); font-size: 9px; }
+
+  /* stat strip */
+  .stats { display: flex; gap: 10px; margin: 10px 0; }
+  .stat { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; background: #faf8f4; }
+  .stat .num { font-size: 22px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .stat .lbl { font-size: 8.6px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: 8px 12px; border-radius: 0 5px 5px 0; margin: 8px 0;
+  }
+
+  /* architecture layers */
+  .layers { display: grid; gap: 6px; margin: 6px 0 8px; }
+  .layer { border: 1px solid var(--line); border-radius: 6px; padding: 7px 11px; background: #faf8f4; }
+  .layer b { color: var(--accent); }
+
+  /* comparison table */
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 8px; font-size: 9.2px; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+  th { font-size: 8.4px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+  td.c { text-align: center; }
+  .yes { color: #2e8b57; font-weight: 700; }
+  .no { color: #c4584a; font-weight: 700; }
+  .lim { color: var(--muted); font-size: 8.4px; }
+  .rip { background: var(--accent-soft); font-weight: 600; }
+
+  /* footer / team */
+  footer {
+    margin-top: auto; border-top: 2px solid var(--ink); padding-top: 12px;
+    break-inside: avoid;
+  }
+  .team-label {
+    font-size: 8.4px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--accent); font-weight: 700; margin-bottom: 9px;
+  }
+  .team {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 18px;
+  }
+  .member { font-size: 9px; }
+  .member b { display: block; font-size: 9.8px; margin-bottom: 1px; }
+  .member span { color: var(--muted); }
+  .foot {
+    margin-top: 14px; padding-top: 9px; border-top: 1px solid var(--line);
+    font-size: 8px; color: var(--muted); text-align: center; letter-spacing: 1.5px;
+  }
+
+  .pagebreak { break-before: page; }
+
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    /* 3 full A4 pages (3 × 297mm = 891mm); 890mm avoids a stray 4th page so the
+       footer lands at the very bottom of page 3 */
+    .page { box-shadow: none; margin: 0; width: auto; min-height: 882mm; padding: 12mm; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ HEADER ============ -->
+  <div class="masthead">
+    <div class="brand">
+      <div class="ripplemark"><span></span><span></span><span></span><i class="dot"></i></div>
+      <div>
+        <div class="wordmark">Ripple</div>
+        <div class="tagline">Your Agentic CRM Platform</div>
+      </div>
+    </div>
+    <div class="partners">
+      WeCloudData&nbsp;&middot;&nbsp;SDA Agentic AI Bootcamp<br>
+      Client: <b>BeamData</b>
+    </div>
+  </div>
+
+  <div class="reporttitle">Project Report — Ripple, an Agentic CRM Platform</div>
+  <div class="reportsub">An AI layer that turns a passive CRM into an active sales teammate.</div>
+
+  <!-- ============ WHAT WE BUILT ============ -->
+  <h2>What we built</h2>
+  <p class="lead">
+    <strong>Ripple</strong> is an agentic AI layer built on top of <strong>Twenty</strong>, an open-source CRM that
+    serves as the system of record and the user interface. A standard CRM is passive — it stores what reps remember to
+    type in, and goes stale the moment they stop. Ripple makes it active. On the Twenty foundation we built three
+    capabilities that work together:
+  </p>
+  <ul>
+    <li><strong>A conversational CRM agent.</strong> Reps read and modify CRM data in plain language. An orchestrator
+      interprets each request, plans it into ordered steps, and delegates to specialised read and write sub-agents
+      that operate the CRM safely on the rep's behalf.</li>
+    <li><strong>An autonomous Follow-Up engine.</strong> It ingests inbound emails, builds an
+      <span class="accent">opportunity knowledge graph</span>, scores deal risk, and drafts the next best action —
+      an email, a note, a task, or a meeting — for the rep to approve.</li>
+    <li><strong>Privacy-first data masking.</strong> Personal data is masked before it ever reaches an external model
+      and unmasked only after the work is complete, so sensitive information never leaves a trusted boundary.</li>
+  </ul>
+
+  <h3>Foundation &amp; architecture at a glance</h3>
+  <div class="layers">
+    <div class="layer"><b>Interface layer</b> — Twenty CRM (open source) provides the records, UI, and the surfaces
+      where reps give input and approve the agent's proposals. The workflow explicitly pauses for human input and human
+      approval.</div>
+    <div class="layer"><b>Agent layer (Ripple AI)</b> — a planning orchestrator coordinating reader, writer, and
+      Follow-Up sub-agents over a controlled delegation interface, with a shared session and a knowledge graph.</div>
+    <div class="layer"><b>Trust &amp; data layer</b> — PII masking at every model boundary, plus the CRM tools the
+      agents call to read and write records.</div>
+  </div>
+
+  <!-- ============ WHO IT IS FOR ============ -->
+  <h2>Who it is for</h2>
+  <p>
+    Ripple is built for <strong>BeamData</strong> and the sales teams it serves. A sales rep's context is scattered
+    across CRM records, emails, notes, tasks and calendars — "data is the new currency, scattered across every tool."
+    That fragmentation has a measurable cost:
+  </p>
+  <div class="stats">
+    <div class="stat"><div class="num">75%</div><div class="lbl">of customer information never gets logged into the CRM</div></div>
+    <div class="stat"><div class="num">$3–5M</div><div class="lbl">in revenue lost to missing or stale information</div></div>
+    <div class="stat"><div class="num">121</div><div class="lbl">emails reaching a sales rep on an average day</div></div>
+  </div>
+  <p>
+    Ripple's job is to capture what would otherwise be lost, keep the deal picture current automatically, and hand the
+    rep a ready-to-approve next step instead of a blank record — without adding manual data entry to their day. The
+    primary user is the <strong>sales rep</strong>; the buyers are <strong>sales leaders</strong> who care about
+    pipeline accuracy, revenue protection, and data privacy.
+  </p>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <h2>How it works</h2>
+  <div class="grid2">
+    <div>
+      <p><strong>Conversational agent (rep-initiated).</strong> A user message goes to an <strong>orchestrator</strong>
+      that breaks it into ordered sub-tasks and delegates each to the right specialist: a <strong>reader</strong>
+      (read-only scope) or a <strong>writer</strong> (write scope). The sub-agents call CRM tools — finding records,
+      creating and updating them, and higher-level <em>composite</em> actions such as onboarding a client or advancing
+      a deal. Reads return grounded answers; writes are <strong>tiered by risk</strong> — routine changes run directly,
+      while higher-impact actions (such as deletions) pause for <strong>explicit confirmation</strong>.</p>
+    </div>
+    <div>
+      <p><strong>Follow-Up engine (automatic).</strong> An incoming email is first resolved to the right opportunity
+      <em>from its sender</em> — the deal is rarely named in the message itself. Key facts and relationships are then
+      extracted, deal risk is scored, and a plan is produced. The pipeline prepares the artifacts (a drafted reply, a
+      calendar availability check, a note or a task) and surfaces a single <strong>pending action</strong> the rep can
+      <span class="accent">Accept, Reject, or Revise</span>. Nothing is sent or written until the rep accepts.</p>
+    </div>
+  </div>
+  <div class="flow">
+    <span class="chip k">Inbound email</span><span class="arrow">→</span>
+    <span class="chip">Resolve opportunity (from sender)</span><span class="arrow">→</span>
+    <span class="chip">Extract facts &amp; relationships</span><span class="arrow">→</span>
+    <span class="chip">Score risk</span><span class="arrow">→</span>
+    <span class="chip">Plan next step</span><span class="arrow">→</span>
+    <span class="chip">Draft / schedule / note</span><span class="arrow">→</span>
+    <span class="chip k">Rep approves</span>
+  </div>
+  <br>
+  <br>
+  <br>
+  <br>
+
+  <h3>The opportunity knowledge graph</h3>
+  <p>
+    The knowledge graph is Ripple's core differentiator. It joins <strong>structured CRM records</strong> — owner,
+    contact, company, stage, and deal amount — with <strong>entities surfaced from unstructured text</strong> in notes
+    and emails: champions, blockers, and competing vendors that never had a CRM field of their own. Layered on top is a
+    live <strong>risk score</strong> (for example, "42% chance of loss") with the reasons behind it. The result is a
+    complete, queryable picture of each deal that updates itself as new emails arrive — surfacing, say, that a
+    procurement blocker is pushing back on price while a rival vendor is being preferred, all extracted automatically
+    from the conversation.
+  </p>
+
+  <h3>Privacy-first masking (the trust zone)</h3>
+  <p>
+    Before any text reaches an external model, Ripple replaces personal data with reversible handles, lets the model
+    reason over the masked version, and restores the real values only at the end — inside a trusted boundary.
+  </p>
+  <div class="flow">
+    <span class="chip">1 · User input</span><span class="arrow">→</span>
+    <span class="chip k">2 · Secure masking</span><span class="arrow">→</span>
+    <span class="chip k">3 · AI analysis (masked)</span><span class="arrow">→</span>
+    <span class="chip k">4 · Action (masked)</span><span class="arrow">→</span>
+    <span class="chip">5 · Unmasking</span><span class="arrow">→</span>
+    <span class="chip">6 · Result</span>
+  </div>
+  <div class="callout">
+    <strong>Human-in-the-loop where it matters.</strong> High-impact and outbound actions never happen on their own —
+    the autonomous Follow-Up engine always proposes and the rep approves, and risky CRM writes pause for confirmation.
+    Routine, low-risk changes run directly to stay out of the rep's way. This graduated control is what makes an
+    autonomous agent safe to put in front of a real sales pipeline.
+  </div>
+
+  <!-- ============ AI COMPONENTS ============ -->
+  <h2>What AI components were used</h2>
+  <ul>
+    <li><strong>Multi-agent orchestration on LangGraph.</strong> A planning orchestrator coordinates the reader,
+      writer, and Follow-Up sub-agents through a controlled delegation interface, keeping each agent's scope and
+      permissions separate. The Follow-Up pipeline runs as a directed graph: resolve → extract → load profile →
+      assess risk → plan → run tasks → create pending action.</li>
+    <li><strong>Tool-calling LLM agents.</strong> Large language models (with a configurable backend) select and invoke
+      CRM tools, including composite tools that bundle several CRM operations into one business action. Read and write
+      scopes are enforced per agent.</li>
+    <li><strong>Specialist Follow-Up sub-agents.</strong> A <em>next-step planner</em> decides what should happen next,
+      an <em>email drafter</em> owns tone and template, and a <em>risk assessor</em> reads the deal's facts and returns
+      a calibrated risk score.</li>
+    <li><strong>Knowledge-graph extraction.</strong> LLM-driven extraction of facts, relationships, and provisional
+      ("shadow") entities from unstructured text, with conflict resolution by source priority and entity
+      de-duplication so the same person mentioned two ways is not stored twice.</li>
+    <li><strong>PII detection &amp; masking.</strong> Microsoft Presidio with NER models detects names, emails, and
+      phone numbers and swaps them for reversible handles at every model boundary, then restores them afterwards.</li>
+    <li><strong>Automated evaluation harness.</strong> A scenario-driven, LLM-graded test suite scores the agents on
+      five capabilities — completing the request, using the right tools, handling problems safely, protecting personal
+      data, and staying grounded and accurate — producing a client-facing scorecard.</li>
+  </ul>
+
+  <h3>How Ripple compares</h3>
+  <table>
+    <thead>
+      <tr><th>Capability</th><th class="c rip">Ripple</th><th class="c">HubSpot</th><th class="c">Monday</th><th class="c">MS Dynamics 365</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>AI-assisted sales workflows</td><td class="c rip yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+      <tr><td>Autonomous next-step planning &amp; execution</td><td class="c rip yes">✓</td><td class="c lim">Limited</td><td class="c no">✕</td><td class="c lim">Limited</td></tr>
+      <tr><td>Opportunity knowledge graph</td><td class="c rip yes">✓</td><td class="c no">✕</td><td class="c no">✕</td><td class="c no">✕</td></tr>
+      <tr><td>Sensitive-data masking for AI</td><td class="c rip yes">✓</td><td class="c no">✕</td><td class="c no">✕</td><td class="c lim">Limited</td></tr>
+      <tr><td>Revenue intelligence &amp; risk detection</td><td class="c rip yes">✓</td><td class="c lim">Limited</td><td class="c no">✕</td><td class="c yes">✓</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ============ WORKED WELL / DID NOT ============ -->
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+   <br>
+
+
+  <div class="grid2">
+    <div>
+      <h2>What worked well</h2>
+      <ul>
+        <li>Natural-language read and write against a real CRM, with risk-tiered safeguards and confirmation on
+          high-impact actions.</li>
+        <li>Sender-anchored resolution that reliably maps an inbound email to the correct deal even when the deal is
+          never named.</li>
+        <li>Building a usable knowledge graph from unstructured text — pulling out champions, blockers, and rivals that
+          had no CRM field.</li>
+        <li>PII masking verified end-to-end: no raw names or emails reached the model at the reader boundary in
+          testing.</li>
+        <li>The Accept / Reject / Revise loop that keeps the rep firmly in control of every outbound action.</li>
+        <li>Cross-turn memory and ambiguity handling ("which Stripe deal did you mean?") performed strongly in
+          evaluation.</li>
+      </ul>
+    </div>
+    <div>
+      <h2>What did not work / is incomplete</h2>
+      <ul>
+        <li>Tool-calling accuracy gaps: possessive phrasing ("Kevin's") can break name resolution; some newly-written
+          contact details are not yet masked; notes occasionally save without being linked to their deal.</li>
+        <li>The orchestrator sometimes gives up after the first tool error instead of attempting a recovery path.</li>
+        <li>The risk feature is functional but not yet reflected in the current presentation draft.</li>
+        <li>The researcher (external enrichment) agent exists only as a stub.</li>
+        <li>Environment and data flakiness — duplicate seed records and backend limits under high concurrency made some
+          evaluation runs harder to interpret.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ============ NEXT ============ -->
+  <h2>What we would improve next</h2>
+  <ul>
+    <li><strong>A researcher agent.</strong> Autonomously enrich deals with external context — company news, key
+      people, funding and market signals — and feed it back into the knowledge graph so the rep walks into every
+      conversation prepared.</li>
+    <li><strong>Higher tool-calling accuracy.</strong> More robust name resolution (including possessives), masking of
+      write-content PII, guaranteed note-to-deal linking, and perseverance through recoverable tool errors instead of
+      giving up early.</li>
+    <li><strong>Scenario coverage to perfection.</strong> Broaden and harden the scenario suite until the agents
+      behave reliably across the full range of real sales situations, using the evaluation scorecard as the gate for
+      what ships.</li>
+  </ul>
+  <div class="callout">
+    <strong>In short:</strong> Ripple already demonstrates the hard parts — autonomous planning, a self-updating
+    knowledge graph, and privacy-safe AI inside a real CRM. The roadmap is about accuracy and reach, not
+    reinvention.
+  </div>
+
+  <!-- ============ TEAM ============ -->
+  <footer>
+    <div class="team-label">Project Team</div>
+    <div class="team">
+      <div class="member"><b>Ibrahim Aljohani</b><span>ibrahim.rabehh@gmail.com</span></div>
+      <div class="member"><b>Majid Alshehri</b><span>imajidshehri@gmail.com</span></div>
+      <div class="member"><b>Rana Alshehri</b><span>alshehrirana24@gmail.com</span></div>
+      <div class="member"><b>Anwar Alotaibi</b><span>a.nwar1@hotmail.com</span></div>
+    </div>
+    <div class="foot">RIPPLE &middot; SDA AGENTIC AI BOOTCAMP (WECLOUDDATA) &middot; CLIENT: BEAMDATA</div>
+  </footer>
+
+
+</div>
+</body>
+</html>

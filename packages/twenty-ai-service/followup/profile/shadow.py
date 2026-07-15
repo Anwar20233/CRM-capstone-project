@@ -24,6 +24,23 @@ _MENTION_PROMOTION_THRESHOLD = 3
 _PROMOTION_FACT_TYPES = ("decision_power", "buying_signal")
 
 
+def looks_like_email(value: Optional[str]) -> bool:
+    """Whether ``value`` is shaped like an email Twenty's bridge will accept.
+
+    The extraction LLM emits free-text placeholders for unknown addresses
+    ("not available", "see signature", …). These are truthy strings, so a bare
+    ``if not email`` guard lets them reach ``create_person``, where the bridge
+    rejects them ("Invalid string value 'not available' for email field"). A
+    shape check — exactly one ``@`` with a dotted, space-free domain — is the
+    durable filter (a sentinel blocklist is endless whack-a-mole).
+    """
+    text = (value or "").strip()
+    if text.count("@") != 1:
+        return False
+    local, _, domain = text.partition("@")
+    return bool(local) and "." in domain and " " not in text
+
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -162,11 +179,12 @@ async def check_and_auto_promote(deps: PipelineDeps, shadow_id: str) -> bool:
     if not await _should_promote(deps, shadow):
         return False
 
-    # Twenty rejects a person without a primary email, so a shadow that has met a
-    # promotion trigger on title/mentions alone (no email yet) cannot be persisted
-    # as a real contact. Keep it as a shadow until an address surfaces rather than
-    # crashing the extraction run on the bridge's NOT-NULL email rejection.
-    if not shadow.email_address:
+    # Twenty rejects a person without a valid primary email, so a shadow that has
+    # met a promotion trigger on title/mentions alone (no real address yet) cannot
+    # be persisted as a contact. Keep it as a shadow until a genuine address
+    # surfaces rather than crashing the run on the bridge's email validation —
+    # this also defends against placeholder addresses persisted by earlier runs.
+    if not looks_like_email(shadow.email_address):
         return False
 
     contact = await deps.crm_orchestrator.create_contact(

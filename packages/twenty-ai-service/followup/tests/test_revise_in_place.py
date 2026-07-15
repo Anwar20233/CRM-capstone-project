@@ -309,6 +309,25 @@ async def test_expand_duration_keeps_start_and_cascades() -> None:
     assert "2026-06-23T09:00:00+00:00" in payload["task_results"]["write_note"]["body"]
 
 
+async def test_revise_meeting_without_time_or_duration_errors_not_silent_noop() -> None:
+    # The reported bug: a meeting "move" that supplies neither requested_time nor
+    # requested_duration_minutes must FAIL loudly — it previously kept the baseline
+    # slot and returned "updated", letting the agent claim a move that never happened.
+    deps, pending_repo = _make_deps(busy=False)
+    action = _meeting_action(slot=dict(_EXISTING_SLOT))
+
+    result = await revise_step_in_place(
+        deps,
+        action=action,
+        target="book_meeting",
+        instructions="move it to 1pm",  # time only in free text — not structured
+        user_id=USER_ID,
+    )
+
+    assert result["status"] == "error"
+    assert pending_repo.saved == []  # nothing persisted on a no-op meeting edit
+
+
 async def test_cascade_gate_aborts_atomically_when_dependent_fails() -> None:
     # If a dependent artifact (the email) cannot be regenerated, NOTHING is
     # persisted — the meeting must never move while the email stays stale.

@@ -16,10 +16,36 @@ from typing import Any, Optional
 
 from followup.profile.dependencies import PipelineDeps
 from followup.profile.references import parse_label
-from followup.profile.shadow import check_and_auto_promote, create_shadow
+from followup.profile.shadow import check_and_auto_promote, create_shadow, looks_like_email
 from followup.store.repositories import ShadowEntity
 
 _ACTIVE_SHADOW_STATUSES = ("shadow", "detected", "pending_promotion")
+
+# Sentinel strings the extraction LLM emits for "no value". Without this they
+# leak through as real data (e.g. an email literally "null"), which later trips
+# the CRM bridge's email validation when a shadow is promoted to a contact.
+_NULL_SENTINELS = {
+    "", "null", "none", "n/a", "na", "unknown", "undefined",
+    "not available", "not provided", "tbd", "none provided",
+}
+
+
+def _clean_field(value: Any) -> Optional[str]:
+    """Trimmed string, or None for empty/sentinel ("null", "none", …) values."""
+    text = (value or "").strip()
+    return None if text.lower() in _NULL_SENTINELS else text
+
+
+def _clean_email(value: Any) -> Optional[str]:
+    """A usable email address, or None for sentinels and non-email-shaped text.
+
+    The extraction LLM happily reports a contact whose email it doesn't know with
+    a placeholder ("not available"); persisting that as a shadow's address makes a
+    later promotion crash on the CRM bridge's email validation. Require real email
+    shape here so unknown addresses stay None all the way through.
+    """
+    text = _clean_field(value)
+    return text if text and looks_like_email(text) else None
 
 
 @dataclass
@@ -118,9 +144,9 @@ async def _resolve_one(
     company: Optional[dict[str, Any]],
     result: ResolutionResult,
 ) -> None:
-    name = (person.get("name") or "").strip()
-    email = (person.get("email") or "").strip() or None
-    role = (person.get("apparent_role") or "").strip() or None
+    name = _clean_field(person.get("name")) or ""
+    email = _clean_email(person.get("email"))
+    role = _clean_field(person.get("apparent_role"))
 
     # 1. CRM contact match — strongest signal is an exact email, then a name.
     if _match_crm_contact(contacts, name, email) is not None:

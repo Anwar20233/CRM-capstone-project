@@ -227,6 +227,18 @@ async def revise_step_in_place(
     # ------------------------------------------------------------------
     new_calendar = None
     if is_calendar:
+        # A meeting edit moves the slot ONLY via the structured delta. If neither
+        # a new time nor a new duration was supplied, there is nothing to apply —
+        # refuse loudly instead of silently re-using the baseline and reporting
+        # "updated" (which let the agent claim a move that never happened).
+        if not requested_time and not requested_duration_minutes:
+            return {
+                "status": "error",
+                "error": (
+                    "A meeting change needs a concrete new time or duration, but "
+                    "none was provided in requested_time / requested_duration_minutes."
+                ),
+            }
         baseline = _current_slot(payload)
         start, duration, error = _revised_slot(
             baseline=baseline,

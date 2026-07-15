@@ -43,6 +43,37 @@ def _safe_zone(tz_name: Optional[str]) -> Any:
         return timezone.utc
 
 
+def _local_slot_label(iso_value: Optional[str], tz_name: Optional[str]) -> Optional[str]:
+    """Render a stored slot ISO timestamp in the rep's timezone for confirmation.
+
+    The agent must confirm the time that was ACTUALLY persisted (read back from
+    the saved action), not the time the rep asked for — otherwise a no-op revise
+    is reported as a successful move.
+    """
+    if not iso_value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(iso_value).replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        return iso_value
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(_safe_zone(tz_name)).strftime("%A, %Y-%m-%d %H:%M")
+
+
+def _persisted_meeting_slot(action: Any) -> tuple[Optional[str], Optional[str]]:
+    """The currently-chosen (start, end) ISO strings from a saved action's payload."""
+    payload = getattr(action, "action_payload", None) or {}
+    calendar = payload.get("calendar") or {}
+    slot = next(
+        (s for s in (calendar.get("available_slots") or []) if s.get("available")),
+        None,
+    )
+    if slot is None:
+        return None, None
+    return slot.get("start"), slot.get("end")
+
+
 def _to_utc_iso(value: Optional[str], tz_name: Optional[str]) -> Optional[str]:
     """Convert a chat-supplied time to a UTC ISO-8601 string before it runs.
 
@@ -91,12 +122,17 @@ Choosing between revise_step and replan_followup:
 - Use **replan_followup** ONLY when the request changes the set of steps (e.g.
   "also add a note and schedule a meeting", or "scrap this and just send an email").
 - Change ONLY what the rep asked for; never alter a field they did not mention.
-  For a meeting: put a new START in `requested_time` (ISO-8601, resolving phrasing
-  like "next Tuesday 2pm" against today's date) ONLY if they asked to move it; put
-  a new length in `requested_duration_minutes` ONLY if they asked to change the
-  duration (e.g. "make it an hour" → 60). To change duration while keeping the
-  same day/time, leave `requested_time` empty. The system keeps the existing
-  date/time and propagates the change to the email and any note/task automatically.
+  MOVING A MEETING TIME: ALWAYS target the `book_meeting` step AND put the new
+  start in the structured `requested_time` argument (ISO-8601, resolving phrasing
+  like "1pm" / "next Tuesday 2pm" against today's date). NEVER convey the new time
+  only in `instructions` and NEVER target the email step to move the meeting — the
+  time is applied solely from `requested_time`, so omitting it changes nothing.
+  Changing only the LENGTH: put the new minutes in `requested_duration_minutes`
+  (e.g. "make it an hour" → 60) and leave `requested_time` empty to keep the day/
+  time. The system propagates the change to the email and any note/task automatically.
+- After revise_step succeeds, confirm using the `persisted_meeting_start` it
+  returns — that is the time actually saved. Never confirm a time you were not
+  given back; if it differs from what the rep asked, say so.
 - If revise_step reports the slot is unavailable, tell the rep it's booked and
   offer the returned alternatives — never claim it was moved.
 
@@ -379,11 +415,27 @@ class _ChatTools:
             }
         if result["status"] == "error":
             return {"error": result.get("error", "revise failed")}
-        return {
+        # Read the time that was ACTUALLY persisted back out of the saved action
+        # and confirm with that — never echo the rep's requested time, so a no-op
+        # can't be reported as a successful move.
+        start_iso, end_iso = _persisted_meeting_slot(result.get("action"))
+        response: dict[str, Any] = {
             "status": "updated",
             "action_id": action_id,
             "target": target,
         }
+        if start_iso is not None:
+            response["persisted_meeting_start"] = _local_slot_label(
+                start_iso, self._tz_name
+            )
+            response["persisted_meeting_end"] = _local_slot_label(
+                end_iso, self._tz_name
+            )
+            response["note"] = (
+                "Confirm to the rep using persisted_meeting_start — this is the "
+                "time now saved. Do not state any other time."
+            )
+        return response
 
     async def _replan(self, action_id: str, instructions: str) -> dict[str, Any]:
         """Strategy B — discard the workflow and re-plan from scratch."""

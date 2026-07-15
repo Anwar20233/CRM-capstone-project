@@ -130,10 +130,16 @@ async def extract_from_email(
     source_text: str,
     sender_email: str,
     *,
+    opportunity_id: Optional[str] = None,
     deps: Optional[PipelineDeps] = None,
     write_locks: Optional[_OpportunityWriteLocks] = None,
 ) -> FollowupExtractionOutcome:
     """Resolve the deal from the sender, then extract — or halt with a reason.
+
+    When ``opportunity_id`` is supplied (the caller already knows the deal — e.g.
+    a trigger that names it explicitly), it is authoritative: extraction binds to
+    that opportunity directly instead of inferring it from the sender, so the deal
+    can't be mis-resolved to an unrelated open opportunity.
 
     ``write_locks`` serializes the persist step per-opportunity when this email is
     one of several concurrent runs sharing the same deal. Defaults to the locks on
@@ -148,7 +154,7 @@ async def extract_from_email(
             source_id=source_id,
             source_text=source_text,
             sender_email=sender_email,
-            opportunity_id=None,
+            opportunity_id=opportunity_id,
             write_locks=write_locks or getattr(d, "write_locks", None),
         ),
     )
